@@ -2,12 +2,17 @@ import express from 'express';
 import { createServer, type Server } from 'http';
 import { env } from '../config/env.js';
 import { logger } from '../logger/logger.js';
+import campaignRoutes from './routes/campaignRoutes.js';
 
 const app = express();
+
+app.use(express.json());
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
+
+app.use('/api', campaignRoutes);
 
 export function startHttpServer(): Server {
   const server = createServer(app);
