@@ -1,6 +1,7 @@
 import { env } from '../../../config/env.js';
 import { generateLLMResponse } from './llmResponder.js';
 import * as templates from './templates.js';
+import { buildHeadcountClarificationQuestion } from '../clarificationQuestions.js';
 import type { Action, Interpretation, FlowContext } from '../types.js';
 
 export async function composeReply(
@@ -24,8 +25,20 @@ export async function composeReply(
 
 function getTemplateReply(action: Action, flowContext: FlowContext): string {
   switch (action.type) {
-    case 'ASK_HEADCOUNT':
-      return templates.replyAskHeadcount({ guestName: flowContext.guestName });
+    case 'ASK_HEADCOUNT': {
+      // Use clarification question helper for initial ask
+      const reason =
+        interpretation.headcountExtraction.kind === 'ambiguous'
+          ? interpretation.headcountExtraction.reason
+          : null;
+
+      return buildHeadcountClarificationQuestion({
+        reason,
+        language: flowContext.locale,
+        guestName: flowContext.guestName,
+        attemptNumber: 1,
+      });
+    }
 
     case 'SET_RSVP': {
       const rsvpStatus = action.updates.rsvpStatus;
@@ -54,12 +67,27 @@ function getTemplateReply(action: Action, flowContext: FlowContext): string {
     }
 
     case 'CLARIFY': {
-      // If in YES_AWAITING_HEADCOUNT state, ask for headcount specifically
+      // If in YES_AWAITING_HEADCOUNT state, use clarification question helper
       if (
         flowContext.conversationState === 'YES_AWAITING_HEADCOUNT' ||
         action.nextState === 'YES_AWAITING_HEADCOUNT'
       ) {
-        return templates.replyAskHeadcount({ guestName: flowContext.guestName });
+        // Use clarification question helper with attempt tracking
+        const attemptNumber = (flowContext.headcountClarificationAttempts ?? 0) + 1;
+        const reason = flowContext.lastHeadcountClarificationReason;
+        
+        // If interpretation has headcountExtraction, use its reason
+        const extractionReason =
+          interpretation.headcountExtraction.kind === 'ambiguous'
+            ? interpretation.headcountExtraction.reason
+            : null;
+
+        return buildHeadcountClarificationQuestion({
+          reason: reason ?? extractionReason ?? null,
+          language: flowContext.locale,
+          guestName: flowContext.guestName,
+          attemptNumber,
+        });
       }
       return templates.replyClarify({ guestName: flowContext.guestName });
     }

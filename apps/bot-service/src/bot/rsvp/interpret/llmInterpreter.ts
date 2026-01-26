@@ -7,9 +7,24 @@ import { env } from '../../../config/env.js';
 
 const DEFAULT_MAX_TOKENS_INTERPRET = 200;
 
+const headcountExtractionSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('exact'),
+    headcount: z.number(),
+  }),
+  z.object({
+    kind: z.literal('ambiguous'),
+    reason: z.enum(['FAMILY_TERM', 'RELATIONAL', 'RANGE_OR_APPROX', 'UNKNOWN']),
+  }),
+  z.object({
+    kind: z.literal('none'),
+  }),
+]);
+
 const interpretationSchema = z.object({
   rsvp: z.enum(['YES', 'NO', 'MAYBE', 'UNKNOWN']),
   headcount: z.number().nullable(),
+  headcountExtraction: headcountExtractionSchema,
   confidence: z.number().min(0).max(1),
   needsHeadcount: z.boolean(),
   language: z.enum(['he', 'en']).optional(),
@@ -48,6 +63,7 @@ export async function interpretWithLLM(
       return {
         rsvp: 'UNKNOWN',
         headcount: null,
+        headcountExtraction: { kind: 'none' },
         confidence: 0.2,
         needsHeadcount: false,
       };
@@ -62,6 +78,7 @@ export async function interpretWithLLM(
     return {
       rsvp: validated.rsvp,
       headcount: validated.headcount,
+      headcountExtraction: validated.headcountExtraction,
       confidence,
       needsHeadcount: validated.needsHeadcount,
       language: validated.language,
@@ -71,6 +88,7 @@ export async function interpretWithLLM(
     return {
       rsvp: 'UNKNOWN',
       headcount: null,
+      headcountExtraction: { kind: 'none' },
       confidence: 0.2,
       needsHeadcount: false,
     };

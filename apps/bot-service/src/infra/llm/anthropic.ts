@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../../config/env.js';
 import { logger } from '../../logger/logger.js';
 
-const DEFAULT_MODEL = 'claude-3-5-sonnet-20241022';
+const DEFAULT_MODEL = 'claude-3-haiku-20240307';
 const DEFAULT_MAX_TOKENS_INTERPRET = 200;
 const DEFAULT_MAX_TOKENS_RESPOND = 120;
 const DEFAULT_TEMPERATURE = 0.2;

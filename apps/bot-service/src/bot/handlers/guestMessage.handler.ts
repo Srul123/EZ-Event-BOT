@@ -19,6 +19,9 @@ interface BotSession {
   };
   eventTitle?: string;
   eventDate?: string;
+  // Lightweight clarification attempt tracking (session-only, not persisted to DB)
+  headcountClarificationAttempts?: number;
+  lastHeadcountClarificationReason?: 'FAMILY_TERM' | 'RELATIONAL' | 'RANGE_OR_APPROX' | 'UNKNOWN';
 }
 
 interface SessionContext extends Context<Update> {
@@ -61,7 +64,7 @@ export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
       conversationState = guest.conversationState || 'DEFAULT';
     }
 
-    // Build flowContext
+    // Build flowContext with clarification attempt tracking from session
     const flowContext: FlowContext = {
       guestName: ctx.session.guest.name,
       eventTitle: ctx.session.eventTitle,
@@ -70,6 +73,8 @@ export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
       currentRsvpStatus: guest.rsvpStatus as FlowContext['currentRsvpStatus'],
       currentHeadcount: guest.headcount ?? null,
       conversationState,
+      headcountClarificationAttempts: ctx.session.headcountClarificationAttempts,
+      lastHeadcountClarificationReason: ctx.session.lastHeadcountClarificationReason,
     };
 
     // Call RSVP flow
@@ -125,6 +130,20 @@ export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
     // Update conversationState in session after flow decision
     if (ctx.session.guest) {
       ctx.session.guest.conversationState = action.nextState;
+    }
+
+    // Update clarification attempt tracking in session (if flow context was updated)
+    if (flowContext.headcountClarificationAttempts !== undefined) {
+      ctx.session.headcountClarificationAttempts = flowContext.headcountClarificationAttempts;
+    }
+    if (flowContext.lastHeadcountClarificationReason !== undefined) {
+      ctx.session.lastHeadcountClarificationReason = flowContext.lastHeadcountClarificationReason;
+    }
+
+    // Reset clarification attempts when leaving YES_AWAITING_HEADCOUNT state
+    if (action.nextState === 'DEFAULT' && conversationState === 'YES_AWAITING_HEADCOUNT') {
+      ctx.session.headcountClarificationAttempts = undefined;
+      ctx.session.lastHeadcountClarificationReason = undefined;
     }
 
     // Always ensure deterministic reply
