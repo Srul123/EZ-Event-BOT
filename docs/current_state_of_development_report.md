@@ -9,7 +9,7 @@ EZ-Event-BOT is a Node.js + TypeScript monorepo application that provides event 
 ### ✅ **Fully Implemented and Working**
 
 #### 1. **Infrastructure & Core Services**
-- **Monorepo Structure**: npm workspaces with `apps/bot-service` and `packages/shared`
+- **Monorepo Structure**: npm workspaces with `apps/bot-service`, `apps/admin-web`, and `packages/shared` (shared package is currently an empty placeholder)
 - **TypeScript Configuration**: ESM (ES2022) with NodeNext module resolution
 - **Environment Management**: dotenv with zod validation
 - **Logging**: Pino with pino-pretty for development
@@ -114,6 +114,167 @@ EZ-Event-BOT is a Node.js + TypeScript monorepo application that provides event 
 - `lastResponseAt`: Timestamp of last guest message
 - `rsvpUpdatedAt`: Timestamp when RSVP status or headcount changed
 
+#### 7. **Admin Web Frontend (GUI)**
+
+**Technology Stack:**
+- **Framework**: Vue 3 with Composition API
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS 4 with custom design tokens (documented in `apps/admin-web/DESIGN_TOKENS.md`)
+- **Internationalization**: vue-i18n (Hebrew/English support)
+- **State Management**: Pinia stores
+- **Routing**: Vue Router
+- **HTTP Client**: Axios with request/response interceptors
+
+**Key Features Implemented:**
+
+- **Campaign Management**:
+  - Campaign list view with search and status filtering
+  - Campaign detail view with comprehensive statistics
+  - Campaign creation form with guest import (CSV support)
+  - Real-time RSVP statistics dashboard
+  - Campaign status badges (DRAFT, SCHEDULED, RUNNING, COMPLETED, FAILED)
+
+- **Guest Management**:
+  - Guest table with sorting and filtering
+  - RSVP status badges with color coding
+  - Headcount display for confirmed guests
+  - Search functionality (by name/phone)
+  - Status filtering (NO_RESPONSE, YES, NO, MAYBE)
+  - Real-time data refresh
+
+- **Link Generation & Dispatch**:
+  - Personalized Telegram link generation interface
+  - Bulk link generation for all guests in a campaign
+  - Copy-to-clipboard functionality for easy distribution
+  - Link display with guest name association
+  - Export links as CSV
+
+- **Statistics Dashboard**:
+  - Total guests count
+  - RSVP breakdown (YES/NO/MAYBE counts)
+  - Response rate calculation with visual progress bar
+  - Total attendees count (sum of headcounts for YES responses)
+  - Real-time updates on data refresh
+
+- **User Experience**:
+  - Responsive design (mobile-friendly)
+  - RTL/LTR layout based on locale
+  - Loading states and error handling
+  - Toast notifications for user feedback
+  - Bilingual support (Hebrew/English) with language switcher (persisted to localStorage)
+  - Modern, clean UI with consistent design system
+
+**Routes:**
+
+| Route | View | Description |
+|---|---|---|
+| `/` | HomeView | Welcome page with CTA buttons |
+| `/campaigns` | CampaignsListView | Campaign list with search & filtering |
+| `/campaigns/create` | CampaignCreateView | Multi-step campaign creation wizard |
+| `/campaigns/:id` | CampaignDetailView | Campaign stats, guest table, link generation |
+| `/campaigns/:id/dispatch` | CampaignDispatchView | Link generation & distribution page |
+
+**File Structure:**
+```
+apps/admin-web/
+├── src/
+│   ├── components/
+│   │   ├── campaign/        # CampaignCard, CampaignForm, CampaignStats
+│   │   ├── guest/           # GuestTable, GuestImport, RSVPStatusBadge
+│   │   ├── links/           # LinkGenerator
+│   │   └── common/          # Button, Card, Badge, Input, Modal, LoadingSpinner,
+│   │                        # NotificationContainer, LanguageSwitcher
+│   ├── views/              # HomeView, CampaignsListView, CampaignCreateView,
+│   │                       # CampaignDetailView, CampaignDispatchView
+│   ├── layouts/            # BaseLayout (header, nav, footer, RTL support)
+│   ├── composables/        # useCampaigns, useCsvImport, useNotifications
+│   ├── stores/             # Pinia stores (campaigns)
+│   ├── api/                # Axios client (client.js), campaign API (campaigns.js), types
+│   ├── i18n/               # Internationalization (en.js, he.js)
+│   ├── router/             # Vue Router configuration
+│   ├── styles/             # main.css (Tailwind CSS 4, design tokens, component layer)
+│   └── utils/              # Formatters (date-fns), validators, CSV parser (PapaParse)
+```
+
+#### 8. **Enhanced NLP Flow with Intelligent Conversation Handling**
+
+**Advanced Features:**
+
+- **Change Detection & RSVP Updates**:
+  - Guests can update their RSVP after confirmation without requiring a new session
+  - Intelligent change intent detection using multiple signals:
+    - Explicit change keywords: "רק", "משנה", "מעדכן", "change", "update"
+    - Correction keywords: "טעיתי", "אופס", "שגיאה", "mistake", "error", "oops"
+    - Headcount difference detection (when new headcount differs from current)
+    - RSVP status change detection (YES → NO, NO → YES, etc.)
+  
+- **Correction Message Handling**:
+  - Special handling for correction messages (e.g., "אופס טעיתי, נהיה 2")
+  - Prevents misinterpretation of corrections as status changes
+  - When correction keyword + headcount detected with YES status → treats as headcount update, not cancellation
+  - Maintains RSVP status (YES) while updating headcount when appropriate
+
+- **Headcount-Only Updates**:
+  - Supports headcount-only messages when guest has confirmed YES status
+  - Examples: "רק 2 אנשים" (only 2 people), "2 אנשים" (2 people)
+  - Automatically updates headcount while preserving YES status
+  - Natural update confirmation: "סבבה, מעדכן ל-2 סהכ." (Got it, updating to 2 total)
+
+- **Fuzzy Matching for Headcount**:
+  - Levenshtein distance-based fuzzy matching for Hebrew number words
+  - Handles typos in Hebrew number words (e.g., "שנים" instead of "שניים")
+  - Context-aware fuzzy matching (only when headcount context words present)
+  - Confirmation prompts for low-confidence fuzzy matches
+
+- **Adaptive Clarification Questions**:
+  - Context-aware clarification questions based on ambiguity type:
+    - FAMILY_TERM: "רק כדי לדעת, כמה תהיו סהכ?" (Just to know, how many total?)
+    - RELATIONAL: "רק כדי לדייק, כמה תהיו סהכ?" (Just to be precise, how many total?)
+    - RANGE_OR_APPROX: Handles approximate responses gracefully
+  - Attempt tracking (max 3 attempts) with graceful fallback
+  - Personalized questions using guest name
+
+- **Hebrew Number Word Recognition**:
+  - Full support for Hebrew number words (0-10): "אחד", "שניים", "שלושה", etc.
+  - Handles variants: "שני"/"שתיים", "שלוש"/"שלושה", etc.
+  - Prefix stripping for Hebrew prefixes (ו, ה, ב, ל, כ, מ, ש)
+  - Niqqud (diacritical marks) normalization
+
+- **Context-Aware Interpretation**:
+  - Headcount context words detection: "אנחנו", "נהיה", "מגיעים", "בסוף", "סהכ", "כולל"
+  - Relational phrase recognition: "אני ואשתי" (me and my wife) → 2
+  - Family term handling: Detects "ילדים", "משפחה" but asks for clarification if no number
+  - Range/approximation detection: "בערך 3", "כ-3", "2-3" → marked as ambiguous
+
+- **Conversation State Management**:
+  - `DEFAULT`: Normal RSVP flow, handles all message types
+  - `YES_AWAITING_HEADCOUNT`: Focused headcount extraction, prevents conversational drift
+  - State persistence in both database and session (DB is source of truth)
+  - Automatic state transitions based on conversation flow
+
+- **Already Recorded Handling**:
+  - Smart acknowledgment for confirmed RSVPs
+  - Interprets message first to detect change intent
+  - Only ACKs if no change detected
+  - Processes updates seamlessly when change is detected
+
+**NLP Architecture:**
+
+```
+Interpretation Pipeline:
+1. Rule-based parsing (Hebrew-first) → Fast, deterministic
+2. Confidence check → If < threshold (default 0.85)
+3. LLM fallback (Anthropic Claude) → Handles edge cases
+4. Change detection → Compares with current state
+5. Action determination → SET_RSVP / ASK_HEADCOUNT / ACK / CLARIFY
+
+Response Generation:
+1. Template-based (default) → Fast, consistent
+2. Optional LLM-powered → Natural, contextual (behind flag)
+3. Context-aware → Different replies for different states
+4. Personalized → Uses guest name
+```
+
 ## Architecture
 
 ### Project Structure
@@ -176,13 +337,17 @@ apps/admin-web/
 │   │   ├── campaign/        # CampaignCard, CampaignForm, CampaignStats
 │   │   ├── guest/           # GuestTable, GuestImport, RSVPStatusBadge
 │   │   ├── links/           # LinkGenerator
-│   │   └── common/          # Reusable UI components
-│   ├── views/              # Route components
+│   │   └── common/          # Button, Card, Badge, Input, Modal, LoadingSpinner, etc.
+│   ├── views/              # HomeView, CampaignsListView, CampaignCreateView,
+│   │                       # CampaignDetailView, CampaignDispatchView
+│   ├── layouts/            # BaseLayout (header, nav, footer, RTL/LTR)
 │   ├── composables/        # useCampaigns, useCsvImport, useNotifications
-│   ├── stores/             # Pinia stores
-│   ├── api/                # API client and types
-│   ├── i18n/               # Internationalization
-│   └── utils/              # Formatters, validators, CSV parser
+│   ├── stores/             # Pinia stores (campaigns)
+│   ├── router/             # Vue Router configuration
+│   ├── api/                # Axios client, campaign API, types
+│   ├── i18n/               # Internationalization (en.js, he.js)
+│   ├── styles/             # main.css (Tailwind CSS 4, design tokens)
+│   └── utils/              # Formatters (date-fns), validators, CSV parser (PapaParse)
 ```
 
 ### Technology Stack
@@ -195,15 +360,16 @@ apps/admin-web/
 - **Database**: MongoDB with Mongoose ODM
 - **Validation**: Zod for schema validation
 - **Logging**: Pino with pino-pretty
-- **LLM Integration**: Anthropic Claude API (via official SDK)
+- **LLM Integration**: Anthropic Claude API — model: `claude-3-haiku-20240307` (via official SDK)
 
 **Frontend (Admin Web):**
 - **Framework**: Vue 3 with Composition API
 - **Build Tool**: Vite
-- **Styling**: Tailwind CSS with custom design tokens
+- **Styling**: Tailwind CSS 4 with custom design tokens
 - **Internationalization**: vue-i18n (Hebrew/English)
 - **State Management**: Pinia
 - **Routing**: Vue Router
+- **HTTP Client**: Axios with request/response interceptors
 
 ## Key Features
 
@@ -325,7 +491,14 @@ RSVP Flow configuration:
 
 ## Testing Status
 
-### ✅ Verified Working
+### Automated Tests
+- **Test runner**: Node.js built-in `node:test` module with `node:assert`
+- **Coverage**: Minimal — only one test file exists:
+  - `apps/bot-service/src/bot/rsvp/interpret/rules.test.ts` — ~20 test cases covering `extractHeadcount()`: Hebrew number words, digit parsing, family terms, edge cases, normalization, fuzzy matching
+- **No test framework configured**: No vitest, jest, or mocha in dependencies
+- **No integration/E2E tests**
+
+### ✅ Manually Verified Working
 - HTTP server starts on configured port
 - MongoDB connection successful
 - Telegram bot launches and connects
@@ -337,6 +510,7 @@ RSVP Flow configuration:
 - Natural Hebrew reply generation
 - RSVP status and headcount persistence
 - Conversation state management
+- Admin web dashboard (campaigns, guests, links, stats)
 
 ### Manual Testing Workflow
 1. Create campaign: `POST /api/campaigns` with guest list
@@ -349,169 +523,18 @@ RSVP Flow configuration:
 8. Send: "אנחנו זוג" → should set YES + headcount=2 and confirm
 9. Verify via `GET /api/campaigns/:id` that guest fields updated (rsvpStatus, headcount, conversationState, lastResponseAt)
 
-## Known Limitations / Future Work
+## Known Limitations / Not Yet Implemented
 
-### Current Scope
-- Basic bot commands (`/start`, `/help`)
-- Token-based guest identification
-- Campaign and guest management API
-- Link generation and distribution
-- **RSVP conversational flow (Stage 1)**:
-  - Free-text message interpretation (Hebrew-first rules + LLM fallback)
-  - Natural reply generation (templates + optional LLM)
-  - RSVP status and headcount persistence
-  - Conversation state management (DEFAULT / YES_AWAITING_HEADCOUNT)
-  - "Already recorded" acknowledgment for final RSVP statuses
-
-#### 7. **Admin Web Frontend (GUI)**
-
-**Technology Stack:**
-- **Framework**: Vue 3 with Composition API
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS with custom design tokens
-- **Internationalization**: vue-i18n (Hebrew/English support)
-- **State Management**: Pinia stores
-- **Routing**: Vue Router
-
-**Key Features Implemented:**
-
-- **Campaign Management**:
-  - Campaign list view with search and status filtering
-  - Campaign detail view with comprehensive statistics
-  - Campaign creation form with guest import (CSV support)
-  - Real-time RSVP statistics dashboard
-  - Campaign status badges (DRAFT, SCHEDULED, RUNNING, COMPLETED, FAILED)
-
-- **Guest Management**:
-  - Guest table with sorting and filtering
-  - RSVP status badges with color coding
-  - Headcount display for confirmed guests
-  - Search functionality (by name/phone)
-  - Status filtering (NO_RESPONSE, YES, NO, MAYBE)
-  - Real-time data refresh
-
-- **Link Generation & Dispatch**:
-  - Personalized Telegram link generation interface
-  - Bulk link generation for all guests in a campaign
-  - Copy-to-clipboard functionality for easy distribution
-  - Link display with guest name association
-
-- **Statistics Dashboard**:
-  - Total guests count
-  - RSVP breakdown (YES/NO/MAYBE counts)
-  - Response rate calculation with visual progress bar
-  - Total attendees count (sum of headcounts for YES responses)
-  - Real-time updates on data refresh
-
-- **User Experience**:
-  - Responsive design (mobile-friendly)
-  - Loading states and error handling
-  - Toast notifications for user feedback
-  - Bilingual support (Hebrew/English) with language switcher
-  - Modern, clean UI with consistent design system
-
-**File Structure:**
-```
-apps/admin-web/
-├── src/
-│   ├── components/
-│   │   ├── campaign/        # CampaignCard, CampaignForm, CampaignStats
-│   │   ├── guest/           # GuestTable, GuestImport, RSVPStatusBadge
-│   │   ├── links/           # LinkGenerator
-│   │   └── common/          # Reusable UI components (Button, Card, Badge, etc.)
-│   ├── views/              # Route components (CampaignsListView, CampaignDetailView, etc.)
-│   ├── composables/        # useCampaigns, useCsvImport, useNotifications
-│   ├── stores/             # Pinia stores (campaigns)
-│   ├── api/                # API client and types
-│   ├── i18n/               # Internationalization (en.js, he.js)
-│   └── utils/              # Formatters, validators, CSV parser
-```
-
-#### 8. **Enhanced NLP Flow with Intelligent Conversation Handling**
-
-**Advanced Features:**
-
-- **Change Detection & RSVP Updates**:
-  - Guests can update their RSVP after confirmation without requiring a new session
-  - Intelligent change intent detection using multiple signals:
-    - Explicit change keywords: "רק", "משנה", "מעדכן", "change", "update"
-    - Correction keywords: "טעיתי", "אופס", "שגיאה", "mistake", "error", "oops"
-    - Headcount difference detection (when new headcount differs from current)
-    - RSVP status change detection (YES → NO, NO → YES, etc.)
-  
-- **Correction Message Handling**:
-  - Special handling for correction messages (e.g., "אופס טעיתי, נהיה 2")
-  - Prevents misinterpretation of corrections as status changes
-  - When correction keyword + headcount detected with YES status → treats as headcount update, not cancellation
-  - Maintains RSVP status (YES) while updating headcount when appropriate
-
-- **Headcount-Only Updates**:
-  - Supports headcount-only messages when guest has confirmed YES status
-  - Examples: "רק 2 אנשים" (only 2 people), "2 אנשים" (2 people)
-  - Automatically updates headcount while preserving YES status
-  - Natural update confirmation: "סבבה, מעדכן ל-2 סהכ." (Got it, updating to 2 total)
-
-- **Fuzzy Matching for Headcount**:
-  - Levenshtein distance-based fuzzy matching for Hebrew number words
-  - Handles typos in Hebrew number words (e.g., "שנים" instead of "שניים")
-  - Context-aware fuzzy matching (only when headcount context words present)
-  - Confirmation prompts for low-confidence fuzzy matches
-
-- **Adaptive Clarification Questions**:
-  - Context-aware clarification questions based on ambiguity type:
-    - FAMILY_TERM: "רק כדי לדעת, כמה תהיו סהכ?" (Just to know, how many total?)
-    - RELATIONAL: "רק כדי לדייק, כמה תהיו סהכ?" (Just to be precise, how many total?)
-    - RANGE_OR_APPROX: Handles approximate responses gracefully
-  - Attempt tracking (max 3 attempts) with graceful fallback
-  - Personalized questions using guest name
-
-- **Hebrew Number Word Recognition**:
-  - Full support for Hebrew number words (0-10): "אחד", "שניים", "שלושה", etc.
-  - Handles variants: "שני"/"שתיים", "שלוש"/"שלושה", etc.
-  - Prefix stripping for Hebrew prefixes (ו, ה, ב, ל, כ, מ, ש)
-  - Niqqud (diacritical marks) normalization
-
-- **Context-Aware Interpretation**:
-  - Headcount context words detection: "אנחנו", "נהיה", "מגיעים", "בסוף", "סהכ", "כולל"
-  - Relational phrase recognition: "אני ואשתי" (me and my wife) → 2
-  - Family term handling: Detects "ילדים", "משפחה" but asks for clarification if no number
-  - Range/approximation detection: "בערך 3", "כ-3", "2-3" → marked as ambiguous
-
-- **Conversation State Management**:
-  - `DEFAULT`: Normal RSVP flow, handles all message types
-  - `YES_AWAITING_HEADCOUNT`: Focused headcount extraction, prevents conversational drift
-  - State persistence in both database and session (DB is source of truth)
-  - Automatic state transitions based on conversation flow
-
-- **Already Recorded Handling**:
-  - Smart acknowledgment for confirmed RSVPs
-  - Interprets message first to detect change intent
-  - Only ACKs if no change detected
-  - Processes updates seamlessly when change is detected
-
-**NLP Architecture:**
-
-```
-Interpretation Pipeline:
-1. Rule-based parsing (Hebrew-first) → Fast, deterministic
-2. Confidence check → If < threshold (default 0.85)
-3. LLM fallback (Anthropic Claude) → Handles edge cases
-4. Change detection → Compares with current state
-5. Action determination → SET_RSVP / ASK_HEADCOUNT / ACK / CLARIFY
-
-Response Generation:
-1. Template-based (default) → Fast, consistent
-2. Optional LLM-powered → Natural, contextual (behind flag)
-3. Context-aware → Different replies for different states
-4. Personalized → Uses guest name
-```
-
-### Not Yet Implemented
-- Reminder notifications and scheduling
-- Campaign dispatching and outbox (backend ready, UI exists)
-- Event details display in bot
-- Integration with external EZ-Event API
-- Advanced bot interactions beyond RSVP collection
+- **Authentication & Authorization**: No auth on API endpoints or admin web; anyone with access can manage campaigns
+- **Reminder notifications and scheduling**: Campaign `scheduledAt` field exists but no scheduler/worker processes it
+- **Campaign dispatching and outbox**: Backend status field ready, dispatch UI exists, but no actual dispatch worker
+- **Event details display in bot**: Bot doesn't show full event details beyond title and date
+- **Integration with external EZ-Event API**: Not connected to any external event management system
+- **Advanced bot interactions beyond RSVP collection**: No additional bot features (e.g., event info queries, location sharing)
+- **Docker / Containerization**: No Dockerfile or docker-compose
+- **CI/CD Pipeline**: No GitHub Actions, Jenkins, or other CI/CD configuration
+- **`packages/shared` content**: Workspace exists but contains only an empty `index.ts` placeholder
+- **Automated test coverage**: Minimal — only headcount extraction rules have unit tests (see Testing section)
 
 ## Code Quality
 
@@ -527,15 +550,22 @@ Response Generation:
 ## Deployment Readiness
 
 ### ✅ Ready
-- Environment configuration
-- Graceful shutdown handling
-- Error logging and monitoring
-- Database connection management
+- Environment configuration (Zod-validated)
+- Graceful shutdown handling (SIGINT/SIGTERM)
+- Error logging and monitoring (Pino structured logging)
+- Database connection management (Mongoose with timeout)
 
 ### ⚠️ Needs Configuration
 - Production environment variables
 - MongoDB production connection
 - Telegram bot token (currently using dev token)
+
+### ❌ Not Yet Set Up
+- Docker / containerization (no Dockerfile or docker-compose)
+- CI/CD pipeline (no GitHub Actions or similar)
+- API authentication / authorization
+- Rate limiting / security middleware
+- Production monitoring / health checks beyond basic `/health`
 
 ## Summary
 
@@ -585,6 +615,6 @@ The system now includes **Stage 1 of the RSVP Agent**: a complete conversational
 - **Internationalization**: Full i18n support with easy language switching
 - **Real-time updates**: Refresh functionality to monitor latest RSVP data
 - **User-friendly**: Loading states, error handling, toast notifications
-- **Responsive**: Mobile-first design with Tailwind CSS
+- **Responsive**: Mobile-first design with Tailwind CSS 4
 
-The foundation is solid for extending with reminder notifications, campaign dispatching, and advanced event management features.
+The foundation is solid for extending with reminder notifications, campaign dispatching, authentication, and advanced event management features.
