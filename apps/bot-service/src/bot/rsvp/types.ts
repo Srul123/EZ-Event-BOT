@@ -1,26 +1,16 @@
-export type RsvpStatus = 'YES' | 'NO' | 'MAYBE' | 'NO_RESPONSE';
-export type ConversationState = 'DEFAULT' | 'YES_AWAITING_HEADCOUNT';
+import type {
+  RsvpStatus,
+  ConversationState,
+  AmbiguityReason,
+} from '../../domain/rsvp/types.js';
 
-/**
- * Headcount extraction result type.
- * Distinguishes between exact counts, ambiguous mentions, and no signal.
- * This prevents guessing and enables context-aware clarification questions.
- */
-export type HeadcountExtraction =
-  | { kind: 'exact'; headcount: number; fuzzy?: boolean } // fuzzy: true if derived from fuzzy matching
-  | { kind: 'ambiguous'; reason: 'FAMILY_TERM' | 'RELATIONAL' | 'RANGE_OR_APPROX' | 'UNKNOWN' }
-  | { kind: 'none' };
-
-export type AmbiguityReason = 'FAMILY_TERM' | 'RELATIONAL' | 'RANGE_OR_APPROX' | 'UNKNOWN';
-
-export interface Interpretation {
-  rsvp: 'YES' | 'NO' | 'MAYBE' | 'UNKNOWN';
-  headcount: number | null; // Keep for backwards compatibility
-  headcountExtraction: HeadcountExtraction; // New explicit field
-  confidence: number; // 0..1
-  needsHeadcount: boolean; // Derived from headcountExtraction.kind === 'ambiguous' (or 'none')
-  language?: 'he' | 'en';
-}
+export type {
+  RsvpStatus,
+  ConversationState,
+  AmbiguityReason,
+  HeadcountExtraction,
+  Interpretation,
+} from '../../domain/rsvp/types.js';
 
 export type Action =
   | {

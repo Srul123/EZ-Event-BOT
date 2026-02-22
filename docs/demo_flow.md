@@ -41,15 +41,29 @@
          │ Telegram Bot API
          ▼
 ┌─────────────────────────────────────┐
-│      Telegraf Bot Service            │
+│      Telegraf Handler (bot layer)    │
 │  - Session Management                │
-│  - Message Handling                  │
-│  - RSVP Flow Orchestration           │
+│  - Build GuestContext                │
+│  - Apply EffectsPatch to DB          │
 └────────┬─────────────────────────────┘
          │
-         ├─────────────────┐
-         │                 │
-         ▼                 ▼
+         │  GraphInput
+         ▼
+┌─────────────────────────────────────┐
+│  LangGraph State Graph (domain)      │
+│                                      │
+│  START → routeByState                │
+│    ├─ DEFAULT → interpretFull        │
+│    └─ AWAITING → interpretHeadcount  │
+│         └─ fallback → interpretFull  │
+│  → decideAction → composeReply       │
+│  → buildEffects → END                │
+│                                      │
+│  Ports: NluPort, NlgPort, ClockPort  │
+└────────┬─────────────────────────────┘
+         │
+         │ via Port Adapters
+         ▼
 ┌──────────────┐   ┌──────────────┐
 │ Interpretation│   │  Response    │
 │   Layer       │   │  Generation  │
@@ -68,10 +82,11 @@
 
 ### Key Architectural Principles
 
-1. **Domain-Driven Design**: Business logic separated from infrastructure
-2. **Clean Architecture**: Domain layer has zero LLM dependencies
-3. **Modular Design**: Interpretation and response generation are separate modules
-4. **State Management**: Conversation state persisted in both DB and session (DB is source of truth)
+1. **Hexagonal Architecture (Ports & Adapters)**: Domain graph depends only on port interfaces; adapters bridge to existing NLU/NLG
+2. **LangGraph State Graph**: RSVP flow as a compiled directed graph with 5 nodes and conditional routing
+3. **Clean Architecture**: Domain layer (`domain/rsvp-graph/`) has zero imports from `bot/`, `mongoose`, `telegraf`, or `new Date()`
+4. **Pure Business Logic**: `decideAction` node is a pure function — fully unit-testable without mocks
+5. **State Management**: Conversation state persisted in both DB and session (DB is source of truth)
 
 ---
 
@@ -80,8 +95,9 @@
 - **Runtime**: Node.js 22+ with ESM
 - **Language**: TypeScript 5.3+ (strict mode)
 - **Framework**: Express.js (HTTP API), Telegraf (Telegram bot)
+- **Agent Framework**: LangGraph (`@langchain/langgraph`) — state graph orchestration for RSVP flow
 - **Database**: MongoDB with Mongoose ODM
-- **LLM**: Anthropic Claude 3.5 Sonnet (via official SDK)
+- **LLM**: Anthropic Claude 3 Haiku (via official SDK) — optimized for classification tasks
 - **Validation**: Zod for schema validation
 - **Logging**: Pino (structured logging)
 
@@ -319,40 +335,52 @@ Guest with existing `rsvpStatus: "YES"` sends: `"שלום"` (Hello)
 
 ```
 apps/bot-service/src/
-├── domain/              # Business logic (NO LLM imports)
+├── domain/                        # Pure domain (NO bot/mongoose/telegraf imports)
+│   ├── rsvp/
+│   │   └── types.ts               # Shared types: RsvpStatus, Interpretation, etc.
+│   ├── rsvp-graph/                # LangGraph RSVP agent (the core)
+│   │   ├── types.ts               # GuestContext, Action (6 types), EffectsPatch
+│   │   ├── ports.ts               # NluPort, NlgPort, ClockPort, LoggerPort
+│   │   ├── state.ts               # LangGraph Annotation (7 channels)
+│   │   ├── graph.ts               # StateGraph with conditional routing
+│   │   ├── index.ts               # createRsvpGraphRunner() — public API
+│   │   └── nodes/
+│   │       ├── interpretFull.ts       # NLU node
+│   │       ├── interpretHeadcount.ts  # Headcount-only extraction
+│   │       ├── decideAction.ts        # ALL business logic (pure function)
+│   │       ├── composeReply.ts        # NLG node
+│   │       ├── buildEffects.ts        # Action → EffectsPatch
+│   │       └── decideAction.test.ts   # 19 unit tests
 │   └── campaigns/
-│       ├── guest.model.ts      # MongoDB schema
-│       ├── guest.service.ts    # RSVP update logic
+│       ├── guest.model.ts         # MongoDB schema
+│       ├── guest.service.ts       # RSVP update logic
 │       └── guest-session.service.ts
 │
 ├── bot/
-│   ├── handlers/       # Thin handlers (orchestration)
+│   ├── handlers/                  # Thin handlers
 │   │   ├── start.handler.ts
 │   │   ├── help.handler.ts
-│   │   └── guestMessage.handler.ts
-│   │
-│   └── rsvp/           # RSVP application logic
-│       ├── types.ts            # Type definitions
-│       ├── rsvpFlow.ts         # Flow orchestration
-│       ├── interpret/          # Message interpretation
-│       │   ├── rules.ts        # Hebrew-first rules
-│       │   ├── llmInterpreter.ts
-│       │   └── prompts/
-│       └── respond/            # Reply generation
-│           ├── templates.ts   # Hebrew templates
-│           ├── llmResponder.ts
-│           └── prompts/
+│   │   └── guestMessage.handler.ts  # Calls graph runner, applies EffectsPatch
+│   ├── adapters/                  # Port implementations
+│   │   ├── nluAdapter.ts          # NluPort → wraps interpret/*
+│   │   └── nlgAdapter.ts          # NlgPort → wraps respond/*
+│   └── rsvp/                      # Existing NLU/NLG (accessed via adapters)
+│       ├── types.ts               # Re-export shim + bot-layer types
+│       ├── rsvpFlow.ts            # LEGACY (retained, not imported)
+│       ├── interpret/             # Rules + LLM interpretation
+│       └── respond/               # Templates + LLM responses
 │
 └── infra/
-    └── llm/            # LLM infrastructure
-        ├── anthropic.ts        # SDK wrapper
-        └── llmClient.ts       # Retry/timeout logic
+    └── llm/                       # LLM infrastructure
+        ├── anthropic.ts           # SDK wrapper
+        └── llmClient.ts           # Retry/timeout logic
 ```
 
 **Key Points**:
-- **Separation of Concerns**: Domain layer is pure business logic
-- **Modularity**: Interpretation and response are separate modules
-- **Testability**: Each layer can be tested independently
+- **Hexagonal Architecture**: Domain graph depends on port interfaces; adapters bridge to existing code
+- **Pure Business Logic**: `decideAction` is a pure function with 19 unit tests — no async, no mocks needed
+- **Architecture Boundaries**: `domain/rsvp-graph/` never imports `bot/`, `mongoose`, `telegraf`, or calls `new Date()`
+- **Testability**: Each layer can be tested independently; domain graph is fully isolated
 
 #### 3.2: Data Flow Example
 
@@ -363,35 +391,47 @@ apps/bot-service/src/
    ↓
 2. Fetch guest from DB (source of truth)
    ↓
-3. Build FlowContext (guestName, eventTitle, currentRsvpStatus, conversationState)
+3. Build GuestContext (guestId, guestName, eventTitle, currentRsvpStatus, conversationState, ...)
    ↓
-4. rsvpFlow.ts → handleIncomingTextMessage()
+4. runGraph({ messageText: "כן מגיע", guestContext })
    ↓
-5. interpret/index.ts → interpretMessage()
-   ├─→ rules.ts (Hebrew parsing)
-   │   └─→ Confidence: 0.9 ✓ (meets threshold)
-   └─→ Returns: {rsvp: "YES", needsHeadcount: true}
+   ┌─── LangGraph State Graph ───────────────────────────┐
+   │                                                      │
+   │  5. routeByState → "DEFAULT" → interpretFull node    │
+   │     ↓                                                │
+   │     NluPort.interpretMessage("כן מגיע", context)     │
+   │     ├─→ rules.ts (Hebrew parsing)                    │
+   │     │   └─→ Confidence: 0.9 ✓ (meets threshold)     │
+   │     └─→ Sets state.interpretation = {rsvp: "YES"}    │
+   │     ↓                                                │
+   │  6. decideAction node (pure function)                │
+   │     └─→ YES + no headcount → Action: ASK_HEADCOUNT  │
+   │     ↓                                                │
+   │  7. composeReply node                                │
+   │     └─→ NlgPort.buildClarificationQuestion()        │
+   │     └─→ "דוד כהן, רק כדי לדעת, כמה תהיו סהכ?"     │
+   │     ↓                                                │
+   │  8. buildEffects node (via ClockPort)                │
+   │     └─→ EffectsPatch: { rsvpStatus: "YES",          │
+   │         conversationState: "YES_AWAITING_HEADCOUNT", │
+   │         lastResponseAt, rsvpUpdatedAt }              │
+   │                                                      │
+   └──────────────────────────────────────────────────────┘
    ↓
-6. rsvpFlow.ts determines action: ASK_HEADCOUNT
-   ↓
-7. respond/index.ts → composeReply()
-   ├─→ templates.ts (Hebrew template)
-   └─→ Returns: "דוד כהן, כמה אנשים יגיעו?"
-   ↓
-8. guest.service.ts → updateGuestRsvp()
-   ├─→ Updates: rsvpStatus, conversationState, lastResponseAt
+9. Handler applies EffectsPatch → updateGuestRsvp(guestId, patch)
+   ├─→ Only writes keys present in patch
    └─→ Returns updated GuestDocument
    ↓
-9. Update session with DB values
+10. Sync session from patch
    ↓
-10. Send reply to Telegram
+11. Send replyText to Telegram
 ```
 
 #### 3.3: State Management
 
 **Conversation States**:
-- `DEFAULT`: Normal RSVP flow, full interpretation
-- `YES_AWAITING_HEADCOUNT`: Waiting for headcount, only extract number
+- `DEFAULT`: Normal RSVP flow → `interpretFull` node
+- `YES_AWAITING_HEADCOUNT`: First tries `interpretHeadcount` (cheap, number-only); falls through to `interpretFull` if no exact result (enables intent changes like "actually no")
 
 **State Persistence**:
 - **Database**: Source of truth (`guest.conversationState`)
@@ -481,10 +521,11 @@ curl http://localhost:3000/api/campaigns/{CAMPAIGN_ID}
 - Context preservation across messages
 
 ### 3. **Robust Architecture**
-- Clean separation: domain vs. application
-- Type-safe with TypeScript
-- Error handling with graceful fallbacks
-- Structured logging for debugging
+- Hexagonal (ports & adapters): domain graph isolated from infrastructure
+- LangGraph state graph: compiled once, reused per invocation
+- Pure `decideAction` function: all business logic, fully unit-tested
+- Type-safe with TypeScript; strict architecture boundary enforcement
+- Error handling with graceful fallbacks at every layer
 
 ### 4. **Performance Optimizations**
 - Campaign details fetched once (during /start)
@@ -504,22 +545,26 @@ curl http://localhost:3000/api/campaigns/{CAMPAIGN_ID}
 ### Research Contributions
 
 1. **Hybrid NLP Approach**: Combining rule-based and LLM methods for conversational interfaces
-2. **State Management**: Conversation state persistence in distributed systems (DB + session)
-3. **Hebrew Language Processing**: Rule-based parsing for morphologically rich languages
+2. **LangGraph Agent Architecture**: Expressing conversational business logic as a compiled directed graph with typed state annotations
+3. **Hexagonal Domain Isolation**: Port interfaces decouple domain policy from NLU/NLG/DB infrastructure — pure-function business logic with zero side effects
+4. **State Management**: Conversation state persistence in distributed systems (DB + session) with sparse effect patches
+5. **Hebrew Language Processing**: Rule-based parsing for morphologically rich languages
 
 ### Technical Challenges Solved
 
 1. **JSON Extraction from LLM**: Robust parsing with regex fallback
 2. **Error Resilience**: System never crashes on LLM failures
 3. **Type Safety**: Full TypeScript coverage with strict mode
-4. **Architecture Cleanliness**: Zero LLM code in domain layer
+4. **Architecture Boundaries**: Domain layer verified by grep — zero imports from `bot/`, `mongoose`, `telegraf`, no `new Date()`
+5. **Intent-Change Detection in Sub-Flows**: Headcount loop falls through to full NLU when number extraction fails, enabling guests to change their mind
 
 ### Future Research Directions
 
 1. **Multi-language Support**: Extend rules to other languages
-2. **Sentiment Analysis**: Detect guest sentiment from messages
+2. **Sentiment Analysis**: Add as a new graph node without rewiring existing logic
 3. **Proactive Reminders**: Scheduled notifications (out of MVP scope)
 4. **Analytics Dashboard**: Visualize RSVP trends and patterns
+5. **Multi-turn Memory**: Leverage LangGraph's state persistence for cross-session context
 
 ---
 
@@ -573,9 +618,10 @@ During the presentation:
 This demo showcases a production-ready conversational bot system that:
 - Sends personalized invitation messages with event details
 - Handles natural language in Hebrew and English
-- Maintains conversation state across interactions
-- Provides robust error handling and fallbacks
-- Follows clean architecture principles
-- Scales with proper state management
+- Implements RSVP logic as a **LangGraph state graph** with pure domain business logic
+- Uses **hexagonal architecture** (ports & adapters) to isolate domain from infrastructure
+- Maintains conversation state across interactions with sparse effect patches
+- Provides robust error handling and fallbacks at every layer
+- Scales with proper state management and compiled graph reuse
 
-The system demonstrates practical application of NLP, state management, and software architecture principles in a real-world event management context.
+The system demonstrates practical application of NLP, agent-based architecture (LangGraph), state management, and software architecture principles in a real-world event management context.

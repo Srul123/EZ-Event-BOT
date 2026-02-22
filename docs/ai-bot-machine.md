@@ -47,6 +47,8 @@ This yields deterministic behavior for ~80-90% of messages (common RSVP patterns
 
 ### 2.1 High-Level Pipeline
 
+The RSVP pipeline is implemented as a **LangGraph state graph** wrapped in a hexagonal (ports & adapters) architecture. The handler builds a `GraphInput`, invokes the compiled graph, and applies the returned `EffectsPatch` to the database.
+
 ```mermaid
 flowchart TD
     A[Telegram Message] --> B[guestMessage.handler]
@@ -54,40 +56,80 @@ flowchart TD
     C -->|No| D["Reply: Open your invite link"]
     C -->|Yes| E[Fetch Guest from MongoDB]
     E --> F[Sync conversationState]
-    F --> G[Build FlowContext]
-    G --> H[handleIncomingTextMessage]
+    F --> G[Build GuestContext + GraphInput]
+    G --> H["runGraph(input)"]
 
-    H --> I{conversationState?}
-    I -->|DEFAULT| J[Full Interpretation Pipeline]
-    I -->|YES_AWAITING_HEADCOUNT| K[Headcount-Only Extraction]
+    subgraph LangGraph["LangGraph State Graph (domain layer)"]
+        H --> I{routeByState}
+        I -->|DEFAULT| J[interpretFull]
+        I -->|YES_AWAITING_HEADCOUNT| K[interpretHeadcount]
+        K --> L{"exact & not fuzzy?"}
+        L -->|Yes| M[decideAction]
+        L -->|No| J
+        J --> M
+        M --> N[composeReply]
+        N --> O[buildEffects]
+    end
 
-    J --> L{Already confirmed?}
-    L -->|Yes| M[Change Detection]
-    M -->|No change| N["ACK (no DB write)"]
-    M -->|Change detected| O[Process as normal]
-    L -->|No| O
-
-    O --> P[Determine Action]
-    K --> P
-
-    P --> Q[Compose Reply]
-    Q --> R{LLM responses enabled?}
-    R -->|No| S[Template Reply]
-    R -->|Yes| T[Try LLM Reply]
-    T -->|Error| S
-
-    S --> U[updateGuestRsvp in MongoDB]
-    T --> U
-    U --> V[Sync Session]
-    V --> W[ctx.reply to Telegram]
+    O --> P["{ replyText, effects }"]
+    P --> Q[Apply EffectsPatch to MongoDB]
+    Q --> R[Sync Session from patch]
+    R --> S[ctx.reply to Telegram]
 ```
+
+### 2.1.1 Layered Architecture
+
+The codebase enforces strict import boundaries between three layers:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  bot/handlers/           │  bot/adapters/                    │
+│  (Telegraf, session,     │  (nluAdapter, nlgAdapter          │
+│   MongoDB persistence)   │   — bridge bot→domain)            │
+│  Imports: telegraf,      │  Imports: bot/rsvp/interpret/*,   │
+│   mongoose, domain/*     │   bot/rsvp/respond/*              │
+├──────────────────────────┴───────────────────────────────────┤
+│  domain/rsvp-graph/          │  domain/rsvp/                 │
+│  (LangGraph state graph,     │  (shared types:               │
+│   nodes, ports, effects)     │   RsvpStatus, Interpretation, │
+│  Imports: @langchain/        │   HeadcountExtraction, etc.)  │
+│   langgraph, domain/rsvp/*   │  Imports: nothing             │
+│  NO: bot/*, mongoose,        │                               │
+│   telegraf, new Date()       │                               │
+└──────────────────────────────┴───────────────────────────────┘
+```
+
+**Boundary rules** (verified by grep in CI):
+- `domain/rsvp-graph/` never imports from `bot/`, `mongoose`, `telegraf`, or calls `new Date()`
+- All external capabilities are accessed through **port interfaces** (`NluPort`, `NlgPort`, `ClockPort`, `LoggerPort`)
+- Infra adapters implement ports by wrapping existing bot-layer functions
 
 ### 2.2 Component Inventory
 
+**Domain Layer** (pure, no infra imports):
+
 | Component | Source File | Responsibility |
 |---|---|---|
-| Message Handler | `bot/handlers/guestMessage.handler.ts` | Orchestrates the full pipeline: session check, DB fetch, flow call, persistence, reply |
-| State Machine | `bot/rsvp/rsvpFlow.ts` | Two-state FSM, change detection, action determination |
+| Shared Domain Types | `domain/rsvp/types.ts` | `RsvpStatus`, `ConversationState`, `HeadcountExtraction`, `Interpretation`, `AmbiguityReason` |
+| Graph Types | `domain/rsvp-graph/types.ts` | `GuestContext`, `Action` (6-variant union), `EffectsPatch`, `GraphInput`/`GraphOutput` |
+| Port Interfaces | `domain/rsvp-graph/ports.ts` | `NluPort`, `NlgPort`, `ClockPort`, `LoggerPort`, `RsvpGraphPorts` |
+| State Annotation | `domain/rsvp-graph/state.ts` | LangGraph `RsvpAnnotation` — 7-channel state definition |
+| interpretFull Node | `domain/rsvp-graph/nodes/interpretFull.ts` | NLU only — calls `ports.nlu.interpretMessage()`, sets `interpretation` on state |
+| interpretHeadcount Node | `domain/rsvp-graph/nodes/interpretHeadcount.ts` | Calls `ports.nlu.interpretHeadcountOnly()`, sets `headcountExtraction` on state |
+| decideAction Node | `domain/rsvp-graph/nodes/decideAction.ts` | **All business logic**: change detection, policy rules, produces `Action` |
+| composeReply Node | `domain/rsvp-graph/nodes/composeReply.ts` | Switches on `action.type`, delegates to NLG port or inline text |
+| buildEffects Node | `domain/rsvp-graph/nodes/buildEffects.ts` | Pure mapping from `Action` + `GuestContext` → sparse `EffectsPatch` via `ClockPort` |
+| Graph Definition | `domain/rsvp-graph/graph.ts` | LangGraph `StateGraph` with conditional routing, compiled once |
+| Graph Runner | `domain/rsvp-graph/index.ts` | `createRsvpGraphRunner()` — singleton factory returning `(GraphInput) => Promise<GraphOutput>` |
+
+**Bot Layer** (infrastructure, adapters, Telegraf):
+
+| Component | Source File | Responsibility |
+|---|---|---|
+| Message Handler | `bot/handlers/guestMessage.handler.ts` | Session check, DB fetch, builds `GuestContext`, calls graph runner, applies `EffectsPatch`, sends reply |
+| NLU Adapter | `bot/adapters/nluAdapter.ts` | Implements `NluPort` — wraps existing `interpretMessage()` and `interpretHeadcountOnly()` |
+| NLG Adapter | `bot/adapters/nlgAdapter.ts` | Implements `NlgPort` — wraps existing `composeReply()` and `buildHeadcountClarificationQuestion()` |
+| Bot Types (shim) | `bot/rsvp/types.ts` | Re-exports domain types + defines bot-layer `Action`, `FlowContext` |
 | Rule-Based Interpreter | `bot/rsvp/interpret/rules.ts` | Deterministic Hebrew/English NLP with keyword matching and headcount extraction |
 | LLM Interpreter | `bot/rsvp/interpret/llmInterpreter.ts` | Anthropic Claude fallback for ambiguous messages |
 | Interpretation Pipeline | `bot/rsvp/interpret/index.ts` | Routes between rules and LLM based on confidence threshold |
@@ -96,66 +138,197 @@ flowchart TD
 | Template Engine | `bot/rsvp/respond/templates.ts` | Static Hebrew reply templates |
 | LLM Responder | `bot/rsvp/respond/llmResponder.ts` | LLM-generated natural replies |
 | Clarification Builder | `bot/rsvp/clarificationQuestions.ts` | Adaptive headcount clarification questions |
+| Legacy State Machine | `bot/rsvp/rsvpFlow.ts` | **Retained for reference/rollback** — no longer imported by handler |
+
+**Infra Layer**:
+
+| Component | Source File | Responsibility |
+|---|---|---|
 | Anthropic Client | `infra/llm/anthropic.ts` | Anthropic SDK wrapper (singleton) |
 | LLM Client | `infra/llm/llmClient.ts` | Timeout, retry, and error handling layer |
-| Type Definitions | `bot/rsvp/types.ts` | Discriminated unions for Action, Interpretation, HeadcountExtraction |
 
 ---
 
-## 3. Conversation State Machine
+## 3. RSVP Agent — LangGraph State Graph
 
-### 3.1 Formal Definition
+### 3.1 From FSM to LangGraph
 
-The conversation state machine is a **Finite State Machine (FSM)** with:
+The RSVP logic is implemented as a **LangGraph state graph** — a directed graph where each node is a pure(ish) function that reads from and writes to a shared annotation-based state. This replaces the previous procedural FSM in `rsvpFlow.ts`.
 
-- **States** S = { `DEFAULT`, `YES_AWAITING_HEADCOUNT` }
-- **Input alphabet**: free-text messages from the guest
-- **Output alphabet**: bot reply messages
-- **Transition function** delta: S x Input -> S x Action x Output
+**Why LangGraph over a plain FSM:**
+- **Separation of concerns**: Each node has a single responsibility (NLU, policy, NLG, effects). The procedural FSM mixed all of these.
+- **Testability**: The `decideAction` node is a pure function exported separately for unit testing. Port interfaces make every external dependency mockable.
+- **Observability**: LangGraph provides built-in tracing of state transitions across nodes.
+- **Extensibility**: Adding new nodes (e.g., sentiment analysis, multi-turn memory) is additive — no rewiring of existing logic.
 
-### 3.2 State Diagram
+### 3.2 Graph Topology
 
 ```mermaid
-stateDiagram-v2
-    [*] --> DEFAULT: /start (session init)
-
-    DEFAULT --> DEFAULT: NO / MAYBE / UNKNOWN\n→ SET_RSVP or ACK or CLARIFY
-    DEFAULT --> YES_AWAITING_HEADCOUNT: YES without headcount\n→ ASK_HEADCOUNT
-    DEFAULT --> DEFAULT: YES with headcount\n→ SET_RSVP
-
-    YES_AWAITING_HEADCOUNT --> DEFAULT: Exact headcount provided\n→ SET_RSVP (YES + headcount)
-    YES_AWAITING_HEADCOUNT --> YES_AWAITING_HEADCOUNT: Ambiguous / no headcount\n→ CLARIFY (attempt < 3)
-    YES_AWAITING_HEADCOUNT --> DEFAULT: 3 failed attempts\n→ SET_RSVP (YES, headcount=null)
+flowchart TD
+    StartNode[START] --> RouteCheck{routeByState}
+    RouteCheck -->|DEFAULT| InterpretFull[interpretFull]
+    RouteCheck -->|YES_AWAITING_HEADCOUNT| InterpretHC[interpretHeadcount]
+    InterpretHC --> HCCheck{"exact & not fuzzy?"}
+    HCCheck -->|Yes| DecideAction[decideAction]
+    HCCheck -->|No| InterpretFull
+    InterpretFull --> DecideAction
+    DecideAction --> ComposeReply[composeReply]
+    ComposeReply --> BuildEffects[buildEffects]
+    BuildEffects --> EndNode[END]
 ```
 
-### 3.3 Action Types
+**Routing functions:**
 
-The FSM produces one of four **action types**, modeled as a TypeScript discriminated union:
+| Router | Input | Logic |
+|---|---|---|
+| `routeByState` | `state.guestContext.conversationState` | Returns `'DEFAULT'` or `'YES_AWAITING_HEADCOUNT'` |
+| `headcountResultRouter` | `state.headcountExtraction` | If `kind === 'exact' && !fuzzy` → skip to `decideAction`; otherwise fall through to `interpretFull` for full NLU |
 
-| Action | Semantics | Next State | DB Updates |
+The headcount fallback path ensures that when the guest is in `YES_AWAITING_HEADCOUNT` and sends something that isn't a clear number (e.g., "actually no", "maybe"), the message goes through full NLU so intent changes are captured.
+
+### 3.3 State Annotation
+
+The graph state is defined as a LangGraph `Annotation` with 7 channels (all last-writer-wins, no reducers):
+
+```typescript
+RsvpAnnotation = Annotation.Root({
+  messageText:        Annotation<string>,
+  guestContext:       Annotation<GuestContext>,
+  interpretation:     Annotation<Interpretation | null>,
+  headcountExtraction: Annotation<HeadcountExtraction | null>,
+  action:             Annotation<Action | null>,
+  replyText:          Annotation<string>,
+  effects:            Annotation<EffectsPatch | null>,
+});
+```
+
+### 3.4 Node Descriptions
+
+Each node is a **factory function** that takes `RsvpGraphPorts` and returns the LangGraph node function `(state) => partialState`.
+
+| Node | Reads | Writes | Responsibility |
 |---|---|---|---|
-| `SET_RSVP` | Final RSVP determination | `DEFAULT` | `rsvpStatus`, `headcount`, `lastResponseAt`, `rsvpUpdatedAt` |
-| `ASK_HEADCOUNT` | Guest said YES but headcount unknown | `YES_AWAITING_HEADCOUNT` | `rsvpStatus: YES`, `lastResponseAt` |
-| `ACK` | Guest already confirmed, no change detected | `DEFAULT` | `lastResponseAt` only |
-| `CLARIFY` | Message unclear, need more info | Same or `YES_AWAITING_HEADCOUNT` | `lastResponseAt` |
+| `interpretFull` | `messageText`, `guestContext` | `interpretation` | Calls `ports.nlu.interpretMessage()`. No business logic. |
+| `interpretHeadcount` | `messageText`, `guestContext.locale` | `headcountExtraction` | Calls `ports.nlu.interpretHeadcountOnly()`. No business logic. |
+| `decideAction` | `guestContext`, `interpretation`, `headcountExtraction`, `messageText` | `action` | **All business logic** — change detection, policy rules, clarification limits. Pure function. |
+| `composeReply` | `action`, `guestContext`, `interpretation` | `replyText` | Switches on `action.type`, delegates to `ports.nlg` or inline text for `STOP_WAITING_FOR_HEADCOUNT`. |
+| `buildEffects` | `action`, `guestContext` | `effects` | Pure mapping to sparse `EffectsPatch`. Uses `ports.clock.now()` instead of `new Date()`. |
 
-### 3.4 State Persistence Strategy
+### 3.5 Action Types
+
+The `decideAction` node produces one of **six action types**, modeled as a strict discriminated union:
+
+```typescript
+type Action =
+  | { type: 'SET_RSVP'; rsvpStatus: RsvpStatus; headcount: number | null }
+  | { type: 'ASK_HEADCOUNT' }
+  | { type: 'CLARIFY_HEADCOUNT'; reason: AmbiguityReason | null; attemptNumber: number }
+  | { type: 'CLARIFY_INTENT' }
+  | { type: 'ACK_NO_CHANGE' }
+  | { type: 'STOP_WAITING_FOR_HEADCOUNT' };
+```
+
+| Action | Semantics | When |
+|---|---|---|
+| `SET_RSVP` | Final RSVP determination with optional headcount | YES/NO/MAYBE with sufficient info |
+| `ASK_HEADCOUNT` | Guest confirmed YES but headcount missing | YES + no exact headcount in DEFAULT state |
+| `CLARIFY_HEADCOUNT` | Re-ask for headcount with attempt tracking | In `YES_AWAITING_HEADCOUNT`, no clear number |
+| `CLARIFY_INTENT` | Message unclear, ask yes/no/maybe | UNKNOWN rsvp in DEFAULT state |
+| `ACK_NO_CHANGE` | Guest repeated same intent, no DB mutation | Confirmed guest, no change detected |
+| `STOP_WAITING_FOR_HEADCOUNT` | 3 failed headcount attempts, give up gracefully | `clarificationAttempts >= 3` |
+
+### 3.6 EffectsPatch — Sparse DB Updates
+
+Instead of inline `updates` objects embedded in actions, the graph produces an `EffectsPatch` — a sparse object where only the keys that should be written are present. Absent keys mean "do not touch."
+
+```typescript
+interface EffectsPatch {
+  rsvpStatus?: RsvpStatus;
+  headcount?: number | null;
+  conversationState?: ConversationState;
+  lastResponseAt: Date;              // always set
+  rsvpUpdatedAt?: Date;              // only on meaningful changes
+  clarificationAttempts?: number;
+  lastClarificationReason?: AmbiguityReason;
+}
+```
+
+**Per-action patch shapes:**
+
+| Action | Patch Keys Present |
+|---|---|
+| `SET_RSVP` | `rsvpStatus`, `headcount`, `conversationState: 'DEFAULT'`, `lastResponseAt`, `rsvpUpdatedAt` (only if status/headcount actually changed), `clarificationAttempts: 0` |
+| `ASK_HEADCOUNT` | `rsvpStatus: 'YES'`, `conversationState: 'YES_AWAITING_HEADCOUNT'`, `lastResponseAt`, `rsvpUpdatedAt` (only if status changed), `clarificationAttempts: 0` |
+| `CLARIFY_HEADCOUNT` | `conversationState: 'YES_AWAITING_HEADCOUNT'`, `lastResponseAt`, `clarificationAttempts`, `lastClarificationReason` |
+| `CLARIFY_INTENT` | `lastResponseAt` only |
+| `ACK_NO_CHANGE` | `lastResponseAt` only |
+| `STOP_WAITING_FOR_HEADCOUNT` | `conversationState: 'DEFAULT'`, `lastResponseAt`, `clarificationAttempts: 0` (rsvpStatus and headcount intentionally absent) |
+
+The handler applies the patch by iterating its keys and building a DB update object from only the keys present.
+
+### 3.7 Port Interfaces
+
+The graph depends on four port interfaces, with no concrete implementations in the domain layer:
+
+```typescript
+interface RsvpGraphPorts {
+  nlu: NluPort;      // interpretMessage(), interpretHeadcountOnly()
+  nlg: NlgPort;      // composeReply(), buildClarificationQuestion()
+  clock: ClockPort;  // now() — eliminates implicit new Date()
+  logger: LoggerPort; // info(), debug(), warn()
+}
+```
+
+Adapters in `bot/adapters/` implement these ports by wrapping the existing bot-layer NLU and NLG functions (mapping `GuestContext` ↔ `FlowContext`, graph `Action` ↔ bot `Action`).
+
+### 3.8 Policy Rules (decideAction)
+
+The `decideAction` function is the **single source of all business logic**. It is a pure function (no async, no side effects) that maps `(GuestContext, Interpretation?, HeadcountExtraction?, messageText)` → `Action`.
+
+**When `conversationState = DEFAULT`:**
+
+1. If guest already confirmed (YES/NO) and no change detected → `ACK_NO_CHANGE`
+2. Headcount-only update for YES guests (UNKNOWN rsvp + exact headcount) → `SET_RSVP { YES, headcount }`
+3. `rsvp = YES` + exact headcount → `SET_RSVP { YES, headcount }`
+4. `rsvp = YES` + no exact headcount → `ASK_HEADCOUNT`
+5. `rsvp = NO` → `SET_RSVP { NO, null }`
+6. `rsvp = MAYBE` → `SET_RSVP { MAYBE, null }`
+7. `rsvp = UNKNOWN` → `CLARIFY_INTENT`
+
+**When `conversationState = YES_AWAITING_HEADCOUNT`:**
+
+1. `clarificationAttempts >= 3` → `STOP_WAITING_FOR_HEADCOUNT`
+2. Exact non-fuzzy headcount (fast path from `interpretHeadcount`) → `SET_RSVP { YES, headcount }`
+3. If `interpretation` populated (fallback path ran):
+   - `rsvp = NO` → `SET_RSVP { NO, null }` (exits headcount loop)
+   - `rsvp = MAYBE` → `SET_RSVP { MAYBE, null }` (exits headcount loop)
+   - `rsvp = YES` + exact headcount → `SET_RSVP { YES, headcount }`
+   - `rsvp = YES` + no headcount → `CLARIFY_HEADCOUNT`
+   - `rsvp = UNKNOWN` → `CLARIFY_HEADCOUNT` (stay in loop, re-ask)
+4. Only `headcountExtraction` available, not exact → `CLARIFY_HEADCOUNT`
+
+### 3.9 State Persistence Strategy
 
 | Storage | Role | Durability |
 |---|---|---|
 | MongoDB `Guest.conversationState` | **Source of truth** | Persistent across restarts |
 | Telegraf in-memory session | Cache for current interaction | Volatile (lost on restart) |
+| `EffectsPatch` | Transport between graph output and DB write | Per-request (not stored) |
 
 On every incoming message, the handler:
 1. Fetches the guest from MongoDB
 2. Compares DB `conversationState` with session value
 3. If they diverge, **DB wins** — the session is overwritten
+4. Builds `GuestContext` from merged data
+5. Invokes the graph, receives `{ replyText, effects }`
+6. Applies `EffectsPatch` as a sparse merge to MongoDB
+7. Syncs session fields from the patch (only keys present in the patch are synced)
 
-This ensures correctness even if the bot process restarts mid-conversation.
+### 3.10 Why Two Conversation States Still Suffice
 
-### 3.5 Why Two States Suffice
+The conversational flow has a single branching point: after a YES response, the bot may need to ask for headcount. All other RSVP intents (NO, MAYBE) are terminal. The `DEFAULT` state handles all message types, while `YES_AWAITING_HEADCOUNT` is a focused sub-flow.
 
-For Stage 1 of the RSVP agent, the conversational flow has a single branching point: after a YES response, the bot may need to ask for headcount. All other RSVP intents (NO, MAYBE) are terminal — they require no follow-up question. The `DEFAULT` state handles all message types, while `YES_AWAITING_HEADCOUNT` is a focused sub-flow that only extracts headcount (preventing conversational drift where the guest might inadvertently change their RSVP while answering a headcount question).
+The LangGraph routing at `START` uses exactly these two states. However, within `YES_AWAITING_HEADCOUNT`, the graph now supports **fallback to full NLU** — if `interpretHeadcount` doesn't extract an exact number, `interpretFull` runs so the agent can detect intent changes like "actually no" or "maybe." This eliminates the previous limitation where guests couldn't change their RSVP status during the headcount loop.
 
 ---
 
@@ -441,9 +614,9 @@ The discriminated union enables:
 
 ## 6. Change Detection Algorithm
 
-Source: `rsvpFlow.ts`, function `detectChangeIntent()` (lines 45-108)
+Source: `domain/rsvp-graph/nodes/decideAction.ts`, function `detectChangeIntent()`
 
-When a guest who already has a confirmed RSVP (YES or NO) sends a new message, the system must determine whether the guest intends to **update** their response or is simply **reaffirming** it. The change detection algorithm uses a **multi-signal approach**:
+When a guest who already has a confirmed RSVP (YES or NO) sends a new message, the system must determine whether the guest intends to **update** their response or is simply **reaffirming** it. The `decideAction` node calls `detectChangeIntent()` internally — if no change is detected, it returns `ACK_NO_CHANGE` (which produces a patch containing only `lastResponseAt`). The change detection algorithm uses a **multi-signal approach**:
 
 ### 6.1 Signal Hierarchy
 
@@ -637,9 +810,9 @@ sequenceDiagram
     participant T as Telegraf Bot
     participant H as guestMessage.handler
     participant DB as MongoDB
-    participant FSM as rsvpFlow (State Machine)
-    participant NLU as Interpretation Pipeline
-    participant NLG as Response Composer
+    participant GR as LangGraph Runner
+    participant NLU as NLU Port (via adapter)
+    participant NLG as NLG Port (via adapter)
     participant LLM as Anthropic Claude
 
     G->>T: Text message
@@ -647,49 +820,48 @@ sequenceDiagram
     H->>DB: GuestModel.findById(session.guestId)
     DB-->>H: Guest document (source of truth)
     H->>H: Sync conversationState (DB wins)
-    H->>H: Build FlowContext
-    H->>FSM: handleIncomingTextMessage(guest, text, ctx)
+    H->>H: Build GuestContext + GraphInput
+    H->>GR: runGraph({ messageText, guestContext })
 
-    alt DEFAULT state + confirmed guest
-        FSM->>NLU: interpretMessage(text)
-        NLU->>NLU: interpretWithRules(text)
+    Note over GR: Graph routes by conversationState
+
+    alt DEFAULT state
+        GR->>NLU: interpretMessage(text, context)
+        NLU->>NLU: Rules first, LLM fallback
         alt confidence >= 0.85
-            NLU-->>FSM: Rules result
+            NLU-->>GR: Rules result
         else confidence < 0.85 and LLM enabled
             NLU->>LLM: interpretWithLLM(text, context)
             LLM-->>NLU: JSON response
-            NLU-->>FSM: LLM result (validated)
-        end
-        FSM->>FSM: detectChangeIntent()
-        alt No change
-            FSM-->>H: ACK action + template reply
-        else Change detected
-            FSM->>FSM: Process as normal flow
+            NLU-->>GR: LLM result (validated)
         end
     else YES_AWAITING_HEADCOUNT state
-        FSM->>NLU: interpretHeadcountOnly(text)
-        NLU-->>FSM: HeadcountExtraction
-        FSM->>FSM: Determine action (SET_RSVP / CLARIFY)
-    else DEFAULT state + new/unconfirmed
-        FSM->>NLU: interpretMessage(text)
-        NLU-->>FSM: Interpretation
-        FSM->>FSM: Determine action
+        GR->>NLU: interpretHeadcountOnly(text, locale)
+        NLU-->>GR: HeadcountExtraction
+        alt exact & not fuzzy
+            Note over GR: Skip to decideAction
+        else not exact or fuzzy
+            GR->>NLU: interpretMessage(text, context)
+            NLU-->>GR: Full Interpretation (fallback)
+        end
     end
 
-    FSM->>NLG: composeReply(action, interpretation, ctx)
+    GR->>GR: decideAction → Action
+    GR->>NLG: composeReply or buildClarificationQuestion
     alt LLM responses disabled
-        NLG-->>FSM: Template reply
+        NLG-->>GR: Template reply
     else LLM responses enabled
-        NLG->>LLM: generateLLMResponse(action, interpretation, ctx)
+        NLG->>LLM: generateLLMResponse
         LLM-->>NLG: JSON with reply
-        NLG-->>FSM: LLM reply (or template fallback)
+        NLG-->>GR: LLM reply (or template fallback)
     end
+    GR->>GR: buildEffects → EffectsPatch
 
-    FSM-->>H: { action, replyText }
-    H->>DB: updateGuestRsvp(guestId, updates)
+    GR-->>H: { replyText, effects: EffectsPatch }
+    H->>H: applyEffectsPatch (sparse merge)
+    H->>DB: updateGuestRsvp(guestId, patch keys only)
     DB-->>H: Updated guest document
-    H->>H: Sync session with DB result
-    H->>H: Update clarification tracking
+    H->>H: Sync session from patch
     H->>G: ctx.reply(replyText)
 ```
 
@@ -798,11 +970,11 @@ All templates, keyword lists, and NLP normalization are designed for Hebrew as t
 
 **Tradeoff**: Tightly coupled to Hebrew, requiring explicit work to add another language. However, the domain (Israeli events) makes Hebrew the overwhelming majority language.
 
-### 11.5 Focused Sub-Flows Prevent Drift
+### 11.5 Focused Sub-Flows with Intent-Change Fallback
 
-In the `YES_AWAITING_HEADCOUNT` state, the system uses `interpretHeadcountOnly()` instead of the full interpretation pipeline. This prevents a scenario where the guest's reply to "how many people?" is misinterpreted as a new RSVP intent (e.g., "I'm not sure" being classified as MAYBE).
+In the `YES_AWAITING_HEADCOUNT` state, the graph first tries `interpretHeadcountOnly()` (a cheap, number-only extraction). If an exact non-fuzzy number is found, the fast path proceeds directly to `decideAction`. If not, the graph falls through to `interpretFull` — enabling detection of intent changes like "actually no" or "maybe."
 
-**Tradeoff**: The guest cannot change their RSVP status while in the headcount sub-flow. They must first complete or abandon the headcount question, then send a separate message to change status. This is acceptable given the typical conversation pattern.
+**Tradeoff**: The fallback path adds one extra NLU call when the headcount-only extractor can't find a clear number. This is acceptable because (a) it only happens when the guest's message isn't a simple number, and (b) it prevents the previous limitation where guests were locked into the headcount loop and couldn't change their mind.
 
 ### 11.6 Cost Optimization
 
@@ -827,29 +999,86 @@ Every component that depends on the LLM has an explicit fallback:
 
 The system is designed to **always produce a reply**, even if every LLM call fails. Guests never see an error caused by LLM unavailability — they see a template response that may be less natural but is functionally correct.
 
+### 11.8 Hexagonal Architecture (Ports & Adapters)
+
+The domain layer (`domain/rsvp-graph/`) defines **port interfaces** for all external capabilities. Concrete implementations live in the bot layer as **adapters**.
+
+| Port | Interface Methods | Adapter |
+|---|---|---|
+| `NluPort` | `interpretMessage()`, `interpretHeadcountOnly()` | `bot/adapters/nluAdapter.ts` — wraps existing `interpret/` functions |
+| `NlgPort` | `composeReply()`, `buildClarificationQuestion()` | `bot/adapters/nlgAdapter.ts` — wraps existing `respond/` functions |
+| `ClockPort` | `now()` | Inline: `{ now: () => new Date() }` in handler |
+| `LoggerPort` | `info()`, `debug()`, `warn()` | Pino logger instance passed directly |
+
+**Tradeoff**: Adapters add a thin mapping layer (GuestContext ↔ FlowContext, graph Action ↔ bot Action). This is a small cost for the ability to test the entire domain graph in isolation with mock ports.
+
+### 11.9 ClockPort Eliminates Implicit Time
+
+The domain graph never calls `new Date()` directly. All timestamps come from `ClockPort.now()`. This enables:
+- **Deterministic unit tests**: Tests inject a fixed clock, making assertions on `EffectsPatch.lastResponseAt` and `rsvpUpdatedAt` exact rather than approximate.
+- **Future flexibility**: Clock can be replaced with a server-synced or event-sourced timestamp if needed.
+
+### 11.10 Sparse EffectsPatch Prevents Accidental Overwrites
+
+Actions like `ACK_NO_CHANGE` and `CLARIFY_INTENT` only need to update `lastResponseAt`. With the old inline `updates` approach, it was easy to accidentally include fields that shouldn't change. The `EffectsPatch` pattern makes this explicit: absent keys are never written to the DB. The handler iterates patch keys and only includes present ones in the MongoDB update object.
+
+### 11.11 Architecture Boundary Enforcement
+
+The separation between domain and bot/infra layers is enforced by grep-based checks:
+- `domain/rsvp-graph/` must not import from `bot/`, `mongoose`, `telegraf`
+- `domain/rsvp-graph/` must not contain `new Date()` (all via ClockPort)
+
+These checks can be run in CI to prevent boundary violations from being merged.
+
 ---
 
 ## Appendix A: Source File Reference
 
-| File | Lines | Role |
-|---|---|---|
-| `bot/rsvp/rsvpFlow.ts` | 467 | State machine, change detection, flow orchestration |
-| `bot/rsvp/types.ts` | 59 | Discriminated unions: Action, Interpretation, FlowContext, HeadcountExtraction |
-| `bot/rsvp/interpret/index.ts` | 32 | Interpretation pipeline entry (rules -> threshold -> LLM) |
-| `bot/rsvp/interpret/rules.ts` | 630 | Rule-based NLP: keywords, headcount extraction, Hebrew normalization, fuzzy matching |
-| `bot/rsvp/interpret/headcountOnly.ts` | 121 | Focused headcount-only extractor for YES_AWAITING_HEADCOUNT state |
-| `bot/rsvp/interpret/llmInterpreter.ts` | 97 | LLM interpretation with Zod validation and JSON extraction |
-| `bot/rsvp/interpret/prompts/interpret.prompt.ts` | 75 | System prompt for NLU: structured JSON schema, few-shot examples, "never guess" rules |
-| `bot/rsvp/respond/index.ts` | 98 | Response composition: LLM vs. templates routing |
-| `bot/rsvp/respond/templates.ts` | 47 | Static Hebrew reply templates |
-| `bot/rsvp/respond/llmResponder.ts` | 63 | LLM response generation with Zod validation |
-| `bot/rsvp/respond/prompts/respond.prompt.ts` | 50 | System prompt for NLG: constraints (2 sentences, 1 emoji, Hebrew) |
-| `bot/rsvp/clarificationQuestions.ts` | 89 | Adaptive clarification question builder (3-attempt progression) |
-| `infra/llm/anthropic.ts` | 84 | Anthropic SDK wrapper: singleton client, claude-3-haiku, temperature 0.2 |
-| `infra/llm/llmClient.ts` | 91 | Resilience layer: 10s timeout, 1 retry, retryable error classification |
-| `config/env.ts` | 46 | Zod-validated environment config with LLM feature flags |
-| `bot/handlers/guestMessage.handler.ts` | 155 | Message handler: DB fetch, flow orchestration, persistence, session sync |
-| `bot/createBot.ts` | 31 | Bot creation: Telegraf instance, session middleware, handler wiring |
+**Domain Layer — Pure, no infra imports:**
+
+| File | Role |
+|---|---|
+| `domain/rsvp/types.ts` | Shared domain types: `RsvpStatus`, `ConversationState`, `AmbiguityReason`, `HeadcountExtraction`, `Interpretation` |
+| `domain/rsvp-graph/types.ts` | Graph-specific types: `GuestContext`, `Action` (6-variant union), `EffectsPatch`, `GraphInput`/`GraphOutput` |
+| `domain/rsvp-graph/ports.ts` | Port interfaces: `NluPort`, `NlgPort`, `ClockPort`, `LoggerPort`, `RsvpGraphPorts` |
+| `domain/rsvp-graph/state.ts` | LangGraph `RsvpAnnotation` — 7 state channels |
+| `domain/rsvp-graph/nodes/interpretFull.ts` | Node: calls `ports.nlu.interpretMessage()`, sets `interpretation` |
+| `domain/rsvp-graph/nodes/interpretHeadcount.ts` | Node: calls `ports.nlu.interpretHeadcountOnly()`, sets `headcountExtraction` |
+| `domain/rsvp-graph/nodes/decideAction.ts` | Node: all business logic — change detection, policy rules, produces `Action`. Pure function exported for unit testing. |
+| `domain/rsvp-graph/nodes/composeReply.ts` | Node: switches on `action.type`, delegates to NLG port |
+| `domain/rsvp-graph/nodes/buildEffects.ts` | Node: pure mapping from `Action` + `GuestContext` → sparse `EffectsPatch` via `ClockPort` |
+| `domain/rsvp-graph/graph.ts` | LangGraph `StateGraph` definition with conditional routing and edges |
+| `domain/rsvp-graph/index.ts` | Public API: `createRsvpGraphRunner()` singleton factory |
+| `domain/rsvp-graph/nodes/decideAction.test.ts` | Unit tests for `decideAction` and `buildEffects` (node:test) |
+
+**Bot Layer — Infrastructure, adapters, Telegraf:**
+
+| File | Role |
+|---|---|
+| `bot/handlers/guestMessage.handler.ts` | Message handler: DB fetch, builds GuestContext, calls graph runner, applies EffectsPatch, session sync |
+| `bot/adapters/nluAdapter.ts` | Implements `NluPort` — wraps existing NLU functions, maps GuestContext → FlowContext |
+| `bot/adapters/nlgAdapter.ts` | Implements `NlgPort` — wraps existing NLG functions, maps graph Action → bot Action |
+| `bot/rsvp/types.ts` | Re-export shim for domain types + bot-layer `Action`, `FlowContext` |
+| `bot/rsvp/interpret/index.ts` | Interpretation pipeline entry (rules → threshold → LLM) |
+| `bot/rsvp/interpret/rules.ts` | Rule-based NLP: keywords, headcount extraction, Hebrew normalization, fuzzy matching |
+| `bot/rsvp/interpret/headcountOnly.ts` | Focused headcount-only extractor for YES_AWAITING_HEADCOUNT state |
+| `bot/rsvp/interpret/llmInterpreter.ts` | LLM interpretation with Zod validation and JSON extraction |
+| `bot/rsvp/interpret/prompts/interpret.prompt.ts` | System prompt for NLU: structured JSON schema, few-shot examples, "never guess" rules |
+| `bot/rsvp/respond/index.ts` | Response composition: LLM vs. templates routing |
+| `bot/rsvp/respond/templates.ts` | Static Hebrew reply templates |
+| `bot/rsvp/respond/llmResponder.ts` | LLM response generation with Zod validation |
+| `bot/rsvp/respond/prompts/respond.prompt.ts` | System prompt for NLG: constraints (2 sentences, 1 emoji, Hebrew) |
+| `bot/rsvp/clarificationQuestions.ts` | Adaptive clarification question builder (3-attempt progression) |
+| `bot/rsvp/rsvpFlow.ts` | **Legacy** — retained for reference/rollback, no longer imported by handler |
+| `bot/createBot.ts` | Bot creation: Telegraf instance, session middleware, handler wiring |
+
+**Infra & Config:**
+
+| File | Role |
+|---|---|
+| `infra/llm/anthropic.ts` | Anthropic SDK wrapper: singleton client, claude-3-haiku, temperature 0.2 |
+| `infra/llm/llmClient.ts` | Resilience layer: 10s timeout, 1 retry, retryable error classification |
+| `config/env.ts` | Zod-validated environment config with LLM feature flags |
 
 ## Appendix B: Glossary
 
@@ -857,8 +1086,14 @@ The system is designed to **always produce a reply**, even if every LLM call fai
 |---|---|
 | **NLU** | Natural Language Understanding — extracting structured meaning from free text |
 | **NLG** | Natural Language Generation — producing human-readable text from structured data |
+| **LangGraph** | A library from LangChain for building stateful, graph-based agent workflows with typed state annotations |
+| **State graph** | A directed graph where nodes are functions that read/write shared state, connected by edges and conditional routing |
+| **Annotation** | LangGraph's mechanism for defining typed state channels with optional reducers |
+| **Port** | An interface defining a capability the domain depends on (e.g., `NluPort`, `ClockPort`), without specifying implementation |
+| **Adapter** | A concrete implementation of a port that wraps existing infrastructure code |
+| **EffectsPatch** | A sparse object where only present keys are written to the database; absent keys are untouched |
 | **FSM** | Finite State Machine — a model with discrete states and transitions |
-| **Discriminated union** | A TypeScript type pattern where a shared field (e.g., `kind`) determines the shape of the rest of the object |
+| **Discriminated union** | A TypeScript type pattern where a shared field (e.g., `kind` or `type`) determines the shape of the rest of the object |
 | **Niqqud** | Hebrew diacritical marks (vowel points) that appear above/below letters |
 | **Levenshtein distance** | The minimum number of single-character edits (insert, delete, substitute) to transform one string into another |
 | **Few-shot prompting** | Including examples in the LLM prompt to guide the expected output format |

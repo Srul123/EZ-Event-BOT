@@ -2,8 +2,10 @@ import type { Context } from 'telegraf';
 import type { Update } from 'telegraf/types';
 import { GuestModel } from '../../domain/campaigns/guest.model.js';
 import { updateGuestRsvp } from '../../domain/campaigns/guest.service.js';
-import { handleIncomingTextMessage } from '../rsvp/rsvpFlow.js';
-import type { FlowContext } from '../rsvp/types.js';
+import { createRsvpGraphRunner } from '../../domain/rsvp-graph/index.js';
+import type { GuestContext, EffectsPatch } from '../../domain/rsvp-graph/index.js';
+import { nluAdapter } from '../adapters/nluAdapter.js';
+import { nlgAdapter } from '../adapters/nlgAdapter.js';
 import { logger } from '../../logger/logger.js';
 
 interface BotSession {
@@ -19,7 +21,6 @@ interface BotSession {
   };
   eventTitle?: string;
   eventDate?: string;
-  // Lightweight clarification attempt tracking (session-only, not persisted to DB)
   headcountClarificationAttempts?: number;
   lastHeadcountClarificationReason?: 'FAMILY_TERM' | 'RELATIONAL' | 'RANGE_OR_APPROX' | 'UNKNOWN';
 }
@@ -28,22 +29,26 @@ interface SessionContext extends Context<Update> {
   session?: BotSession;
 }
 
+const runGraph = createRsvpGraphRunner({
+  nlu: nluAdapter,
+  nlg: nlgAdapter,
+  clock: { now: () => new Date() },
+  logger,
+});
+
 export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
-  // Only handle text messages (ignore stickers/media)
   if (!ctx.message || !('text' in ctx.message)) {
     return;
   }
 
   const messageText = ctx.message.text;
 
-  // Check if guest is in session
   if (!ctx.session?.guest) {
     ctx.reply('כדי להתחיל, פתח את הקישור האישי שקיבלת להזמנה.');
     return;
   }
 
   try {
-    // Fetch current guest from DB (source of truth)
     const guest = await GuestModel.findById(ctx.session.guest.guestId);
     if (!guest) {
       logger.error({ guestId: ctx.session.guest.guestId }, 'Guest not found in database');
@@ -58,98 +63,84 @@ export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
     } else if (guest.conversationState) {
       conversationState = guest.conversationState;
     }
-
-    // If mismatch exists: override session with DB value
     if (ctx.session.guest.conversationState !== guest.conversationState) {
       conversationState = guest.conversationState || 'DEFAULT';
     }
 
-    // Build flowContext with clarification attempt tracking from session
-    const flowContext: FlowContext = {
+    const guestContext: GuestContext = {
+      guestId: guest._id.toString(),
       guestName: ctx.session.guest.name,
       eventTitle: ctx.session.eventTitle,
       eventDate: ctx.session.eventDate,
       locale: 'he',
-      currentRsvpStatus: guest.rsvpStatus as FlowContext['currentRsvpStatus'],
+      currentRsvpStatus: guest.rsvpStatus as GuestContext['currentRsvpStatus'],
       currentHeadcount: guest.headcount ?? null,
       conversationState,
-      headcountClarificationAttempts: ctx.session.headcountClarificationAttempts,
-      lastHeadcountClarificationReason: ctx.session.lastHeadcountClarificationReason,
+      clarificationAttempts: ctx.session.headcountClarificationAttempts ?? 0,
+      lastClarificationReason: ctx.session.lastHeadcountClarificationReason,
     };
 
-    // Call RSVP flow
-    const { action, replyText } = await handleIncomingTextMessage({
-      guest,
+    const { replyText, effects } = await runGraph({
       messageText,
-      flowContext,
+      guestContext,
     });
 
-    // Persist updates (only if action type is not ACK)
-    if (action.type !== 'ACK') {
-      const updateParams: Parameters<typeof updateGuestRsvp>[1] = {
-        lastResponseAt: action.updates.lastResponseAt,
-        conversationState: action.nextState,
-      };
+    // Apply EffectsPatch -- only write keys that are present
+    await applyEffectsPatch(ctx.session.guest.guestId, effects, ctx);
 
-      if (action.type === 'SET_RSVP' || action.type === 'ASK_HEADCOUNT') {
-        if (action.updates.rsvpStatus !== undefined) {
-          updateParams.rsvpStatus = action.updates.rsvpStatus;
-        }
-        if (action.type === 'SET_RSVP' && 'headcount' in action.updates) {
-          updateParams.headcount = action.updates.headcount;
-        }
-      }
-
-      const updatedGuest = await updateGuestRsvp(ctx.session.guest.guestId, updateParams);
-
-      // Update session with returned guest data
-      ctx.session.guest = {
-        guestId: updatedGuest._id.toString(),
-        campaignId: updatedGuest.campaignId.toString(),
-        name: updatedGuest.name,
-        phone: updatedGuest.phone,
-        rsvpStatus: updatedGuest.rsvpStatus,
-        headcount: updatedGuest.headcount,
-        conversationState: updatedGuest.conversationState || 'DEFAULT',
-        lastResponseAt: updatedGuest.lastResponseAt,
-      };
-    } else {
-      // For ACK, only update lastResponseAt if provided
-      if (action.updates.lastResponseAt) {
-        const updatedGuest = await updateGuestRsvp(ctx.session.guest.guestId, {
-          lastResponseAt: action.updates.lastResponseAt,
-        });
-
-        // Update session lastResponseAt
-        if (ctx.session.guest) {
-          ctx.session.guest.lastResponseAt = updatedGuest.lastResponseAt;
-        }
-      }
+    // Sync session from patch
+    if (effects.conversationState !== undefined && ctx.session.guest) {
+      ctx.session.guest.conversationState = effects.conversationState;
+    }
+    if (effects.clarificationAttempts !== undefined) {
+      ctx.session.headcountClarificationAttempts = effects.clarificationAttempts;
+    }
+    if (effects.lastClarificationReason !== undefined) {
+      ctx.session.lastHeadcountClarificationReason = effects.lastClarificationReason;
     }
 
-    // Update conversationState in session after flow decision
-    if (ctx.session.guest) {
-      ctx.session.guest.conversationState = action.nextState;
-    }
-
-    // Update clarification attempt tracking in session (if flow context was updated)
-    if (flowContext.headcountClarificationAttempts !== undefined) {
-      ctx.session.headcountClarificationAttempts = flowContext.headcountClarificationAttempts;
-    }
-    if (flowContext.lastHeadcountClarificationReason !== undefined) {
-      ctx.session.lastHeadcountClarificationReason = flowContext.lastHeadcountClarificationReason;
-    }
-
-    // Reset clarification attempts when leaving YES_AWAITING_HEADCOUNT state
-    if (action.nextState === 'DEFAULT' && conversationState === 'YES_AWAITING_HEADCOUNT') {
+    // Reset clarification tracking when returning to DEFAULT from awaiting
+    if (
+      effects.conversationState === 'DEFAULT' &&
+      conversationState === 'YES_AWAITING_HEADCOUNT'
+    ) {
       ctx.session.headcountClarificationAttempts = undefined;
       ctx.session.lastHeadcountClarificationReason = undefined;
     }
 
-    // Always ensure deterministic reply
     ctx.reply(replyText);
   } catch (error) {
     logger.error({ error, guestId: ctx.session.guest.guestId }, 'Error handling guest message');
     ctx.reply('שגיאה בעיבוד ההודעה. אנא נסה שוב.');
+  }
+}
+
+async function applyEffectsPatch(
+  guestId: string,
+  effects: EffectsPatch,
+  ctx: SessionContext,
+): Promise<void> {
+  const updateParams: Record<string, unknown> = {};
+
+  if (effects.rsvpStatus !== undefined) updateParams.rsvpStatus = effects.rsvpStatus;
+  if (effects.headcount !== undefined) updateParams.headcount = effects.headcount;
+  if (effects.conversationState !== undefined) updateParams.conversationState = effects.conversationState;
+  if (effects.lastResponseAt !== undefined) updateParams.lastResponseAt = effects.lastResponseAt;
+
+  if (Object.keys(updateParams).length === 0) return;
+
+  const updatedGuest = await updateGuestRsvp(guestId, updateParams);
+
+  if (ctx.session?.guest) {
+    ctx.session.guest = {
+      guestId: updatedGuest._id.toString(),
+      campaignId: updatedGuest.campaignId.toString(),
+      name: updatedGuest.name,
+      phone: updatedGuest.phone,
+      rsvpStatus: updatedGuest.rsvpStatus,
+      headcount: updatedGuest.headcount,
+      conversationState: updatedGuest.conversationState || 'DEFAULT',
+      lastResponseAt: updatedGuest.lastResponseAt,
+    };
   }
 }
