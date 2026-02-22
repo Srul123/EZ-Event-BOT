@@ -36,12 +36,34 @@ const runGraph = createRsvpGraphRunner({
   logger,
 });
 
+// Module-level deduplication: prevents double-processing the same update when
+// Telegraf's middleware chain runs guestMessageHandler after a command handler
+// (e.g. /start fires both startHandler AND this handler), or on webhook retries.
+const processedUpdateIds = new Set<number>();
+const DEDUP_WINDOW_MS = 5 * 60 * 1000;
+
 export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
   if (!ctx.message || !('text' in ctx.message)) {
     return;
   }
 
   const messageText = ctx.message.text;
+
+  // Skip Telegram commands — they are handled by dedicated command handlers.
+  // Without this check, bot.on('text') also fires for /start, /help, etc.,
+  // causing a spurious RSVP response immediately after the welcome message.
+  if (messageText.startsWith('/')) {
+    return;
+  }
+
+  // Deduplicate updates to guard against webhook retries or middleware re-entry.
+  const updateId = ctx.update.update_id;
+  if (processedUpdateIds.has(updateId)) {
+    logger.warn({ updateId }, 'Skipping duplicate update delivery');
+    return;
+  }
+  processedUpdateIds.add(updateId);
+  setTimeout(() => processedUpdateIds.delete(updateId), DEDUP_WINDOW_MS);
 
   if (!ctx.session?.guest) {
     ctx.reply('כדי להתחיל, פתח את הקישור האישי שקיבלת להזמנה.');
