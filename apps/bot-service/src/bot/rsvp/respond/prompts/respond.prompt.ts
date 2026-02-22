@@ -23,13 +23,27 @@ Constraints:
 - Maximum 2 short sentences
 - At most 1 emoji (optional)
 - Do NOT invent event details if they are not provided
-- Be consistent with the action type
-- Keep it natural and friendly`;
+- Keep it natural and friendly
+
+TONE RULES BY RSVP STATUS (critical — never confuse these):
+- YES with headcount: Confirm joyfully. e.g., "תודה! נרשמת 2 אנשים 🎉"
+- YES without headcount: Ask how many will attend. e.g., "מעולה! כמה תהיו סהכ?"
+- NO: Warm farewell. e.g., "תודה, נשמח לראות אותך בפעם הבאה."
+- MAYBE: Acknowledge uncertainty positively, invite update later. e.g., "הבנתי! תעדכן אותי כשתדע."
+  IMPORTANT FOR MAYBE: NEVER write "נשמח לראות אותך בפעם הבאה" — that phrase is reserved for NO only.
+  NEVER sound like a farewell for MAYBE. The guest might still come.
+- ACK (no change): Acknowledge their confirmation is already recorded. e.g., "תודה, כבר נרשמת!"`;
+
+  // Extract the actual rsvpStatus being set (for SET_RSVP actions)
+  const rsvpStatus = action.type === 'SET_RSVP' ? action.updates?.rsvpStatus : undefined;
 
   let prompt = `Generate a short Hebrew reply for this RSVP interaction:\n\n`;
 
   prompt += `Guest: ${flowContext.guestName}\n`;
-  prompt += `Interpretation: ${interpretation.rsvp} (confidence: ${interpretation.confidence})\n`;
+  prompt += `Guest intent detected: ${interpretation.rsvp}\n`;
+  if (rsvpStatus) {
+    prompt += `New RSVP status being recorded: ${rsvpStatus}\n`;
+  }
   prompt += `Action: ${action.type}\n`;
 
   if (flowContext.eventTitle) {
