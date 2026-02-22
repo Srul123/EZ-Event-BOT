@@ -277,6 +277,24 @@ describe('decideAction – YES_AWAITING_HEADCOUNT state', () => {
     });
   });
 
+  it('low-confidence NO ("לא ידוע") in YES_AWAITING_HEADCOUNT -> CLARIFY_HEADCOUNT', () => {
+    const action = decideAction({
+      guestContext: makeGuestContext({
+        currentRsvpStatus: 'YES',
+        conversationState: 'YES_AWAITING_HEADCOUNT',
+        clarificationAttempts: 0,
+      }),
+      interpretation: makeInterpretation({ rsvp: 'NO', confidence: 0.5 }),
+      headcountExtraction: { kind: 'none' },
+      messageText: 'לא ידוע',
+    });
+
+    assert.equal(action.type, 'CLARIFY_HEADCOUNT');
+    if (action.type === 'CLARIFY_HEADCOUNT') {
+      assert.equal(action.attemptNumber, 1);
+    }
+  });
+
   it('"maybe" (fallback rsvp=MAYBE) -> SET_RSVP MAYBE, exits headcount loop', () => {
     const action = decideAction({
       guestContext: makeGuestContext({

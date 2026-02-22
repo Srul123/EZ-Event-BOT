@@ -87,7 +87,19 @@ export function decideAction(input: DecideActionInput): Action {
 
     if (interpretation) {
       if (interpretation.rsvp === 'NO') {
-        return { type: 'SET_RSVP', rsvpStatus: 'NO', headcount: null };
+        // Only exit the headcount loop for high-confidence cancellations.
+        // Low-confidence NO may mean "I don't know" (e.g., "לא ידוע" = don't know),
+        // not an actual cancellation.
+        const confidence = interpretation.confidence ?? 1.0;
+        if (confidence >= 0.8) {
+          return { type: 'SET_RSVP', rsvpStatus: 'NO', headcount: null };
+        }
+        // Treat low-confidence NO as UNKNOWN — keep asking for headcount
+        return {
+          type: 'CLARIFY_HEADCOUNT',
+          reason: null,
+          attemptNumber: clarificationAttempts + 1,
+        };
       }
       if (interpretation.rsvp === 'MAYBE') {
         return { type: 'SET_RSVP', rsvpStatus: 'MAYBE', headcount: null };
