@@ -1,25 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { createCampaignSchema } from '@ez-event-bot/shared';
 import { createCampaign, listCampaigns, getCampaignDetails } from '../../domain/campaigns/campaign.service.js';
 import { generateTelegramInviteLinks } from '../../domain/campaigns/links.service.js';
 import { logger } from '../../logger/logger.js';
 
 const router = Router();
-
-const createCampaignSchema = z.object({
-  name: z.string().min(1),
-  eventTitle: z.string().min(1),
-  eventDate: z.string().optional(),
-  scheduledAt: z.string().datetime(),
-  guests: z
-    .array(
-      z.object({
-        name: z.string().min(1),
-        phone: z.string().min(1),
-      })
-    )
-    .min(1),
-});
 
 router.post('/campaigns', async (req, res) => {
   try {

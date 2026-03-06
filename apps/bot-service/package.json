@@ -10,6 +10,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@ez-event-bot/shared": "*",
     "@langchain/langgraph": "^0.2.0",
     "@anthropic-ai/sdk": "^0.71.2",
     "dotenv": "^16.3.1",

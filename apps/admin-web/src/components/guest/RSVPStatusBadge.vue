@@ -7,12 +7,13 @@
 <script setup>
 import { computed } from 'vue'
 import Badge from '../common/Badge.vue'
+import { RSVP_STATUSES } from '@ez-event-bot/shared'
 
 const props = defineProps({
   status: {
     type: String,
     required: true,
-    validator: (value) => ['NO_RESPONSE', 'YES', 'NO', 'MAYBE'].includes(value),
+    validator: (value) => RSVP_STATUSES.includes(value),
   },
   size: {
     type: String,

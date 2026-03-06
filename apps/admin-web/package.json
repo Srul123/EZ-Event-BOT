@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ez-event-bot/shared": "*",
     "axios": "^1.13.3",
     "date-fns": "^4.1.0",
     "papaparse": "^5.5.3",

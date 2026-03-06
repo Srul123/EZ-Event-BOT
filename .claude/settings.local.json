@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(cd \"C:/Users/iheib/OneDrive/מסמכים/projects/EZ-Event-BOT\" && npm install 2>&1)",
+      "Bash(cd \"C:/Users/iheib/OneDrive/מסמכים/projects/EZ-Event-BOT\" && npm test --workspace=@ez-event-bot/bot-service 2>&1)",
+      "Bash(cd \"C:/Users/iheib/OneDrive/מסמכים/projects/EZ-Event-BOT\" && npm run --workspace=@ez-event-bot/bot-service 2>&1)",
+      "Bash(cd \"C:/Users/iheib/OneDrive/מסמכים/projects/EZ-Event-BOT/apps/bot-service\" && node --import tsx/esm --test src/domain/rsvp-graph/nodes/decideAction.test.ts src/bot/rsvp/interpret/rules.test.ts 2>&1)",
+      "Bash(cd \"C:/Users/iheib/OneDrive/מסמכים/projects/EZ-Event-BOT/apps/bot-service\" && npx tsc --noEmit 2>&1)",
+      "Bash(tail:*)",
+      "Bash(cd /c/Users/iheib/OneDrive/מסמכים/projects/EZ-Event-BOT && node --input-type=module -e \"\nimport { rsvpStatusSchema } from './packages/shared/src/index.ts';\nconst statuses = rsvpStatusSchema.options;\nconsole.log\\('Type:', typeof statuses\\);\nconsole.log\\('Value:', statuses\\);\nconsole.log\\('Is array-like:', Array.isArray\\(statuses\\)\\);\nconsole.log\\('includes method:', typeof statuses.includes\\);\nconsole.log\\('includes\\(\\\\\"YES\\\\\"\\):', statuses.includes\\('YES'\\)\\);\nconsole.log\\('includes\\(\\\\\"INVALID\\\\\"\\):', statuses.includes\\('INVALID'\\)\\);\n\" 2>&1)",
+      "Bash(cd /c/Users/iheib/OneDrive/מסמכים/projects/EZ-Event-BOT && npm run build 2>&1)"
     ]
   }
 }

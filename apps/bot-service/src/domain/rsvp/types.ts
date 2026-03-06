@@ -1,4 +1,4 @@
-export type RsvpStatus = 'YES' | 'NO' | 'MAYBE' | 'NO_RESPONSE';
+export type { RsvpStatus } from '@ez-event-bot/shared';
 export type ConversationState = 'DEFAULT' | 'YES_AWAITING_HEADCOUNT';
 export type AmbiguityReason = 'FAMILY_TERM' | 'RELATIONAL' | 'RANGE_OR_APPROX' | 'UNKNOWN';
 

@@ -11,7 +11,7 @@ export async function composeReply(
 ): Promise<string> {
   // If LLM responses are disabled, always use templates
   if (!env.RSVP_USE_LLM_RESPONSES) {
-    return getTemplateReply(action, flowContext);
+    return getTemplateReply(action, interpretation, flowContext);
   }
 
   // Try LLM, fallback to templates on error
@@ -19,11 +19,11 @@ export async function composeReply(
     return await generateLLMResponse(action, interpretation, flowContext);
   } catch (error) {
     // Fallback to templates
-    return getTemplateReply(action, flowContext);
+    return getTemplateReply(action, interpretation, flowContext);
   }
 }
 
-function getTemplateReply(action: Action, flowContext: FlowContext): string {
+function getTemplateReply(action: Action, interpretation: Interpretation, flowContext: FlowContext): string {
   switch (action.type) {
     case 'ASK_HEADCOUNT': {
       // Use clarification question helper for initial ask
