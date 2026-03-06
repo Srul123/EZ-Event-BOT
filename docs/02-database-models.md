@@ -1,4 +1,7 @@
-# MongoDB Schema — Entity Relationship Mapping
+# Database Models — MongoDB Schema & Entity Relationships
+
+> Part of the [EZ-Event-BOT documentation](README.md).
+> See also: [03-rsvp-lifecycle.md](03-rsvp-lifecycle.md) for how guest records evolve over time.
 
 ## Overview
 
@@ -116,7 +119,7 @@ Represents an event campaign created by an organizer.
 | `{ scheduledAt: 1, status: 1 }` | Compound | Future use — efficient querying for campaigns ready to dispatch |
 
 **Design decisions:**
-- `eventDate` is stored as a free-form `String` (not `Date`) because it's a display value shown directly to guests in Hebrew (e.g., "יום שישי, 25 ביולי"). No date arithmetic is needed on this field.
+- `eventDate` is stored as a free-form `String` (not `Date`) because it is a display value shown directly to guests in Hebrew (e.g., "יום שישי, 25 ביולי"). No date arithmetic is needed on this field.
 - `scheduledAt` is a proper `Date` for future scheduler queries (finding campaigns where `scheduledAt <= now AND status = 'SCHEDULED'`).
 
 ---
@@ -279,10 +282,8 @@ Bot: text message  →  guestMessage.handler.ts → guest.service.ts → updateG
 ```
 
 1. `GuestModel.findById(session.guestId)` — fetch current state (DB is source of truth)
-2. Process message through RSVP flow (interpret → decide action)
-3. `guest.save()` — update fields based on action:
-   - `rsvpStatus`, `headcount`, `conversationState`, `lastResponseAt`
-   - `rsvpUpdatedAt` set automatically only when status or headcount actually changes
+2. Process message through RSVP flow (interpret → decide action → build effects)
+3. Apply sparse `EffectsPatch` — only keys present in the patch are written to the Guest document
 
 ### 5. Campaign Details (Admin dashboard)
 
@@ -311,14 +312,14 @@ API: GET /api/campaigns  →  campaign.service.ts → listCampaigns()
 |---|---|---|---|
 | Campaign | `{ scheduledAt: 1, status: 1 }` | No | Future scheduler: find campaigns ready to dispatch |
 | Guest | `{ campaignId: 1 }` | No | Get all guests in a campaign |
-| Guest | `{ phone: 1 }` | No | Lookup by phone (not currently used in queries, available for future) |
+| Guest | `{ phone: 1 }` | No | Lookup by phone (available for future use) |
 | Invite | `{ token: 1 }` | **Yes** | Token-to-guest resolution on `/start` command |
 | Invite | `{ guestId: 1 }` | No | Find invites for a specific guest |
 | Invite | `{ campaignId: 1 }` | No | Find all invites in a campaign |
 
 ### Why no compound indexes on Guest?
 
-The current query patterns only filter guests by `campaignId` (fetch all guests for a campaign). There's no query that filters by both `campaignId` and `rsvpStatus` at the DB level — RSVP filtering happens in the frontend. If campaign guest counts grow large, a compound index on `{ campaignId: 1, rsvpStatus: 1 }` could be added.
+The current query patterns only filter guests by `campaignId` (fetch all guests for a campaign). There is no query that filters by both `campaignId` and `rsvpStatus` at the DB level — RSVP filtering happens in the frontend. If campaign guest counts grow large, a compound index on `{ campaignId: 1, rsvpStatus: 1 }` could be added.
 
 ### Why `phone` is indexed but not unique?
 

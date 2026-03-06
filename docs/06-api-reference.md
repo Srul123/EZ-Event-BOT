@@ -1,8 +1,10 @@
-# Campaigns API Documentation
+# API Reference — Campaign Management
 
-This document describes the HTTP API endpoints for managing campaigns and generating Telegram invite links for the EZ-Event BOT.
+> Part of the [EZ-Event-BOT documentation](README.md).
 
 **Base URL:** `http://localhost:3000/api`
+
+The Campaign Management API is a RESTful HTTP API served by the bot-service (Express.js). It provides endpoints for creating campaigns, managing guests, and generating personalized Telegram invite links.
 
 ---
 
@@ -14,6 +16,7 @@ This document describes the HTTP API endpoints for managing campaigns and genera
 - [Generate Telegram Links](#generate-telegram-links)
 - [Data Types](#data-types)
 - [Error Responses](#error-responses)
+- [Environment Variables](#environment-variables)
 
 ---
 
@@ -204,8 +207,6 @@ Retrieves detailed information about a specific campaign, including all associat
 }
 ```
 
-**Field Descriptions:**
-
 **Campaign Fields:**
 - `id` (string): Campaign unique identifier
 - `name` (string): Campaign name
@@ -213,27 +214,26 @@ Retrieves detailed information about a specific campaign, including all associat
 - `eventDate` (string, optional): Event date
 - `scheduledAt` (string): ISO 8601 datetime when campaign is scheduled
 - `status` (string): Campaign status
-- `createdAt` (string): ISO 8601 datetime when campaign was created
-- `updatedAt` (string): ISO 8601 datetime when campaign was last updated
+- `createdAt` / `updatedAt` (string): ISO 8601 timestamps
 
 **Guest Fields:**
 - `id` (string): Guest unique identifier
 - `name` (string): Guest's full name
 - `phone` (string): Guest's phone number
 - `rsvpStatus` (string): RSVP status (`NO_RESPONSE`, `YES`, `NO`, `MAYBE`)
-- `headcount` (number, optional): Number of attendees (if provided)
+- `headcount` (number | null): Number of attendees (if provided by guest)
 - `updatedAt` (string): ISO 8601 datetime when guest record was last updated
 
 **Error Responses:**
 
-- **404 Not Found** - Campaign not found:
+- **404 Not Found:**
 ```json
 {
   "error": "Campaign not found"
 }
 ```
 
-- **500 Internal Server Error** - Server error:
+- **500 Internal Server Error:**
 ```json
 {
   "error": "Failed to get campaign details"
@@ -255,8 +255,6 @@ Generates personalized Telegram deep links for all guests in a campaign. Each li
 
 **URL Parameters:**
 - `id` (string, required): Campaign ID (MongoDB ObjectId)
-
-**Example:** `POST /api/campaigns/6970b507ce951f625695114b/generate-telegram-links`
 
 **Request:** No request body required.
 
@@ -297,19 +295,19 @@ Generates personalized Telegram deep links for all guests in a campaign. Each li
 **Important Notes:**
 - Tokens are persisted in the database and linked to guests
 - Each token can be used to identify the guest when they interact with the bot
-- Links are logged to the server console with `[LINK_SIM]` prefix for debugging
 - When a guest clicks the link and starts the bot, the token is used to initialize their session
+- Calling this endpoint multiple times generates new tokens; all previous tokens remain valid
 
 **Error Responses:**
 
-- **404 Not Found** - Campaign not found:
+- **404 Not Found:**
 ```json
 {
   "error": "Campaign not found"
 }
 ```
 
-- **500 Internal Server Error** - Server error:
+- **500 Internal Server Error:**
 ```json
 {
   "error": "Failed to generate Telegram links"
@@ -342,16 +340,16 @@ type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'RUNNING' | 'COMPLETED' | 'FAILED'
 type RsvpStatus = 'NO_RESPONSE' | 'YES' | 'NO' | 'MAYBE';
 ```
 
-- `NO_RESPONSE`: Default status when guest is created
-- `YES`: Guest confirmed attendance
-- `NO`: Guest declined
-- `MAYBE`: Guest is unsure
+| Value | Meaning |
+|---|---|
+| `NO_RESPONSE` | Default status when guest is created |
+| `YES` | Guest confirmed attendance |
+| `NO` | Guest declined |
+| `MAYBE` | Guest is unsure |
 
 ---
 
 ## Error Responses
-
-All endpoints may return the following error responses:
 
 ### 400 Bad Request
 Validation errors when request body doesn't match the expected schema.
@@ -391,11 +389,9 @@ Unexpected server errors.
 
 ---
 
-## Testing Examples
+## Complete Workflow Example
 
-### Complete Workflow Example
-
-**1. Create a campaign:**
+**Step 1 — Create a campaign:**
 ```bash
 curl -X POST http://localhost:3000/api/campaigns \
   -H "Content-Type: application/json" \
@@ -411,40 +407,33 @@ curl -X POST http://localhost:3000/api/campaigns \
   }'
 ```
 
-**Response:**
-```json
-{
-  "campaignId": "6970b507ce951f625695114b"
-}
-```
-
-**2. List all campaigns:**
+**Step 2 — List all campaigns:**
 ```bash
 curl http://localhost:3000/api/campaigns
 ```
 
-**3. Get campaign details:**
+**Step 3 — Get campaign details:**
 ```bash
 curl http://localhost:3000/api/campaigns/6970b507ce951f625695114b
 ```
 
-**4. Generate Telegram links:**
+**Step 4 — Generate Telegram links:**
 ```bash
 curl -X POST http://localhost:3000/api/campaigns/6970b507ce951f625695114b/generate-telegram-links
 ```
 
-**5. Test a generated link:**
-Copy a link from the response (e.g., `https://t.me/EzEventBot?start=inv_evUWgi549vE`) and open it in a browser. The Telegram app should open with the bot, and the bot should greet the guest by name.
+**Step 5 — Test a generated link:**
+Copy a link from the response (e.g., `https://t.me/EzEventBot?start=inv_evUWgi549vE`) and open it in Telegram. The bot should greet the guest by name.
 
 ---
 
 ## Environment Variables
 
-The following environment variables are required:
-
-- `TELEGRAM_BOT_USERNAME`: Telegram bot username (default: `EzEventBot`)
-- `MONGODB_URI`: MongoDB connection string
-- `PORT`: HTTP server port (default: 3000)
+| Variable | Description |
+|---|---|
+| `TELEGRAM_BOT_USERNAME` | Telegram bot username (default: `EzEventBot`) |
+| `MONGODB_URI` | MongoDB connection string |
+| `PORT` | HTTP server port (default: `3000`) |
 
 ---
 

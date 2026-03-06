@@ -1,4 +1,6 @@
-# Project Setup and Installation Guide
+# Setup & Installation Guide
+
+> Part of the [EZ-Event-BOT documentation](README.md).
 
 ## Prerequisites
 
@@ -172,13 +174,6 @@ In a **separate terminal**, from the repository root:
 npm run dev --workspace=@ez-event-bot/admin-web
 ```
 
-Or navigate to the workspace directly:
-
-```bash
-cd apps/admin-web
-npm run dev
-```
-
 This starts the Vite dev server on `http://localhost:5173`. The frontend proxies all `/api` requests to `http://localhost:3000` (the backend).
 
 ### Verify everything is running
@@ -306,7 +301,20 @@ curl -X POST http://localhost:3000/api/campaigns/<campaignId>/generate-telegram-
 
 ---
 
-## 9. Common Issues
+## 9. Running Tests
+
+```bash
+# Run all tests (node:test runner)
+npm test --workspace=@ez-event-bot/bot-service
+```
+
+Test files:
+- `apps/bot-service/src/bot/rsvp/interpret/rules.test.ts` — headcount extraction rules
+- `apps/bot-service/src/domain/rsvp-graph/nodes/decideAction.test.ts` — RSVP business logic
+
+---
+
+## 10. Common Issues
 
 ### `ANTHROPIC_API_KEY is required when RSVP_USE_LLM_INTERPRETATION is true`
 
@@ -343,7 +351,7 @@ If you change the backend port, also update the proxy target in `apps/admin-web/
 
 ---
 
-## 10. npm Workspace Commands Reference
+## 11. npm Workspace Commands Reference
 
 | Command | Scope | Description |
 |---|---|---|
