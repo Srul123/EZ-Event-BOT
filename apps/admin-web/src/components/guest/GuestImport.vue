@@ -2,6 +2,12 @@
   <div class="space-y-4">
     <div
       :class="dropZoneClasses"
+      role="button"
+      tabindex="0"
+      aria-label="Upload guest CSV file"
+      @click="openFilePicker"
+      @keydown.enter.prevent="openFilePicker"
+      @keydown.space.prevent="openFilePicker"
       @drop="handleDrop"
       @dragover.prevent
       @dragenter.prevent
@@ -33,7 +39,7 @@
           <button
             type="button"
             class="font-medium text-primary-600 hover:text-primary-500"
-            @click="$refs.fileInput?.click()"
+            @click.stop="openFilePicker"
           >
             Click to upload
           </button>
@@ -147,6 +153,10 @@ const dropZoneClasses = computed(() => {
 })
 
 const validGuestsCount = computed(() => getValidGuests().length)
+
+function openFilePicker() {
+  fileInput.value?.click()
+}
 
 function handleDrop(event) {
   isDragging.value = false

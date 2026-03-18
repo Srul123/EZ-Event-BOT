@@ -20,6 +20,7 @@ export function useCampaigns() {
     fetchCampaign: (id) => store.fetchCampaign(id),
     createCampaign: (data) => store.createCampaign(data),
     generateLinks: (campaignId) => store.generateLinks(campaignId),
+    deleteCampaign: (campaignId) => store.deleteCampaign(campaignId),
     refreshCampaign: (id) => store.refreshCampaign(id),
     clearCurrentCampaign: () => store.clearCurrentCampaign(),
 

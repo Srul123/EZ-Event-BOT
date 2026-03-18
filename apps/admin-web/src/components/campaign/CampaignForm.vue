@@ -1,64 +1,80 @@
 <template>
-  <div class="space-y-6">
+  <div class="mx-auto w-full max-w-5xl space-y-6">
     <!-- Progress Indicator -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="mb-6 overflow-x-auto pb-2">
+      <div class="flex min-w-[360px] items-start justify-between md:min-w-0">
       <div
         v-for="(step, index) in steps"
         :key="index"
-        class="flex items-center flex-1"
+        class="flex flex-1 items-center"
       >
-        <div
-          :class="[
-            'flex items-center justify-center w-8 h-8 rounded-full font-medium',
-            index < currentStep
-              ? 'bg-primary-500 text-white'
-              : index === currentStep
-                ? 'bg-primary-100 text-primary-700 border-2 border-primary-500'
-                : 'bg-neutral-200 text-neutral-600',
-          ]"
-        >
-          {{ index + 1 }}
+        <div class="flex flex-col items-center gap-2">
+          <div
+            :class="[
+              'flex h-8 w-8 items-center justify-center rounded-full font-medium',
+              index < currentStep
+                ? 'bg-primary-500 text-white'
+                : index === currentStep
+                  ? 'border-2 border-primary-500 bg-primary-100 text-primary-700'
+                  : 'bg-neutral-200 text-neutral-600',
+            ]"
+          >
+            {{ index + 1 }}
+          </div>
+          <span
+            :class="[
+              'hidden text-xs font-medium text-center md:block',
+              index <= currentStep ? 'text-primary-700' : 'text-neutral-500',
+            ]"
+          >
+            {{ step }}
+          </span>
         </div>
         <div
           v-if="index < steps.length - 1"
           :class="[
-            'flex-1 h-1 mx-2',
+            'mx-2 h-1 flex-1',
             index < currentStep ? 'bg-primary-500' : 'bg-neutral-200',
           ]"
         />
       </div>
     </div>
+    </div>
 
     <!-- Step 1: Campaign Details -->
     <div v-if="currentStep === 0" class="space-y-4">
       <h3 class="text-xl font-semibold text-neutral-900">{{ t('form.campaignDetails') }}</h3>
-      <Input
-        v-model="formData.name"
-        :label="t('campaigns.name')"
-        placeholder="e.g., Summer BBQ 2024"
-        :error="errors.name"
-        required
-      />
-      <Input
-        v-model="formData.eventTitle"
-        :label="t('form.eventTitle')"
-        :placeholder="t('form.eventTitlePlaceholder')"
-        :error="errors.eventTitle"
-        required
-      />
-      <Input
-        v-model="formData.eventDate"
-        type="date"
-        :label="t('form.eventDate')"
-        :error="errors.eventDate"
-      />
-      <Input
-        v-model="formData.scheduledAt"
-        type="datetime-local"
-        :label="t('form.scheduledAt')"
-        :error="errors.scheduledAt"
-        required
-      />
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Input
+          v-model="formData.name"
+          class="lg:col-span-2"
+          :label="t('campaigns.name')"
+          placeholder="e.g., Summer BBQ 2024"
+          :error="errors.name"
+          required
+        />
+        <Input
+          v-model="formData.eventTitle"
+          class="lg:col-span-2"
+          :label="t('form.eventTitle')"
+          :placeholder="t('form.eventTitlePlaceholder')"
+          :error="errors.eventTitle"
+          required
+        />
+        <Input
+          v-model="formData.eventDate"
+          type="date"
+          :label="t('form.eventDate')"
+          :error="errors.eventDate"
+        />
+        <Input
+          v-model="formData.scheduledAt"
+          type="datetime-local"
+          :label="t('form.scheduledAt')"
+          :error="errors.scheduledAt"
+          required
+        />
+      </div>
     </div>
 
     <!-- Step 2: Guest Import -->
@@ -100,17 +116,19 @@
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="flex justify-between pt-6 border-t border-neutral-200">
+    <div class="flex flex-col gap-3 border-t border-neutral-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
       <Button
         v-if="currentStep > 0"
+        class="w-full sm:w-auto"
         variant="outline"
         @click="currentStep--"
       >
         {{ t('common.previous') }}
       </Button>
-      <div v-else />
+      <div v-else class="hidden sm:block" />
       <Button
         v-if="currentStep < steps.length - 1"
+        class="w-full sm:w-auto"
         variant="primary"
         :disabled="!canProceed"
         @click="currentStep++"
@@ -119,6 +137,7 @@
       </Button>
       <Button
         v-else
+        class="w-full sm:w-auto"
         variant="primary"
         :loading="loading"
         :disabled="!canSubmit"

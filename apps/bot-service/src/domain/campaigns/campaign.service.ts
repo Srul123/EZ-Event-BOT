@@ -1,5 +1,6 @@
 import { CampaignModel } from './campaign.model.js';
 import { GuestModel } from './guest.model.js';
+import { InviteModel } from './invite.model.js';
 import type { CreateCampaignRequest } from './types.js';
 import { logger } from '../../logger/logger.js';
 
@@ -80,5 +81,43 @@ export async function getCampaignDetails(campaignId: string): Promise<any> {
       headcount: guest.headcount,
       updatedAt: guest.updatedAt,
     })),
+  };
+}
+
+export async function deleteCampaign(campaignId: string): Promise<{
+  campaignId: string;
+  deleted: { campaign: number; guests: number; invites: number };
+}> {
+  const campaign = await CampaignModel.findById(campaignId).select('_id').lean();
+  if (!campaign) {
+    throw new Error('Campaign not found');
+  }
+
+  const [inviteDeleteResult, guestDeleteResult] = await Promise.all([
+    InviteModel.deleteMany({ campaignId: campaign._id }),
+    GuestModel.deleteMany({ campaignId: campaign._id }),
+  ]);
+
+  const campaignDeleteResult = await CampaignModel.deleteOne({ _id: campaign._id });
+
+  logger.info(
+    {
+      campaignId,
+      deleted: {
+        campaign: campaignDeleteResult.deletedCount ?? 0,
+        guests: guestDeleteResult.deletedCount ?? 0,
+        invites: inviteDeleteResult.deletedCount ?? 0,
+      },
+    },
+    'Campaign and related data deleted'
+  );
+
+  return {
+    campaignId,
+    deleted: {
+      campaign: campaignDeleteResult.deletedCount ?? 0,
+      guests: guestDeleteResult.deletedCount ?? 0,
+      invites: inviteDeleteResult.deletedCount ?? 0,
+    },
   };
 }

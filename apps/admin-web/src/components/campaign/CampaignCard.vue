@@ -6,7 +6,17 @@
           <h3 class="text-lg font-semibold text-neutral-900">{{ campaign.name }}</h3>
           <p class="text-sm text-neutral-600 mt-1">{{ campaign.eventTitle }}</p>
         </div>
-        <Badge :variant="statusVariant">{{ campaign.status }}</Badge>
+        <div class="ml-3 flex items-center gap-2">
+          <Badge :variant="statusVariant">{{ campaign.status }}</Badge>
+          <button
+            type="button"
+            class="inline-flex items-center rounded-md border border-neutral-300 px-2 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-100"
+            :aria-label="t('campaigns.delete')"
+            @click.stop="$emit('delete', campaign.id)"
+          >
+            {{ t('common.delete') }}
+          </button>
+        </div>
       </div>
     </template>
 
@@ -58,6 +68,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { formatDate, formatDateTime } from '../../utils/formatters.js'
 import Card from '../common/Card.vue'
 import Badge from '../common/Badge.vue'
@@ -69,7 +80,9 @@ const props = defineProps({
   },
 })
 
-defineEmits(['click'])
+const { t } = useI18n()
+
+defineEmits(['click', 'delete'])
 
 const statusVariant = computed(() => {
   const map = {

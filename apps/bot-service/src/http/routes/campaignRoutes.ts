@@ -1,11 +1,19 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { createCampaignSchema } from '@ez-event-bot/shared';
-import { createCampaign, listCampaigns, getCampaignDetails } from '../../domain/campaigns/campaign.service.js';
+import {
+  createCampaign,
+  listCampaigns,
+  getCampaignDetails,
+  deleteCampaign,
+} from '../../domain/campaigns/campaign.service.js';
 import { generateTelegramInviteLinks } from '../../domain/campaigns/links.service.js';
 import { logger } from '../../logger/logger.js';
 
 const router = Router();
+const campaignIdParamsSchema = z.object({
+  id: z.string().regex(/^[a-fA-F0-9]{24}$/, 'Invalid campaign id'),
+});
 
 router.post('/campaigns', async (req, res) => {
   try {
@@ -72,6 +80,33 @@ router.post('/campaigns/:id/generate-telegram-links', async (req, res) => {
     logger.error({ error }, 'Error generating Telegram links');
     res.status(500).json({
       error: 'Failed to generate Telegram links',
+    });
+  }
+});
+
+router.delete('/campaigns/:id', async (req, res) => {
+  try {
+    const { id } = campaignIdParamsSchema.parse(req.params);
+    const result = await deleteCampaign(id);
+    res.json(result);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      logger.warn({ error: error.errors }, 'Validation error deleting campaign');
+      res.status(400).json({
+        error: 'Validation error',
+        details: error.errors,
+      });
+      return;
+    }
+    if (error instanceof Error && error.message === 'Campaign not found') {
+      res.status(404).json({
+        error: 'Campaign not found',
+      });
+      return;
+    }
+    logger.error({ error }, 'Error deleting campaign');
+    res.status(500).json({
+      error: 'Failed to delete campaign',
     });
   }
 });

@@ -38,3 +38,13 @@ export async function generateLinks(campaignId) {
   const response = await apiClient.post(`/campaigns/${campaignId}/generate-telegram-links`)
   return response.data
 }
+
+/**
+ * Delete a campaign by ID
+ * @param {string} campaignId
+ * @returns {Promise<{campaignId: string, deleted: {campaign: number, guests: number, invites: number}}>}
+ */
+export async function deleteCampaign(campaignId) {
+  const response = await apiClient.delete(`/campaigns/${campaignId}`)
+  return response.data
+}

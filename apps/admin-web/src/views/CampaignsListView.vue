@@ -44,8 +44,30 @@
         :key="campaign.id"
         :campaign="campaign"
         @click="$router.push({ name: 'campaigns-detail', params: { id: campaign.id } })"
+        @delete="requestDeleteCampaign(campaign)"
       />
     </div>
+
+    <Modal v-model:show="showDeleteModal" size="md" @close="closeDeleteModal">
+      <template #header>
+        <h2 class="text-lg font-semibold text-neutral-900">{{ t('campaigns.deleteConfirmTitle') }}</h2>
+      </template>
+
+      <p class="text-sm text-neutral-700">
+        {{ t('campaigns.deleteConfirmMessage', { name: deleteTargetName }) }}
+      </p>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <Button variant="outline" :disabled="deletingCampaign" @click="closeDeleteModal">
+            {{ t('common.cancel') }}
+          </Button>
+          <Button variant="primary" :loading="deletingCampaign" @click="confirmDeleteCampaign">
+            {{ t('common.delete') }}
+          </Button>
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -57,13 +79,17 @@ import { useNotifications } from '../composables/useNotifications.js'
 import CampaignCard from '../components/campaign/CampaignCard.vue'
 import Button from '../components/common/Button.vue'
 import LoadingSpinner from '../components/common/LoadingSpinner.vue'
+import Modal from '../components/common/Modal.vue'
 
 const { t } = useI18n()
-const { campaigns, loading, fetchCampaigns } = useCampaigns()
-const { error: notifyError } = useNotifications()
+const { campaigns, loading, fetchCampaigns, deleteCampaign } = useCampaigns()
+const { success: notifySuccess, error: notifyError } = useNotifications()
 
 const searchQuery = ref('')
 const statusFilter = ref('')
+const showDeleteModal = ref(false)
+const selectedCampaign = ref(null)
+const deletingCampaign = ref(false)
 
 const filteredCampaigns = computed(() => {
   let filtered = [...campaigns.value]
@@ -89,6 +115,38 @@ async function handleRefresh() {
     await fetchCampaigns()
   } catch (error) {
     notifyError(t('campaigns.failedToRefreshList'))
+  }
+}
+
+const deleteTargetName = computed(() => selectedCampaign.value?.name || '')
+
+function requestDeleteCampaign(campaign) {
+  selectedCampaign.value = campaign
+  showDeleteModal.value = true
+}
+
+function closeDeleteModal(force = false) {
+  if (deletingCampaign.value && !force) {
+    return
+  }
+  showDeleteModal.value = false
+  selectedCampaign.value = null
+}
+
+async function confirmDeleteCampaign() {
+  if (!selectedCampaign.value) {
+    return
+  }
+
+  deletingCampaign.value = true
+  try {
+    await deleteCampaign(selectedCampaign.value.id)
+    notifySuccess(t('notifications.campaignDeleted'))
+    closeDeleteModal(true)
+  } catch (error) {
+    notifyError(t('campaigns.failedToDelete'))
+  } finally {
+    deletingCampaign.value = false
   }
 }
 

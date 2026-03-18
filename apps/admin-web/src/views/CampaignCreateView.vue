@@ -1,13 +1,13 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h1 class="text-3xl font-bold text-neutral-900">{{ t('campaigns.create') }}</h1>
-      <Button variant="outline" @click="$router.push({ name: 'campaigns' })">
+  <div class="mx-auto w-full max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <h1 class="text-2xl font-bold text-neutral-900 sm:text-3xl">{{ t('campaigns.create') }}</h1>
+      <Button class="w-full sm:w-auto" variant="outline" @click="$router.push({ name: 'campaigns' })">
         {{ t('common.cancel') }}
       </Button>
     </div>
 
-    <Card>
+    <Card class="overflow-hidden">
       <CampaignForm :loading="loading" @submit="handleSubmit" />
     </Card>
   </div>

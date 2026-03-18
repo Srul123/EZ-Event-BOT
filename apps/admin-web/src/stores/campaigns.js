@@ -1,5 +1,11 @@
 import { defineStore } from 'pinia'
-import { createCampaign, listCampaigns, getCampaignById, generateLinks } from '../api/campaigns.js'
+import {
+  createCampaign,
+  listCampaigns,
+  getCampaignById,
+  generateLinks,
+  deleteCampaign as deleteCampaignRequest,
+} from '../api/campaigns.js'
 
 /**
  * @typedef {import('../api/types.js').Campaign} Campaign
@@ -109,6 +115,29 @@ export const useCampaignsStore = defineStore('campaigns', {
         return result
       } catch (error) {
         this.error = error.message || 'Failed to generate links'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    /**
+     * Delete a campaign
+     * @param {string} campaignId
+     * @returns {Promise<{campaignId: string, deleted: {campaign: number, guests: number, invites: number}}>}
+     */
+    async deleteCampaign(campaignId) {
+      this.loading = true
+      this.error = null
+      try {
+        const result = await deleteCampaignRequest(campaignId)
+        this.campaigns = this.campaigns.filter((campaign) => campaign.id !== campaignId)
+        if (this.currentCampaign?.id === campaignId) {
+          this.currentCampaign = null
+        }
+        return result
+      } catch (error) {
+        this.error = error.message || 'Failed to delete campaign'
         throw error
       } finally {
         this.loading = false

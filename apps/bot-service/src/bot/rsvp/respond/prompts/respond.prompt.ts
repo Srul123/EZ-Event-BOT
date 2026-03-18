@@ -36,6 +36,10 @@ TONE RULES BY RSVP STATUS (critical — never confuse these):
 
   // Extract the actual rsvpStatus being set (for SET_RSVP actions)
   const rsvpStatus = action.type === 'SET_RSVP' ? action.updates?.rsvpStatus : undefined;
+  const resolvedHeadcount =
+    action.type === 'SET_RSVP' && action.updates?.headcount !== undefined
+      ? action.updates.headcount
+      : interpretation.headcount;
 
   let prompt = `Generate a short Hebrew reply for this RSVP interaction:\n\n`;
 
@@ -53,8 +57,8 @@ TONE RULES BY RSVP STATUS (critical — never confuse these):
     prompt += `Date: ${flowContext.eventDate}\n`;
   }
 
-  if (interpretation.headcount !== null) {
-    prompt += `Headcount: ${interpretation.headcount}\n`;
+  if (resolvedHeadcount !== null && resolvedHeadcount !== undefined) {
+    prompt += `Headcount: ${resolvedHeadcount}\n`;
   }
 
   prompt += `\nGenerate the reply JSON now.`;
