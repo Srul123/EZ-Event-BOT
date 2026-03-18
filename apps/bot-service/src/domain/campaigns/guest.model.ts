@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import type { RsvpStatus } from './types.js';
+import mongoose from "mongoose";
+import type { RsvpStatus } from "./types.js";
 
 export interface GuestDocument extends mongoose.Document {
   campaignId: mongoose.Types.ObjectId;
@@ -8,7 +8,7 @@ export interface GuestDocument extends mongoose.Document {
   rsvpStatus: RsvpStatus;
   headcount?: number;
   rsvpUpdatedAt?: Date;
-  conversationState?: 'DEFAULT' | 'YES_AWAITING_HEADCOUNT';
+  conversationState?: "DEFAULT" | "YES_AWAITING_HEADCOUNT";
   lastResponseAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -18,7 +18,7 @@ const guestSchema = new mongoose.Schema<GuestDocument>(
   {
     campaignId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Campaign',
+      ref: "Campaign",
       required: true,
       index: true,
     },
@@ -33,8 +33,8 @@ const guestSchema = new mongoose.Schema<GuestDocument>(
     },
     rsvpStatus: {
       type: String,
-      enum: ['NO_RESPONSE', 'YES', 'NO', 'MAYBE'],
-      default: 'NO_RESPONSE',
+      enum: ["NO_RESPONSE", "YES", "NO", "MAYBE"],
+      default: "NO_RESPONSE",
     },
     headcount: {
       type: Number,
@@ -47,9 +47,9 @@ const guestSchema = new mongoose.Schema<GuestDocument>(
     },
     conversationState: {
       type: String,
-      enum: ['DEFAULT', 'YES_AWAITING_HEADCOUNT'],
+      enum: ["DEFAULT", "YES_AWAITING_HEADCOUNT"],
       required: false,
-      default: 'DEFAULT',
+      default: "DEFAULT",
     },
     lastResponseAt: {
       type: Date,
@@ -58,7 +58,7 @@ const guestSchema = new mongoose.Schema<GuestDocument>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-export const GuestModel = mongoose.model<GuestDocument>('Guest', guestSchema);
+export const GuestModel = mongoose.model<GuestDocument>("Guest", guestSchema);

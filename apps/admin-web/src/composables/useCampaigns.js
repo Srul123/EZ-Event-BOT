@@ -1,12 +1,12 @@
-import { computed } from 'vue'
-import { useCampaignsStore } from '../stores/campaigns.js'
+import { computed } from "vue";
+import { useCampaignsStore } from "../stores/campaigns.js";
 
 /**
  * Composable for campaign operations
  * @returns {Object}
  */
 export function useCampaigns() {
-  const store = useCampaignsStore()
+  const store = useCampaignsStore();
 
   return {
     // State
@@ -27,5 +27,5 @@ export function useCampaigns() {
     // Getters
     campaignsByStatus: (status) => store.campaignsByStatus(status),
     activeCampaigns: computed(() => store.activeCampaigns),
-  }
+  };
 }

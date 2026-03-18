@@ -1,4 +1,4 @@
-import type { Interpretation, Action, FlowContext } from '../../types.js';
+import type { Interpretation, Action, FlowContext } from "../../types.js";
 
 export interface RespondPromptParams {
   interpretation: Interpretation;
@@ -35,9 +35,10 @@ TONE RULES BY RSVP STATUS (critical — never confuse these):
 - ACK (no change): Acknowledge their confirmation is already recorded. e.g., "תודה, כבר נרשמת!"`;
 
   // Extract the actual rsvpStatus being set (for SET_RSVP actions)
-  const rsvpStatus = action.type === 'SET_RSVP' ? action.updates?.rsvpStatus : undefined;
+  const rsvpStatus =
+    action.type === "SET_RSVP" ? action.updates?.rsvpStatus : undefined;
   const resolvedHeadcount =
-    action.type === 'SET_RSVP' && action.updates?.headcount !== undefined
+    action.type === "SET_RSVP" && action.updates?.headcount !== undefined
       ? action.updates.headcount
       : interpretation.headcount;
 

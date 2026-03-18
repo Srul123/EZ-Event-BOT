@@ -1,6 +1,10 @@
 <template>
   <div class="w-full">
-    <label v-if="label" :for="inputId" class="block text-sm font-medium text-neutral-700 mb-1">
+    <label
+      v-if="label"
+      :for="inputId"
+      class="block text-sm font-medium text-neutral-700 mb-1"
+    >
       {{ label }}
       <span v-if="required" class="text-error-500">*</span>
     </label>
@@ -25,32 +29,32 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps({
   modelValue: {
     type: [String, Number],
-    default: '',
+    default: "",
   },
   type: {
     type: String,
-    default: 'text',
+    default: "text",
   },
   label: {
     type: String,
-    default: '',
+    default: "",
   },
   placeholder: {
     type: String,
-    default: '',
+    default: "",
   },
   helperText: {
     type: String,
-    default: '',
+    default: "",
   },
   error: {
     type: String,
-    default: '',
+    default: "",
   },
   required: {
     type: Boolean,
@@ -62,19 +66,21 @@ const props = defineProps({
   },
   id: {
     type: String,
-    default: '',
+    default: "",
   },
-})
+});
 
-defineEmits(['update:modelValue', 'blur'])
+defineEmits(["update:modelValue", "blur"]);
 
-const inputId = computed(() => props.id || `input-${Math.random().toString(36).substr(2, 9)}`)
+const inputId = computed(
+  () => props.id || `input-${Math.random().toString(36).substr(2, 9)}`,
+);
 
 const inputClasses = computed(() => {
-  const base = 'input'
+  const base = "input";
   if (props.error) {
-    return `${base} border-error-500 focus:ring-error-200`
+    return `${base} border-error-500 focus:ring-error-200`;
   }
-  return base
-})
+  return base;
+});
 </script>

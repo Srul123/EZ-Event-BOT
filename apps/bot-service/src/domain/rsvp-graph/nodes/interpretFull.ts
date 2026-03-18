@@ -1,5 +1,5 @@
-import type { RsvpGraphPorts } from '../ports.js';
-import type { RsvpAnnotation } from '../state.js';
+import type { RsvpGraphPorts } from "../ports.js";
+import type { RsvpAnnotation } from "../state.js";
 
 export function createInterpretFullNode(ports: RsvpGraphPorts) {
   return async (state: typeof RsvpAnnotation.State) => {
@@ -10,12 +10,12 @@ export function createInterpretFullNode(ports: RsvpGraphPorts) {
 
     ports.logger.debug(
       {
-        node: 'interpretFull',
+        node: "interpretFull",
         rsvp: interpretation.rsvp,
         confidence: interpretation.confidence,
         headcountKind: interpretation.headcountExtraction.kind,
       },
-      'Full NLU interpretation complete',
+      "Full NLU interpretation complete",
     );
 
     return { interpretation };

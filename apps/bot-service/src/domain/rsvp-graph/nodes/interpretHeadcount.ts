@@ -1,5 +1,5 @@
-import type { RsvpGraphPorts } from '../ports.js';
-import type { RsvpAnnotation } from '../state.js';
+import type { RsvpGraphPorts } from "../ports.js";
+import type { RsvpAnnotation } from "../state.js";
 
 export function createInterpretHeadcountNode(ports: RsvpGraphPorts) {
   return async (state: typeof RsvpAnnotation.State) => {
@@ -10,17 +10,17 @@ export function createInterpretHeadcountNode(ports: RsvpGraphPorts) {
 
     ports.logger.debug(
       {
-        node: 'interpretHeadcount',
+        node: "interpretHeadcount",
         kind: headcountExtraction.kind,
-        ...(headcountExtraction.kind === 'exact' && {
+        ...(headcountExtraction.kind === "exact" && {
           headcount: headcountExtraction.headcount,
           fuzzy: headcountExtraction.fuzzy,
         }),
-        ...(headcountExtraction.kind === 'ambiguous' && {
+        ...(headcountExtraction.kind === "ambiguous" && {
           reason: headcountExtraction.reason,
         }),
       },
-      'Headcount-only extraction complete',
+      "Headcount-only extraction complete",
     );
 
     return { headcountExtraction };

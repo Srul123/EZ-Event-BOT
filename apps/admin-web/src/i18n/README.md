@@ -8,22 +8,22 @@ This project uses vue-i18n for internationalization.
 
 ```vue
 <script setup>
-import { useI18n } from 'vue-i18n'
+import { useI18n } from "vue-i18n";
 
-const { t, locale } = useI18n()
+const { t, locale } = useI18n();
 
 // Use translations
-const message = t('common.save')
-const campaignTitle = t('campaigns.title')
+const message = t("common.save");
+const campaignTitle = t("campaigns.title");
 
 // Change locale
-locale.value = 'en' // or 'fr', 'es', etc.
+locale.value = "en"; // or 'fr', 'es', etc.
 </script>
 
 <template>
   <div>
-    <h1>{{ t('campaigns.title') }}</h1>
-    <button>{{ t('common.save') }}</button>
+    <h1>{{ t("campaigns.title") }}</h1>
+    <button>{{ t("common.save") }}</button>
   </div>
 </template>
 ```
@@ -35,14 +35,14 @@ locale.value = 'en' // or 'fr', 'es', etc.
 export default {
   methods: {
     getMessage() {
-      return this.$t('common.save')
-    }
-  }
-}
+      return this.$t("common.save");
+    },
+  },
+};
 </script>
 
 <template>
-  <div>{{ $t('campaigns.title') }}</div>
+  <div>{{ $t("campaigns.title") }}</div>
 </template>
 ```
 
@@ -52,15 +52,15 @@ export default {
 2. Import and add it to `src/i18n/index.js`:
 
 ```js
-import fr from './locales/fr.js'
+import fr from "./locales/fr.js";
 
 const i18n = createI18n({
   // ...
   messages: {
     en,
-    fr
-  }
-})
+    fr,
+  },
+});
 ```
 
 ## Translation Keys Structure

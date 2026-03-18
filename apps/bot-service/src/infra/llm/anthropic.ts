@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { env } from '../../config/env.js';
-import { logger } from '../../logger/logger.js';
+import Anthropic from "@anthropic-ai/sdk";
+import { env } from "../../config/env.js";
+import { logger } from "../../logger/logger.js";
 
-const DEFAULT_MODEL = 'claude-3-haiku-20240307';
+const DEFAULT_MODEL = "claude-3-haiku-20240307";
 const DEFAULT_MAX_TOKENS_INTERPRET = 200;
 const DEFAULT_MAX_TOKENS_RESPOND = 120;
 const DEFAULT_TEMPERATURE = 0.2;
@@ -12,7 +12,7 @@ let anthropicClient: Anthropic | null = null;
 
 function getAnthropicClient(): Anthropic {
   if (!env.ANTHROPIC_API_KEY) {
-    throw new Error('ANTHROPIC_API_KEY is not configured');
+    throw new Error("ANTHROPIC_API_KEY is not configured");
   }
 
   if (!anthropicClient) {
@@ -47,16 +47,18 @@ export async function anthropicJsonCompletion({
       system,
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: prompt,
         },
       ],
     });
 
     // Extract text content from response
-    const textBlock = message.content.find((block) => block.type === 'text');
-    if (!textBlock || textBlock.type !== 'text') {
-      throw new Error('Invalid response format from Anthropic API: no text content');
+    const textBlock = message.content.find((block) => block.type === "text");
+    if (!textBlock || textBlock.type !== "text") {
+      throw new Error(
+        "Invalid response format from Anthropic API: no text content",
+      );
     }
 
     return textBlock.text;
@@ -69,16 +71,16 @@ export async function anthropicJsonCompletion({
           error: error.message,
           errorCode: error.error?.type,
         },
-        'Anthropic API error'
+        "Anthropic API error",
       );
       throw new Error(`Anthropic API error: ${error.status} ${error.message}`);
     }
 
     if (error instanceof Error) {
-      logger.error({ error: error.message }, 'Error calling Anthropic API');
+      logger.error({ error: error.message }, "Error calling Anthropic API");
       throw error;
     }
 
-    throw new Error('Unknown error calling Anthropic API');
+    throw new Error("Unknown error calling Anthropic API");
   }
 }

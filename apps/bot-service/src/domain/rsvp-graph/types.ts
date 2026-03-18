@@ -4,7 +4,7 @@ import type {
   AmbiguityReason,
   HeadcountExtraction,
   Interpretation,
-} from '../rsvp/types.js';
+} from "../rsvp/types.js";
 
 export type {
   RsvpStatus,
@@ -19,7 +19,7 @@ export interface GuestContext {
   guestName: string;
   eventTitle?: string;
   eventDate?: string;
-  locale: 'he' | 'en';
+  locale: "he" | "en";
   currentRsvpStatus: RsvpStatus;
   currentHeadcount: number | null;
   conversationState: ConversationState;
@@ -28,12 +28,16 @@ export interface GuestContext {
 }
 
 export type Action =
-  | { type: 'SET_RSVP'; rsvpStatus: RsvpStatus; headcount: number | null }
-  | { type: 'ASK_HEADCOUNT' }
-  | { type: 'CLARIFY_HEADCOUNT'; reason: AmbiguityReason | null; attemptNumber: number }
-  | { type: 'CLARIFY_INTENT' }
-  | { type: 'ACK_NO_CHANGE' }
-  | { type: 'STOP_WAITING_FOR_HEADCOUNT' };
+  | { type: "SET_RSVP"; rsvpStatus: RsvpStatus; headcount: number | null }
+  | { type: "ASK_HEADCOUNT" }
+  | {
+      type: "CLARIFY_HEADCOUNT";
+      reason: AmbiguityReason | null;
+      attemptNumber: number;
+    }
+  | { type: "CLARIFY_INTENT" }
+  | { type: "ACK_NO_CHANGE" }
+  | { type: "STOP_WAITING_FOR_HEADCOUNT" };
 
 export interface EffectsPatch {
   rsvpStatus?: RsvpStatus;

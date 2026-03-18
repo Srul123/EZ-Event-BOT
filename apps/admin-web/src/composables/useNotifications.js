@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref } from "vue";
 
 /**
  * @typedef {'success' | 'error' | 'info' | 'warning'} NotificationType
@@ -12,7 +12,7 @@ import { ref } from 'vue'
  * @property {number} timeout
  */
 
-const notifications = ref([])
+const notifications = ref([]);
 
 /**
  * Composable for notification system
@@ -25,25 +25,25 @@ export function useNotifications() {
    * @param {NotificationType} [type='info']
    * @param {number} [timeout=5000]
    */
-  function notify(message, type = 'info', timeout = 5000) {
-    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9)
+  function notify(message, type = "info", timeout = 5000) {
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     const notification = {
       id,
       type,
       message,
       timeout,
-    }
+    };
 
-    notifications.value.push(notification)
+    notifications.value.push(notification);
 
     // Auto-dismiss
     if (timeout > 0) {
       setTimeout(() => {
-        removeNotification(id)
-      }, timeout)
+        removeNotification(id);
+      }, timeout);
     }
 
-    return id
+    return id;
   }
 
   /**
@@ -51,9 +51,9 @@ export function useNotifications() {
    * @param {string} id
    */
   function removeNotification(id) {
-    const index = notifications.value.findIndex((n) => n.id === id)
+    const index = notifications.value.findIndex((n) => n.id === id);
     if (index !== -1) {
-      notifications.value.splice(index, 1)
+      notifications.value.splice(index, 1);
     }
   }
 
@@ -61,24 +61,24 @@ export function useNotifications() {
    * Clear all notifications
    */
   function clearNotifications() {
-    notifications.value = []
+    notifications.value = [];
   }
 
   // Convenience methods
   function success(message, timeout = 5000) {
-    return notify(message, 'success', timeout)
+    return notify(message, "success", timeout);
   }
 
   function error(message, timeout = 7000) {
-    return notify(message, 'error', timeout)
+    return notify(message, "error", timeout);
   }
 
   function info(message, timeout = 5000) {
-    return notify(message, 'info', timeout)
+    return notify(message, "info", timeout);
   }
 
   function warning(message, timeout = 6000) {
-    return notify(message, 'warning', timeout)
+    return notify(message, "warning", timeout);
   }
 
   return {
@@ -90,5 +90,5 @@ export function useNotifications() {
     error,
     info,
     warning,
-  }
+  };
 }

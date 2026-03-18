@@ -1,15 +1,15 @@
-import type { RsvpGraphPorts } from './ports.js';
-import type { GraphInput, GraphOutput } from './types.js';
-import { createRsvpGraph } from './graph.js';
+import type { RsvpGraphPorts } from "./ports.js";
+import type { GraphInput, GraphOutput } from "./types.js";
+import { createRsvpGraph } from "./graph.js";
 
-export type { RsvpGraphPorts } from './ports.js';
+export type { RsvpGraphPorts } from "./ports.js";
 export type {
   GraphInput,
   GraphOutput,
   GuestContext,
   Action,
   EffectsPatch,
-} from './types.js';
+} from "./types.js";
 
 export function createRsvpGraphRunner(
   ports: RsvpGraphPorts,
@@ -23,7 +23,7 @@ export function createRsvpGraphRunner(
       interpretation: null,
       headcountExtraction: null,
       action: null,
-      replyText: '',
+      replyText: "",
       effects: null,
     });
 

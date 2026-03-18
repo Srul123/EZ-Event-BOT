@@ -1,10 +1,13 @@
-import { z } from 'zod';
-import { callLLM } from '../../../infra/llm/llmClient.js';
-import { logger } from '../../../logger/logger.js';
-import { buildRespondPrompt, type RespondPromptParams } from './prompts/respond.prompt.js';
-import { env } from '../../../config/env.js';
-import * as templates from './templates.js';
-import type { Action, Interpretation, FlowContext } from '../types.js';
+import { z } from "zod";
+import { callLLM } from "../../../infra/llm/llmClient.js";
+import { logger } from "../../../logger/logger.js";
+import {
+  buildRespondPrompt,
+  type RespondPromptParams,
+} from "./prompts/respond.prompt.js";
+import { env } from "../../../config/env.js";
+import * as templates from "./templates.js";
+import type { Action, Interpretation, FlowContext } from "../types.js";
 
 const DEFAULT_MAX_TOKENS_RESPOND = 120;
 
@@ -30,7 +33,7 @@ function extractJsonFromText(text: string): string | null {
 export async function generateLLMResponse(
   action: Action,
   interpretation: Interpretation,
-  flowContext: FlowContext
+  flowContext: FlowContext,
 ): Promise<string> {
   try {
     const { system, prompt } = buildRespondPrompt({
@@ -47,8 +50,8 @@ export async function generateLLMResponse(
 
     const jsonText = extractJsonFromText(response);
     if (!jsonText) {
-      logger.warn({ response }, 'Failed to extract JSON from LLM response');
-      throw new Error('Failed to extract JSON');
+      logger.warn({ response }, "Failed to extract JSON from LLM response");
+      throw new Error("Failed to extract JSON");
     }
 
     const parsed = JSON.parse(jsonText);
@@ -56,7 +59,10 @@ export async function generateLLMResponse(
 
     return validated.reply;
   } catch (error) {
-    logger.error({ error, action, interpretation }, 'Error generating LLM response');
+    logger.error(
+      { error, action, interpretation },
+      "Error generating LLM response",
+    );
     throw error; // Will fallback to templates
   }
 }

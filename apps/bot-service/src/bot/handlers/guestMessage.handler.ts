@@ -1,12 +1,15 @@
-import type { Context } from 'telegraf';
-import type { Update } from 'telegraf/types';
-import { GuestModel } from '../../domain/campaigns/guest.model.js';
-import { updateGuestRsvp } from '../../domain/campaigns/guest.service.js';
-import { createRsvpGraphRunner } from '../../domain/rsvp-graph/index.js';
-import type { GuestContext, EffectsPatch } from '../../domain/rsvp-graph/index.js';
-import { nluAdapter } from '../adapters/nluAdapter.js';
-import { nlgAdapter } from '../adapters/nlgAdapter.js';
-import { logger } from '../../logger/logger.js';
+import type { Context } from "telegraf";
+import type { Update } from "telegraf/types";
+import { GuestModel } from "../../domain/campaigns/guest.model.js";
+import { updateGuestRsvp } from "../../domain/campaigns/guest.service.js";
+import { createRsvpGraphRunner } from "../../domain/rsvp-graph/index.js";
+import type {
+  GuestContext,
+  EffectsPatch,
+} from "../../domain/rsvp-graph/index.js";
+import { nluAdapter } from "../adapters/nluAdapter.js";
+import { nlgAdapter } from "../adapters/nlgAdapter.js";
+import { logger } from "../../logger/logger.js";
 
 interface BotSession {
   guest?: {
@@ -16,13 +19,17 @@ interface BotSession {
     phone: string;
     rsvpStatus: string;
     headcount?: number;
-    conversationState?: 'DEFAULT' | 'YES_AWAITING_HEADCOUNT';
+    conversationState?: "DEFAULT" | "YES_AWAITING_HEADCOUNT";
     lastResponseAt?: Date;
   };
   eventTitle?: string;
   eventDate?: string;
   headcountClarificationAttempts?: number;
-  lastHeadcountClarificationReason?: 'FAMILY_TERM' | 'RELATIONAL' | 'RANGE_OR_APPROX' | 'UNKNOWN';
+  lastHeadcountClarificationReason?:
+    | "FAMILY_TERM"
+    | "RELATIONAL"
+    | "RANGE_OR_APPROX"
+    | "UNKNOWN";
 }
 
 interface SessionContext extends Context<Update> {
@@ -43,7 +50,7 @@ const processedUpdateIds = new Set<number>();
 const DEDUP_WINDOW_MS = 5 * 60 * 1000;
 
 export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
-  if (!ctx.message || !('text' in ctx.message)) {
+  if (!ctx.message || !("text" in ctx.message)) {
     return;
   }
 
@@ -52,41 +59,46 @@ export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
   // Skip Telegram commands — they are handled by dedicated command handlers.
   // Without this check, bot.on('text') also fires for /start, /help, etc.,
   // causing a spurious RSVP response immediately after the welcome message.
-  if (messageText.startsWith('/')) {
+  if (messageText.startsWith("/")) {
     return;
   }
 
   // Deduplicate updates to guard against webhook retries or middleware re-entry.
   const updateId = ctx.update.update_id;
   if (processedUpdateIds.has(updateId)) {
-    logger.warn({ updateId }, 'Skipping duplicate update delivery');
+    logger.warn({ updateId }, "Skipping duplicate update delivery");
     return;
   }
   processedUpdateIds.add(updateId);
   setTimeout(() => processedUpdateIds.delete(updateId), DEDUP_WINDOW_MS);
 
   if (!ctx.session?.guest) {
-    ctx.reply('כדי להתחיל, פתח את הקישור האישי שקיבלת להזמנה.');
+    ctx.reply("כדי להתחיל, פתח את הקישור האישי שקיבלת להזמנה.");
     return;
   }
 
   try {
     const guest = await GuestModel.findById(ctx.session.guest.guestId);
     if (!guest) {
-      logger.error({ guestId: ctx.session.guest.guestId }, 'Guest not found in database');
-      ctx.reply('שגיאה: לא נמצא מידע עליך במערכת. אנא פתח את הקישור האישי שלך שוב.');
+      logger.error(
+        { guestId: ctx.session.guest.guestId },
+        "Guest not found in database",
+      );
+      ctx.reply(
+        "שגיאה: לא נמצא מידע עליך במערכת. אנא פתח את הקישור האישי שלך שוב.",
+      );
       return;
     }
 
     // conversationState sync (DB is source of truth)
-    let conversationState: 'DEFAULT' | 'YES_AWAITING_HEADCOUNT' = 'DEFAULT';
+    let conversationState: "DEFAULT" | "YES_AWAITING_HEADCOUNT" = "DEFAULT";
     if (ctx.session.guest.conversationState) {
       conversationState = ctx.session.guest.conversationState;
     } else if (guest.conversationState) {
       conversationState = guest.conversationState;
     }
     if (ctx.session.guest.conversationState !== guest.conversationState) {
-      conversationState = guest.conversationState || 'DEFAULT';
+      conversationState = guest.conversationState || "DEFAULT";
     }
 
     const guestContext: GuestContext = {
@@ -94,8 +106,8 @@ export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
       guestName: ctx.session.guest.name,
       eventTitle: ctx.session.eventTitle,
       eventDate: ctx.session.eventDate,
-      locale: 'he',
-      currentRsvpStatus: guest.rsvpStatus as GuestContext['currentRsvpStatus'],
+      locale: "he",
+      currentRsvpStatus: guest.rsvpStatus as GuestContext["currentRsvpStatus"],
       currentHeadcount: guest.headcount ?? null,
       conversationState,
       clarificationAttempts: ctx.session.headcountClarificationAttempts ?? 0,
@@ -115,16 +127,18 @@ export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
       ctx.session.guest.conversationState = effects.conversationState;
     }
     if (effects.clarificationAttempts !== undefined) {
-      ctx.session.headcountClarificationAttempts = effects.clarificationAttempts;
+      ctx.session.headcountClarificationAttempts =
+        effects.clarificationAttempts;
     }
     if (effects.lastClarificationReason !== undefined) {
-      ctx.session.lastHeadcountClarificationReason = effects.lastClarificationReason;
+      ctx.session.lastHeadcountClarificationReason =
+        effects.lastClarificationReason;
     }
 
     // Reset clarification tracking when returning to DEFAULT from awaiting
     if (
-      effects.conversationState === 'DEFAULT' &&
-      conversationState === 'YES_AWAITING_HEADCOUNT'
+      effects.conversationState === "DEFAULT" &&
+      conversationState === "YES_AWAITING_HEADCOUNT"
     ) {
       ctx.session.headcountClarificationAttempts = undefined;
       ctx.session.lastHeadcountClarificationReason = undefined;
@@ -132,8 +146,11 @@ export async function guestMessageHandler(ctx: SessionContext): Promise<void> {
 
     ctx.reply(replyText);
   } catch (error) {
-    logger.error({ error, guestId: ctx.session.guest.guestId }, 'Error handling guest message');
-    ctx.reply('שגיאה בעיבוד ההודעה. אנא נסה שוב.');
+    logger.error(
+      { error, guestId: ctx.session.guest.guestId },
+      "Error handling guest message",
+    );
+    ctx.reply("שגיאה בעיבוד ההודעה. אנא נסה שוב.");
   }
 }
 
@@ -144,10 +161,14 @@ async function applyEffectsPatch(
 ): Promise<void> {
   const updateParams: Record<string, unknown> = {};
 
-  if (effects.rsvpStatus !== undefined) updateParams.rsvpStatus = effects.rsvpStatus;
-  if (effects.headcount !== undefined) updateParams.headcount = effects.headcount;
-  if (effects.conversationState !== undefined) updateParams.conversationState = effects.conversationState;
-  if (effects.lastResponseAt !== undefined) updateParams.lastResponseAt = effects.lastResponseAt;
+  if (effects.rsvpStatus !== undefined)
+    updateParams.rsvpStatus = effects.rsvpStatus;
+  if (effects.headcount !== undefined)
+    updateParams.headcount = effects.headcount;
+  if (effects.conversationState !== undefined)
+    updateParams.conversationState = effects.conversationState;
+  if (effects.lastResponseAt !== undefined)
+    updateParams.lastResponseAt = effects.lastResponseAt;
 
   if (Object.keys(updateParams).length === 0) return;
 
@@ -161,7 +182,7 @@ async function applyEffectsPatch(
       phone: updatedGuest.phone,
       rsvpStatus: updatedGuest.rsvpStatus,
       headcount: updatedGuest.headcount,
-      conversationState: updatedGuest.conversationState || 'DEFAULT',
+      conversationState: updatedGuest.conversationState || "DEFAULT",
       lastResponseAt: updatedGuest.lastResponseAt,
     };
   }

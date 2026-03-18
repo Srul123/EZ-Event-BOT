@@ -8,6 +8,7 @@
 The RSVP lifecycle describes the complete journey of a Guest record — from creation when a campaign is set up, through RSVP collection, headcount confirmation, possible updates and corrections, and final confirmed state. The system enforces strict business rules to ensure data accuracy while keeping the conversation natural and user-friendly.
 
 A Guest record has **two interacting state dimensions**:
+
 1. **`rsvpStatus`**: `NO_RESPONSE | YES | NO | MAYBE`
 2. **`conversationState`**: `DEFAULT | YES_AWAITING_HEADCOUNT`
 
@@ -41,6 +42,7 @@ stateDiagram-v2
 ```
 
 **State labels** — format: `{rsvpStatus}_{conversationState}`:
+
 - `NO_RESPONSE_DEFAULT` — Initial state for all new guests
 - `YES_AWAITING_HEADCOUNT` — Guest confirmed YES, bot is awaiting headcount
 - `YES_DEFAULT` / `NO_DEFAULT` / `MAYBE_DEFAULT` — Terminal confirmed states (conversation returns to DEFAULT)
@@ -49,25 +51,25 @@ stateDiagram-v2
 
 ## 3. Guest Record Fields & Semantics
 
-| Field | Type | Default | Updated When |
-|---|---|---|---|
-| `_id` | ObjectId | auto | Never |
-| `campaignId` | ObjectId | set at creation | Never |
-| `name` | String | set at creation | Never |
-| `phone` | String | set at creation | Never |
-| `rsvpStatus` | `NO_RESPONSE\|YES\|NO\|MAYBE` | `NO_RESPONSE` | On meaningful RSVP change |
-| `headcount` | Number\|null | `null` | When guest with YES provides count |
-| `conversationState` | `DEFAULT\|YES_AWAITING_HEADCOUNT` | `DEFAULT` | On state transitions |
-| `rsvpUpdatedAt` | Date\|null | `null` | Only when `rsvpStatus` OR `headcount` actually changes |
-| `lastResponseAt` | Date\|null | `null` | Every time any message is processed (including ACK) |
-| `createdAt` | Date | auto | Never |
-| `updatedAt` | Date | auto | Every Mongoose save |
+| Field               | Type                              | Default         | Updated When                                           |
+| ------------------- | --------------------------------- | --------------- | ------------------------------------------------------ |
+| `_id`               | ObjectId                          | auto            | Never                                                  |
+| `campaignId`        | ObjectId                          | set at creation | Never                                                  |
+| `name`              | String                            | set at creation | Never                                                  |
+| `phone`             | String                            | set at creation | Never                                                  |
+| `rsvpStatus`        | `NO_RESPONSE\|YES\|NO\|MAYBE`     | `NO_RESPONSE`   | On meaningful RSVP change                              |
+| `headcount`         | Number\|null                      | `null`          | When guest with YES provides count                     |
+| `conversationState` | `DEFAULT\|YES_AWAITING_HEADCOUNT` | `DEFAULT`       | On state transitions                                   |
+| `rsvpUpdatedAt`     | Date\|null                        | `null`          | Only when `rsvpStatus` OR `headcount` actually changes |
+| `lastResponseAt`    | Date\|null                        | `null`          | Every time any message is processed (including ACK)    |
+| `createdAt`         | Date                              | auto            | Never                                                  |
+| `updatedAt`         | Date                              | auto            | Every Mongoose save                                    |
 
 ### Key Timestamp Distinction
 
-**`rsvpUpdatedAt`** tracks *when the RSVP data last changed*. It is NOT updated on `ACK_NO_CHANGE`, `CLARIFY_INTENT`, or `CLARIFY_HEADCOUNT` — only on actual data changes (status transitions or headcount updates).
+**`rsvpUpdatedAt`** tracks _when the RSVP data last changed_. It is NOT updated on `ACK_NO_CHANGE`, `CLARIFY_INTENT`, or `CLARIFY_HEADCOUNT` — only on actual data changes (status transitions or headcount updates).
 
-**`lastResponseAt`** tracks *when the guest last interacted*, regardless of whether the data changed. This enables the admin dashboard to differentiate "last RSVP change" from "last active conversation."
+**`lastResponseAt`** tracks _when the guest last interacted_, regardless of whether the data changed. This enables the admin dashboard to differentiate "last RSVP change" from "last active conversation."
 
 ---
 
@@ -162,11 +164,11 @@ When the guest is in `YES_AWAITING_HEADCOUNT` and their response does not contai
 
 ### Attempt Progression
 
-| Attempt | Strategy | Trigger | Hebrew Example |
-|---|---|---|---|
-| 1 | Reason-specific question | Ambiguity reason (FAMILY_TERM, RELATIONAL, RANGE_OR_APPROX) | "מעולה! כמה ילדים יגיעו איתך? כלומר כמה תהיו סהכ?" |
-| 2 | Simplified with example | Second failed attempt | "כדי לרשום נכון, אפשר מספר בלבד? למשל: 3" |
-| 3 | Graceful exit | `clarificationAttempts >= 3` | "אין בעיה, אשאיר כרגע בלי מספר. תמיד אפשר לעדכן בהמשך." |
+| Attempt | Strategy                 | Trigger                                                     | Hebrew Example                                          |
+| ------- | ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------- |
+| 1       | Reason-specific question | Ambiguity reason (FAMILY_TERM, RELATIONAL, RANGE_OR_APPROX) | "מעולה! כמה ילדים יגיעו איתך? כלומר כמה תהיו סהכ?"      |
+| 2       | Simplified with example  | Second failed attempt                                       | "כדי לרשום נכון, אפשר מספר בלבד? למשל: 3"               |
+| 3       | Graceful exit            | `clarificationAttempts >= 3`                                | "אין בעיה, אשאיר כרגע בלי מספר. תמיד אפשר לעדכן בהמשך." |
 
 After 3 failed attempts, `STOP_WAITING_FOR_HEADCOUNT` is triggered:
 
@@ -260,9 +262,9 @@ EffectsPatch written:
 
 **Keyword sets:**
 
-| Type | Keywords |
-|---|---|
-| Change keywords | `רק, משנה, מעדכן, מעדכנת, change, update, changing, updating` |
+| Type                | Keywords                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| Change keywords     | `רק, משנה, מעדכן, מעדכנת, change, update, changing, updating`                                   |
 | Correction keywords | `טעיתי, טעות, אופס, שגיאה, תיקנתי, מתקן, mistake, error, oops, correct, correction, fix, fixed` |
 
 ---
@@ -273,26 +275,26 @@ The graph never writes directly to MongoDB. Instead, every action produces a spa
 
 ```typescript
 interface EffectsPatch {
-  rsvpStatus?: RsvpStatus;           // absent = do not update
-  headcount?: number | null;          // absent = do not update
+  rsvpStatus?: RsvpStatus; // absent = do not update
+  headcount?: number | null; // absent = do not update
   conversationState?: ConversationState; // absent = do not update
-  lastResponseAt: Date;               // always present
-  rsvpUpdatedAt?: Date;              // only when data actually changed
-  clarificationAttempts?: number;     // only on CLARIFY_HEADCOUNT / STOP_WAITING
+  lastResponseAt: Date; // always present
+  rsvpUpdatedAt?: Date; // only when data actually changed
+  clarificationAttempts?: number; // only on CLARIFY_HEADCOUNT / STOP_WAITING
   lastClarificationReason?: AmbiguityReason; // only on CLARIFY_HEADCOUNT
 }
 ```
 
 ### Per-Action Patch Shapes
 
-| Action | Keys Written |
-|---|---|
-| `SET_RSVP` | `rsvpStatus`, `headcount`, `conversationState: DEFAULT`, `lastResponseAt`, `rsvpUpdatedAt`\* , `clarificationAttempts: 0` |
-| `ASK_HEADCOUNT` | `rsvpStatus: YES`, `conversationState: YES_AWAITING_HEADCOUNT`, `lastResponseAt`, `rsvpUpdatedAt`\* , `clarificationAttempts: 0` |
-| `CLARIFY_HEADCOUNT` | `conversationState: YES_AWAITING_HEADCOUNT`, `lastResponseAt`, `clarificationAttempts++`, `lastClarificationReason` |
-| `CLARIFY_INTENT` | `lastResponseAt` only |
-| `ACK_NO_CHANGE` | `lastResponseAt` only |
-| `STOP_WAITING_FOR_HEADCOUNT` | `conversationState: DEFAULT`, `lastResponseAt`, `clarificationAttempts: 0` |
+| Action                       | Keys Written                                                                                                                     |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `SET_RSVP`                   | `rsvpStatus`, `headcount`, `conversationState: DEFAULT`, `lastResponseAt`, `rsvpUpdatedAt`\* , `clarificationAttempts: 0`        |
+| `ASK_HEADCOUNT`              | `rsvpStatus: YES`, `conversationState: YES_AWAITING_HEADCOUNT`, `lastResponseAt`, `rsvpUpdatedAt`\* , `clarificationAttempts: 0` |
+| `CLARIFY_HEADCOUNT`          | `conversationState: YES_AWAITING_HEADCOUNT`, `lastResponseAt`, `clarificationAttempts++`, `lastClarificationReason`              |
+| `CLARIFY_INTENT`             | `lastResponseAt` only                                                                                                            |
+| `ACK_NO_CHANGE`              | `lastResponseAt` only                                                                                                            |
+| `STOP_WAITING_FOR_HEADCOUNT` | `conversationState: DEFAULT`, `lastResponseAt`, `clarificationAttempts: 0`                                                       |
 
 \* `rsvpUpdatedAt` is only included when the status or headcount value actually changed vs. current — not on repeat messages that confirm existing data.
 
@@ -304,22 +306,26 @@ Headcount is not stored as a simple `number | null`. The extraction pipeline use
 
 ```typescript
 type HeadcountExtraction =
-  | { kind: 'exact'; headcount: number; fuzzy?: boolean }
-  | { kind: 'ambiguous'; reason: AmbiguityReason }
-  | { kind: 'none' };
+  | { kind: "exact"; headcount: number; fuzzy?: boolean }
+  | { kind: "ambiguous"; reason: AmbiguityReason }
+  | { kind: "none" };
 
-type AmbiguityReason = 'FAMILY_TERM' | 'RELATIONAL' | 'RANGE_OR_APPROX' | 'UNKNOWN';
+type AmbiguityReason =
+  | "FAMILY_TERM"
+  | "RELATIONAL"
+  | "RANGE_OR_APPROX"
+  | "UNKNOWN";
 ```
 
 Why this matters:
 
-| Message | `number | null` | `HeadcountExtraction` |
-|---|---|---|
-| "כן מגיע" | `null` | `{ kind: 'none' }` |
-| "אני והילדים" | `null` | `{ kind: 'ambiguous', reason: 'FAMILY_TERM' }` |
-| "בערך 3" | `3`? | `{ kind: 'ambiguous', reason: 'RANGE_OR_APPROX' }` |
-| "אנחנו שניים" | `2` | `{ kind: 'exact', headcount: 2 }` |
-| "שנים" (typo) | `2`? | `{ kind: 'exact', headcount: 2, fuzzy: true }` |
+| Message       | `number | null`                                              | `HeadcountExtraction` |
+| ------------- | ------- | -------------------------------------------------- | --------------------- |
+| "כן מגיע"     | `null`  | `{ kind: 'none' }`                                 |
+| "אני והילדים" | `null`  | `{ kind: 'ambiguous', reason: 'FAMILY_TERM' }`     |
+| "בערך 3"      | `3`?    | `{ kind: 'ambiguous', reason: 'RANGE_OR_APPROX' }` |
+| "אנחנו שניים" | `2`     | `{ kind: 'exact', headcount: 2 }`                  |
+| "שנים" (typo) | `2`?    | `{ kind: 'exact', headcount: 2, fuzzy: true }`     |
 
 Each ambiguity reason triggers a different clarification message. `fuzzy: true` may trigger a confirmation prompt before recording.
 

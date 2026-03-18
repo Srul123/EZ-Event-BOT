@@ -8,7 +8,11 @@ export function replyYesConfirmed({
   return `תודה ${guestName}! נרשמת ${headcount} אנשים.`;
 }
 
-export function replyAskHeadcount({ guestName }: { guestName: string }): string {
+export function replyAskHeadcount({
+  guestName,
+}: {
+  guestName: string;
+}): string {
   return `${guestName}, כמה אנשים יגיעו?`;
 }
 
@@ -33,13 +37,13 @@ export function replyAlreadyRecorded({
   rsvpStatus: string;
   headcount?: number | null;
 }): string {
-  if (rsvpStatus === 'YES') {
+  if (rsvpStatus === "YES") {
     if (headcount) {
       return `תודה ${guestName}! כבר נרשמת ${headcount} אנשים.`;
     }
     return `תודה ${guestName}! כבר נרשמת.`;
   }
-  if (rsvpStatus === 'NO') {
+  if (rsvpStatus === "NO") {
     return `תודה ${guestName}, הבנתי שלא תוכל להגיע.`;
   }
   return `תודה ${guestName}!`;

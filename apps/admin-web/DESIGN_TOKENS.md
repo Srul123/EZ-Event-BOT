@@ -17,6 +17,7 @@ This document outlines the design token system and UI/UX guidelines for the EZ-E
 ## Color System
 
 ### Primary Colors
+
 The primary color palette is based on a blue-purple gradient scheme that represents trust and professionalism.
 
 - **Primary 50-950**: Full scale from lightest to darkest
@@ -25,6 +26,7 @@ The primary color palette is based on a blue-purple gradient scheme that represe
 - **Primary 700** (`#4c51bf`): Active/pressed states
 
 **Usage:**
+
 ```vue
 <button class="bg-primary-500 hover:bg-primary-600 active:bg-primary-700">
   Primary Button
@@ -32,6 +34,7 @@ The primary color palette is based on a blue-purple gradient scheme that represe
 ```
 
 ### Secondary Colors
+
 Complementary purple tones for secondary actions and accents.
 
 - **Secondary 500** (`#764ba2`): Secondary brand color
@@ -40,22 +43,27 @@ Complementary purple tones for secondary actions and accents.
 ### Semantic Colors
 
 #### Success (Green)
+
 - Use for: Success messages, completed states, positive actions
 - **Success 500** (`#22c55e`): Main success color
 
 #### Warning (Amber/Yellow)
+
 - Use for: Warnings, caution states, pending actions
 - **Warning 500** (`#f59e0b`): Main warning color
 
 #### Error (Red)
+
 - Use for: Error messages, destructive actions, validation errors
 - **Error 500** (`#ef4444`): Main error color
 
 #### Info (Blue)
+
 - Use for: Informational messages, neutral notifications
 - **Info 500** (`#3b82f6`): Main info color
 
 ### Neutral Colors
+
 Grayscale palette for text, backgrounds, and borders.
 
 - **Neutral 50** (`#fafafa`): Lightest background
@@ -66,6 +74,7 @@ Grayscale palette for text, backgrounds, and borders.
 - **Neutral 900** (`#171717`): Darkest text
 
 **Text Color Guidelines:**
+
 - Primary text: `text-neutral-900` or `text-neutral-700`
 - Secondary text: `text-neutral-500`
 - Disabled text: `text-neutral-400`
@@ -77,10 +86,12 @@ Grayscale palette for text, backgrounds, and borders.
 ### Font Families
 
 **Sans Serif (Default):**
+
 - System font stack for optimal performance
 - Includes: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, etc.
 
 **Monospace:**
+
 - Use for: Code, technical data, IDs
 - Class: `font-mono`
 
@@ -88,17 +99,17 @@ Grayscale palette for text, backgrounds, and borders.
 
 Our typography scale follows a fluid, responsive system:
 
-| Size | Class | Pixels | Use Case |
-|------|-------|--------|----------|
-| xs | `text-xs` | 12px | Labels, captions |
-| sm | `text-sm` | 14px | Secondary text, helper text |
-| base | `text-base` | 16px | Body text (default) |
-| lg | `text-lg` | 18px | Emphasized body text |
-| xl | `text-xl` | 20px | Small headings |
-| 2xl | `text-2xl` | 24px | Section headings |
-| 3xl | `text-3xl` | 30px | Page titles |
-| 4xl | `text-4xl` | 36px | Hero headings |
-| 5xl+ | `text-5xl`+ | 48px+ | Display text |
+| Size | Class       | Pixels | Use Case                    |
+| ---- | ----------- | ------ | --------------------------- |
+| xs   | `text-xs`   | 12px   | Labels, captions            |
+| sm   | `text-sm`   | 14px   | Secondary text, helper text |
+| base | `text-base` | 16px   | Body text (default)         |
+| lg   | `text-lg`   | 18px   | Emphasized body text        |
+| xl   | `text-xl`   | 20px   | Small headings              |
+| 2xl  | `text-2xl`  | 24px   | Section headings            |
+| 3xl  | `text-3xl`  | 30px   | Page titles                 |
+| 4xl  | `text-4xl`  | 36px   | Hero headings               |
+| 5xl+ | `text-5xl`+ | 48px+  | Display text                |
 
 ### Font Weights
 
@@ -114,6 +125,7 @@ Our typography scale follows a fluid, responsive system:
 ### Line Heights
 
 Automatically included with font sizes:
+
 - Tight: 1.25 (headings)
 - Normal: 1.5 (body text)
 - Relaxed: 1.75 (spacious text)
@@ -126,17 +138,17 @@ Automatically included with font sizes:
 
 Our spacing system uses an 8px base unit for consistency:
 
-| Size | Class | Pixels | Use Case |
-|------|-------|--------|----------|
-| 0 | `p-0`, `m-0` | 0px | Reset spacing |
-| 1 | `p-1`, `m-1` | 4px | Tight spacing |
-| 2 | `p-2`, `m-2` | 8px | Small spacing |
-| 3 | `p-3`, `m-3` | 12px | Medium-small |
-| 4 | `p-4`, `m-4` | 16px | Medium (default) |
-| 6 | `p-6`, `m-6` | 24px | Large spacing |
-| 8 | `p-8`, `m-8` | 32px | Extra large |
-| 12 | `p-12`, `m-12` | 48px | Section spacing |
-| 16 | `p-16`, `m-16` | 64px | Page spacing |
+| Size | Class          | Pixels | Use Case         |
+| ---- | -------------- | ------ | ---------------- |
+| 0    | `p-0`, `m-0`   | 0px    | Reset spacing    |
+| 1    | `p-1`, `m-1`   | 4px    | Tight spacing    |
+| 2    | `p-2`, `m-2`   | 8px    | Small spacing    |
+| 3    | `p-3`, `m-3`   | 12px   | Medium-small     |
+| 4    | `p-4`, `m-4`   | 16px   | Medium (default) |
+| 6    | `p-6`, `m-6`   | 24px   | Large spacing    |
+| 8    | `p-8`, `m-8`   | 32px   | Extra large      |
+| 12   | `p-12`, `m-12` | 48px   | Section spacing  |
+| 16   | `p-16`, `m-16` | 64px   | Page spacing     |
 
 ### Spacing Guidelines
 
@@ -145,6 +157,7 @@ Our spacing system uses an 8px base unit for consistency:
 - **Gap**: Use with flexbox/grid for consistent spacing between children
 
 **Example:**
+
 ```vue
 <div class="p-6 mb-4">
   <div class="flex gap-4">
@@ -162,13 +175,13 @@ Our spacing system uses an 8px base unit for consistency:
 
 Tailwind's default responsive breakpoints:
 
-| Breakpoint | Min Width | Class Prefix | Use Case |
-|------------|-----------|--------------|----------|
-| sm | 640px | `sm:` | Small tablets |
-| md | 768px | `md:` | Tablets |
-| lg | 1024px | `lg:` | Laptops |
-| xl | 1280px | `xl:` | Desktops |
-| 2xl | 1536px | `2xl:` | Large desktops |
+| Breakpoint | Min Width | Class Prefix | Use Case       |
+| ---------- | --------- | ------------ | -------------- |
+| sm         | 640px     | `sm:`        | Small tablets  |
+| md         | 768px     | `md:`        | Tablets        |
+| lg         | 1024px    | `lg:`        | Laptops        |
+| xl         | 1280px    | `xl:`        | Desktops       |
+| 2xl        | 1536px    | `2xl:`       | Large desktops |
 
 ### Mobile-First Approach
 
@@ -235,6 +248,7 @@ Pre-built button classes are available:
 ```
 
 **Button Sizes:**
+
 - Small: `px-4 py-2 text-sm`
 - Medium (default): `px-6 py-3 text-base`
 - Large: `px-8 py-4 text-lg`
@@ -258,13 +272,9 @@ Pre-built button classes are available:
 ### Inputs
 
 ```vue
-<input 
-  type="text" 
-  class="input" 
-  placeholder="Enter text..."
-/>
+<input type="text" class="input" placeholder="Enter text..." />
 
-<textarea 
+<textarea
   class="input min-h-[120px] resize-y"
   placeholder="Enter message..."
 ></textarea>
@@ -277,6 +287,7 @@ Pre-built button classes are available:
 ### Focus States
 
 All interactive elements have visible focus states:
+
 - Ring: 2px primary color ring
 - Offset: 2px ring offset for better visibility
 
@@ -311,6 +322,7 @@ Use logical properties for RTL (Right-to-Left) language support:
 - `text-start`/`text-end` instead of `text-left`/`text-right`
 
 **Example:**
+
 ```vue
 <div class="ps-4 text-start">
   <!-- padding-inline-start, text-align: start -->
@@ -354,6 +366,7 @@ Use logical properties for RTL (Right-to-Left) language support:
 ### Common Patterns
 
 **Centered Container:**
+
 ```vue
 <div class="container-custom">
   <!-- Content -->
@@ -361,6 +374,7 @@ Use logical properties for RTL (Right-to-Left) language support:
 ```
 
 **Flexbox Layout:**
+
 ```vue
 <div class="flex items-center justify-between gap-4">
   <!-- Items -->
@@ -368,6 +382,7 @@ Use logical properties for RTL (Right-to-Left) language support:
 ```
 
 **Responsive Grid:**
+
 ```vue
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   <!-- Items -->
@@ -375,6 +390,7 @@ Use logical properties for RTL (Right-to-Left) language support:
 ```
 
 **Card with Header:**
+
 ```vue
 <div class="card">
   <div class="flex items-center justify-between mb-4">

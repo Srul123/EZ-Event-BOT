@@ -4,18 +4,28 @@ import type {
   Interpretation,
   HeadcountExtraction,
   Action,
-} from './types.js';
+} from "./types.js";
 
 export interface NluPort {
-  interpretMessage(text: string, context: GuestContext): Promise<Interpretation>;
-  interpretHeadcountOnly(text: string, language: 'he' | 'en'): Promise<HeadcountExtraction>;
+  interpretMessage(
+    text: string,
+    context: GuestContext,
+  ): Promise<Interpretation>;
+  interpretHeadcountOnly(
+    text: string,
+    language: "he" | "en",
+  ): Promise<HeadcountExtraction>;
 }
 
 export interface NlgPort {
-  composeReply(action: Action, interpretation: Interpretation, context: GuestContext): Promise<string>;
+  composeReply(
+    action: Action,
+    interpretation: Interpretation,
+    context: GuestContext,
+  ): Promise<string>;
   buildClarificationQuestion(params: {
     reason: AmbiguityReason | null;
-    language: 'he' | 'en';
+    language: "he" | "en";
     guestName: string;
     attemptNumber: number;
   }): string;

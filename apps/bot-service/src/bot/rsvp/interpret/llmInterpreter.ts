@@ -1,33 +1,36 @@
-import { z } from 'zod';
-import { callLLM } from '../../../infra/llm/llmClient.js';
-import { logger } from '../../../logger/logger.js';
-import { buildInterpretPrompt, type InterpretPromptParams } from './prompts/interpret.prompt.js';
-import type { Interpretation } from '../types.js';
-import { env } from '../../../config/env.js';
+import { z } from "zod";
+import { callLLM } from "../../../infra/llm/llmClient.js";
+import { logger } from "../../../logger/logger.js";
+import {
+  buildInterpretPrompt,
+  type InterpretPromptParams,
+} from "./prompts/interpret.prompt.js";
+import type { Interpretation } from "../types.js";
+import { env } from "../../../config/env.js";
 
 const DEFAULT_MAX_TOKENS_INTERPRET = 200;
 
-const headcountExtractionSchema = z.discriminatedUnion('kind', [
+const headcountExtractionSchema = z.discriminatedUnion("kind", [
   z.object({
-    kind: z.literal('exact'),
+    kind: z.literal("exact"),
     headcount: z.number(),
   }),
   z.object({
-    kind: z.literal('ambiguous'),
-    reason: z.enum(['FAMILY_TERM', 'RELATIONAL', 'RANGE_OR_APPROX', 'UNKNOWN']),
+    kind: z.literal("ambiguous"),
+    reason: z.enum(["FAMILY_TERM", "RELATIONAL", "RANGE_OR_APPROX", "UNKNOWN"]),
   }),
   z.object({
-    kind: z.literal('none'),
+    kind: z.literal("none"),
   }),
 ]);
 
 const interpretationSchema = z.object({
-  rsvp: z.enum(['YES', 'NO', 'MAYBE', 'UNKNOWN']),
+  rsvp: z.enum(["YES", "NO", "MAYBE", "UNKNOWN"]),
   headcount: z.number().nullable(),
   headcountExtraction: headcountExtractionSchema,
   confidence: z.number().min(0).max(1),
   needsHeadcount: z.boolean(),
-  language: z.enum(['he', 'en']).optional(),
+  language: z.enum(["he", "en"]).optional(),
 });
 
 function extractJsonFromText(text: string): string | null {
@@ -46,7 +49,7 @@ function extractJsonFromText(text: string): string | null {
 }
 
 export async function interpretWithLLM(
-  params: InterpretPromptParams
+  params: InterpretPromptParams,
 ): Promise<Interpretation> {
   try {
     const { system, prompt } = buildInterpretPrompt(params);
@@ -59,11 +62,11 @@ export async function interpretWithLLM(
 
     const jsonText = extractJsonFromText(response);
     if (!jsonText) {
-      logger.warn({ response }, 'Failed to extract JSON from LLM response');
+      logger.warn({ response }, "Failed to extract JSON from LLM response");
       return {
-        rsvp: 'UNKNOWN',
+        rsvp: "UNKNOWN",
         headcount: null,
-        headcountExtraction: { kind: 'none' },
+        headcountExtraction: { kind: "none" },
         confidence: 0.2,
         needsHeadcount: false,
       };
@@ -84,11 +87,11 @@ export async function interpretWithLLM(
       language: validated.language,
     };
   } catch (error) {
-    logger.error({ error, params }, 'Error in LLM interpretation');
+    logger.error({ error, params }, "Error in LLM interpretation");
     return {
-      rsvp: 'UNKNOWN',
+      rsvp: "UNKNOWN",
       headcount: null,
-      headcountExtraction: { kind: 'none' },
+      headcountExtraction: { kind: "none" },
       confidence: 0.2,
       needsHeadcount: false,
     };

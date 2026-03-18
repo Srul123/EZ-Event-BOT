@@ -69,61 +69,61 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 
-const { locale, t } = useI18n()
+const { locale, t } = useI18n();
 
-const isOpen = ref(false)
-const dropdownRef = ref(null)
+const isOpen = ref(false);
+const dropdownRef = ref(null);
 
 const languages = [
-  { code: 'he', name: 'עברית', flag: '🇮🇱' },
-  { code: 'en', name: 'English', flag: '🇺🇸' }
-]
+  { code: "he", name: "עברית", flag: "🇮🇱" },
+  { code: "en", name: "English", flag: "🇺🇸" },
+];
 
 const currentLanguageName = computed(() => {
-  const lang = languages.find(l => l.code === locale.value)
-  return lang ? lang.name : 'Language'
-})
+  const lang = languages.find((l) => l.code === locale.value);
+  return lang ? lang.name : "Language";
+});
 
 function toggleDropdown() {
-  isOpen.value = !isOpen.value
+  isOpen.value = !isOpen.value;
 }
 
 function closeDropdown() {
-  isOpen.value = false
+  isOpen.value = false;
 }
 
 function switchLanguage(langCode) {
-  locale.value = langCode
-  closeDropdown()
-  
+  locale.value = langCode;
+  closeDropdown();
+
   // Update document direction
-  document.documentElement.dir = langCode === 'he' ? 'rtl' : 'ltr'
-  document.documentElement.lang = langCode
-  
+  document.documentElement.dir = langCode === "he" ? "rtl" : "ltr";
+  document.documentElement.lang = langCode;
+
   // Save preference to localStorage
-  localStorage.setItem('preferred-language', langCode)
+  localStorage.setItem("preferred-language", langCode);
 }
 
 function handleClickOutside(event) {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
-    closeDropdown()
+    closeDropdown();
   }
 }
 
 onMounted(() => {
   // Set initial direction
-  document.documentElement.dir = locale.value === 'he' ? 'rtl' : 'ltr'
-  document.documentElement.lang = locale.value
-  
+  document.documentElement.dir = locale.value === "he" ? "rtl" : "ltr";
+  document.documentElement.lang = locale.value;
+
   // Add click outside listener
-  document.addEventListener('click', handleClickOutside)
-})
+  document.addEventListener("click", handleClickOutside);
+});
 
 onUnmounted(() => {
   // Remove click outside listener
-  document.removeEventListener('click', handleClickOutside)
-})
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>

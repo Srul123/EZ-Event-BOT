@@ -13,29 +13,29 @@ The admin web dashboard is a Vue 3 single-page application for event organizers 
 
 ## 2. Technology Stack
 
-| Technology | Version | Purpose |
-|---|---|---|
-| Vue 3 | Composition API | UI framework |
-| Vite | latest | Build tool and dev server |
-| Tailwind CSS 4 | 4.x | Styling with custom design tokens (see `DESIGN_TOKENS.md`) |
-| Pinia | latest | State management |
-| Vue Router | 4.x | Client-side routing |
-| vue-i18n | latest | Hebrew/English internationalization |
-| Axios | latest | HTTP client with request/response interceptors |
-| PapaParse | latest | CSV parsing for guest import |
-| date-fns | latest | Date formatting |
+| Technology     | Version         | Purpose                                                    |
+| -------------- | --------------- | ---------------------------------------------------------- |
+| Vue 3          | Composition API | UI framework                                               |
+| Vite           | latest          | Build tool and dev server                                  |
+| Tailwind CSS 4 | 4.x             | Styling with custom design tokens (see `DESIGN_TOKENS.md`) |
+| Pinia          | latest          | State management                                           |
+| Vue Router     | 4.x             | Client-side routing                                        |
+| vue-i18n       | latest          | Hebrew/English internationalization                        |
+| Axios          | latest          | HTTP client with request/response interceptors             |
+| PapaParse      | latest          | CSV parsing for guest import                               |
+| date-fns       | latest          | Date formatting                                            |
 
 ---
 
 ## 3. Application Routes
 
-| Route | View | Description |
-|---|---|---|
-| `/` | `HomeView` | Welcome page with call-to-action buttons |
-| `/campaigns` | `CampaignsListView` | Campaign list with search and status filtering |
-| `/campaigns/create` | `CampaignCreateView` | Multi-step campaign creation wizard with CSV guest import |
-| `/campaigns/:id` | `CampaignDetailView` | Campaign statistics, guest table, link generation |
-| `/campaigns/:id/dispatch` | `CampaignDispatchView` | Link generation and distribution interface |
+| Route                     | View                   | Description                                               |
+| ------------------------- | ---------------------- | --------------------------------------------------------- |
+| `/`                       | `HomeView`             | Welcome page with call-to-action buttons                  |
+| `/campaigns`              | `CampaignsListView`    | Campaign list with search and status filtering            |
+| `/campaigns/create`       | `CampaignCreateView`   | Multi-step campaign creation wizard with CSV guest import |
+| `/campaigns/:id`          | `CampaignDetailView`   | Campaign statistics, guest table, link generation         |
+| `/campaigns/:id/dispatch` | `CampaignDispatchView` | Link generation and distribution interface                |
 
 ---
 
@@ -52,15 +52,15 @@ The admin web dashboard is a Vue 3 single-page application for event organizers 
 
 Displayed for each campaign in `CampaignDetailView`:
 
-| Metric | Description |
-|---|---|
-| Total guests | Total count of guests in the campaign |
-| YES | Number of confirmed attendees |
-| NO | Number of declined guests |
-| MAYBE | Number of uncertain guests |
-| NO_RESPONSE | Guests who have not yet responded |
-| Response rate | Percentage of guests who responded (YES + NO + MAYBE) / total |
-| Total attendees | Sum of `headcount` values for all YES guests |
+| Metric          | Description                                                   |
+| --------------- | ------------------------------------------------------------- |
+| Total guests    | Total count of guests in the campaign                         |
+| YES             | Number of confirmed attendees                                 |
+| NO              | Number of declined guests                                     |
+| MAYBE           | Number of uncertain guests                                    |
+| NO_RESPONSE     | Guests who have not yet responded                             |
+| Response rate   | Percentage of guests who responded (YES + NO + MAYBE) / total |
+| Total attendees | Sum of `headcount` values for all YES guests                  |
 
 The response rate is displayed as a visual progress bar.
 
@@ -68,15 +68,15 @@ The response rate is displayed as a visual progress bar.
 
 The guest table in `CampaignDetailView` provides:
 
-| Feature | Description |
-|---|---|
+| Feature            | Description                                                            |
+| ------------------ | ---------------------------------------------------------------------- |
 | RSVP status badges | Color-coded: green (YES), red (NO), yellow (MAYBE), gray (NO_RESPONSE) |
-| Headcount display | Shown for YES guests with a confirmed headcount |
-| Name/phone columns | Guest identity information |
-| Last response time | Formatted timestamp from `lastResponseAt` |
-| Search | Filter guests by name or phone number |
-| Status filter | Show only guests with a specific RSVP status |
-| Sorting | Sortable columns |
+| Headcount display  | Shown for YES guests with a confirmed headcount                        |
+| Name/phone columns | Guest identity information                                             |
+| Last response time | Formatted timestamp from `lastResponseAt`                              |
+| Search             | Filter guests by name or phone number                                  |
+| Status filter      | Show only guests with a specific RSVP status                           |
+| Sorting            | Sortable columns                                                       |
 
 ### 4.4 Guest Import
 
@@ -172,14 +172,15 @@ The admin web communicates with the bot-service backend via Axios. In developmen
 
 **API operations used:**
 
-| Operation | Endpoint | Used In |
-|---|---|---|
-| List campaigns | `GET /api/campaigns` | `CampaignsListView` |
-| Create campaign | `POST /api/campaigns` | `CampaignCreateView` |
-| Get campaign details | `GET /api/campaigns/:id` | `CampaignDetailView` |
+| Operation               | Endpoint                                          | Used In                                 |
+| ----------------------- | ------------------------------------------------- | --------------------------------------- |
+| List campaigns          | `GET /api/campaigns`                              | `CampaignsListView`                     |
+| Create campaign         | `POST /api/campaigns`                             | `CampaignCreateView`                    |
+| Get campaign details    | `GET /api/campaigns/:id`                          | `CampaignDetailView`                    |
 | Generate Telegram links | `POST /api/campaigns/:id/generate-telegram-links` | `CampaignDispatchView`, `LinkGenerator` |
 
 **Proxy configuration** (`vite.config.js`):
+
 ```javascript
 server: {
   proxy: {

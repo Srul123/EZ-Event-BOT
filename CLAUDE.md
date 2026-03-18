@@ -40,6 +40,7 @@ decideAction.ts       MUST be:               pure synchronous function (no async
 ```
 
 **Violation check:**
+
 ```bash
 grep -r "new Date()" apps/bot-service/src/domain/rsvp-graph/
 grep -r "from '.*bot/" apps/bot-service/src/domain/rsvp-graph/
@@ -49,17 +50,17 @@ grep -r "from '.*bot/" apps/bot-service/src/domain/rsvp-graph/
 
 ## Key Files
 
-| Path | Role |
-|---|---|
-| `apps/bot-service/src/domain/rsvp-graph/nodes/decideAction.ts` | ALL business logic — pure sync |
-| `apps/bot-service/src/domain/rsvp-graph/graph.ts` | LangGraph state graph (compiled once at startup) |
-| `apps/bot-service/src/domain/rsvp-graph/ports.ts` | Port interfaces (NluPort, NlgPort, ClockPort, LoggerPort) |
-| `apps/bot-service/src/bot/adapters/nluAdapter.ts` | NluPort implementation |
-| `apps/bot-service/src/bot/rsvp/interpret/rules.ts` | Hebrew NLP (~630 lines) |
-| `apps/bot-service/src/bot/handlers/guestMessage.handler.ts` | Free-text: calls runGraph → applies EffectsPatch → replies |
-| `apps/bot-service/src/domain/rsvp-graph/nodes/decideAction.test.ts` | 19 unit tests |
-| `apps/bot-service/src/bot/rsvp/interpret/rules.test.ts` | ~20 unit tests |
-| `docs/llm-context.md` | Compact full-project reference |
+| Path                                                                | Role                                                       |
+| ------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `apps/bot-service/src/domain/rsvp-graph/nodes/decideAction.ts`      | ALL business logic — pure sync                             |
+| `apps/bot-service/src/domain/rsvp-graph/graph.ts`                   | LangGraph state graph (compiled once at startup)           |
+| `apps/bot-service/src/domain/rsvp-graph/ports.ts`                   | Port interfaces (NluPort, NlgPort, ClockPort, LoggerPort)  |
+| `apps/bot-service/src/bot/adapters/nluAdapter.ts`                   | NluPort implementation                                     |
+| `apps/bot-service/src/bot/rsvp/interpret/rules.ts`                  | Hebrew NLP (~630 lines)                                    |
+| `apps/bot-service/src/bot/handlers/guestMessage.handler.ts`         | Free-text: calls runGraph → applies EffectsPatch → replies |
+| `apps/bot-service/src/domain/rsvp-graph/nodes/decideAction.test.ts` | 19 unit tests                                              |
+| `apps/bot-service/src/bot/rsvp/interpret/rules.test.ts`             | ~20 unit tests                                             |
+| `docs/llm-context.md`                                               | Compact full-project reference                             |
 
 ---
 
@@ -67,29 +68,36 @@ grep -r "from '.*bot/" apps/bot-service/src/domain/rsvp-graph/
 
 ```typescript
 // DB state
-type RsvpStatus = 'NO_RESPONSE' | 'YES' | 'NO' | 'MAYBE';
-type ConversationState = 'DEFAULT' | 'YES_AWAITING_HEADCOUNT';
+type RsvpStatus = "NO_RESPONSE" | "YES" | "NO" | "MAYBE";
+type ConversationState = "DEFAULT" | "YES_AWAITING_HEADCOUNT";
 
 // Headcount — discriminated union, NOT number|null
 type HeadcountExtraction =
-  | { kind: 'exact'; headcount: number; fuzzy?: boolean }
-  | { kind: 'ambiguous'; reason: AmbiguityReason }
-  | { kind: 'none' };
+  | { kind: "exact"; headcount: number; fuzzy?: boolean }
+  | { kind: "ambiguous"; reason: AmbiguityReason }
+  | { kind: "none" };
 
 // Action — 6 variants
 type Action =
-  | { type: 'SET_RSVP'; rsvpStatus: RsvpStatus; headcount: number | null }
-  | { type: 'ASK_HEADCOUNT' }
-  | { type: 'CLARIFY_HEADCOUNT'; reason: AmbiguityReason | null; attemptNumber: number }
-  | { type: 'CLARIFY_INTENT' }
-  | { type: 'ACK_NO_CHANGE' }
-  | { type: 'STOP_WAITING_FOR_HEADCOUNT' };
+  | { type: "SET_RSVP"; rsvpStatus: RsvpStatus; headcount: number | null }
+  | { type: "ASK_HEADCOUNT" }
+  | {
+      type: "CLARIFY_HEADCOUNT";
+      reason: AmbiguityReason | null;
+      attemptNumber: number;
+    }
+  | { type: "CLARIFY_INTENT" }
+  | { type: "ACK_NO_CHANGE" }
+  | { type: "STOP_WAITING_FOR_HEADCOUNT" };
 
 // Sparse DB patch — only present keys written to MongoDB
 interface EffectsPatch {
-  rsvpStatus?: RsvpStatus; headcount?: number | null;
-  conversationState?: ConversationState; lastResponseAt: Date;
-  rsvpUpdatedAt?: Date; clarificationAttempts?: number;
+  rsvpStatus?: RsvpStatus;
+  headcount?: number | null;
+  conversationState?: ConversationState;
+  lastResponseAt: Date;
+  rsvpUpdatedAt?: Date;
+  clarificationAttempts?: number;
   lastClarificationReason?: AmbiguityReason;
 }
 ```

@@ -1,13 +1,13 @@
-import { env } from '../../../config/env.js';
-import { generateLLMResponse } from './llmResponder.js';
-import * as templates from './templates.js';
-import { buildHeadcountClarificationQuestion } from '../clarificationQuestions.js';
-import type { Action, Interpretation, FlowContext } from '../types.js';
+import { env } from "../../../config/env.js";
+import { generateLLMResponse } from "./llmResponder.js";
+import * as templates from "./templates.js";
+import { buildHeadcountClarificationQuestion } from "../clarificationQuestions.js";
+import type { Action, Interpretation, FlowContext } from "../types.js";
 
 export async function composeReply(
   action: Action,
   interpretation: Interpretation,
-  flowContext: FlowContext
+  flowContext: FlowContext,
 ): Promise<string> {
   // If LLM responses are disabled, always use templates
   if (!env.RSVP_USE_LLM_RESPONSES) {
@@ -23,12 +23,16 @@ export async function composeReply(
   }
 }
 
-function getTemplateReply(action: Action, interpretation: Interpretation, flowContext: FlowContext): string {
+function getTemplateReply(
+  action: Action,
+  interpretation: Interpretation,
+  flowContext: FlowContext,
+): string {
   switch (action.type) {
-    case 'ASK_HEADCOUNT': {
+    case "ASK_HEADCOUNT": {
       // Use clarification question helper for initial ask
       const reason =
-        interpretation.headcountExtraction.kind === 'ambiguous'
+        interpretation.headcountExtraction.kind === "ambiguous"
           ? interpretation.headcountExtraction.reason
           : null;
 
@@ -40,25 +44,29 @@ function getTemplateReply(action: Action, interpretation: Interpretation, flowCo
       });
     }
 
-    case 'SET_RSVP': {
+    case "SET_RSVP": {
       const rsvpStatus = action.updates.rsvpStatus;
-      if (rsvpStatus === 'YES' && action.updates.headcount !== undefined && action.updates.headcount !== null) {
+      if (
+        rsvpStatus === "YES" &&
+        action.updates.headcount !== undefined &&
+        action.updates.headcount !== null
+      ) {
         return templates.replyYesConfirmed({
           guestName: flowContext.guestName,
           headcount: action.updates.headcount,
         });
       }
-      if (rsvpStatus === 'NO') {
+      if (rsvpStatus === "NO") {
         return templates.replyNo({ guestName: flowContext.guestName });
       }
-      if (rsvpStatus === 'MAYBE') {
+      if (rsvpStatus === "MAYBE") {
         return templates.replyMaybe({ guestName: flowContext.guestName });
       }
       // Fallback
       return templates.replyClarify({ guestName: flowContext.guestName });
     }
 
-    case 'ACK': {
+    case "ACK": {
       return templates.replyAlreadyRecorded({
         guestName: flowContext.guestName,
         rsvpStatus: flowContext.currentRsvpStatus,
@@ -66,19 +74,20 @@ function getTemplateReply(action: Action, interpretation: Interpretation, flowCo
       });
     }
 
-    case 'CLARIFY': {
+    case "CLARIFY": {
       // If in YES_AWAITING_HEADCOUNT state, use clarification question helper
       if (
-        flowContext.conversationState === 'YES_AWAITING_HEADCOUNT' ||
-        action.nextState === 'YES_AWAITING_HEADCOUNT'
+        flowContext.conversationState === "YES_AWAITING_HEADCOUNT" ||
+        action.nextState === "YES_AWAITING_HEADCOUNT"
       ) {
         // Use clarification question helper with attempt tracking
-        const attemptNumber = (flowContext.headcountClarificationAttempts ?? 0) + 1;
+        const attemptNumber =
+          (flowContext.headcountClarificationAttempts ?? 0) + 1;
         const reason = flowContext.lastHeadcountClarificationReason;
-        
+
         // If interpretation has headcountExtraction, use its reason
         const extractionReason =
-          interpretation.headcountExtraction.kind === 'ambiguous'
+          interpretation.headcountExtraction.kind === "ambiguous"
             ? interpretation.headcountExtraction.reason
             : null;
 

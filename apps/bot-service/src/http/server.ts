@@ -1,23 +1,23 @@
-import express from 'express';
-import { createServer, type Server } from 'http';
-import { env } from '../config/env.js';
-import { logger } from '../logger/logger.js';
-import campaignRoutes from './routes/campaignRoutes.js';
+import express from "express";
+import { createServer, type Server } from "http";
+import { env } from "../config/env.js";
+import { logger } from "../logger/logger.js";
+import campaignRoutes from "./routes/campaignRoutes.js";
 
 const app = express();
 
 app.use(express.json());
 
-app.get('/health', (_req, res) => {
+app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.use('/api', campaignRoutes);
+app.use("/api", campaignRoutes);
 
 export function startHttpServer(): Server {
   const server = createServer(app);
   server.listen(env.PORT, () => {
-    logger.info({ port: env.PORT }, 'HTTP server started');
+    logger.info({ port: env.PORT }, "HTTP server started");
   });
   return server;
 }
@@ -26,10 +26,10 @@ export function stopHttpServer(server: Server): Promise<void> {
   return new Promise((resolve, reject) => {
     server.close((err) => {
       if (err) {
-        logger.error({ error: err }, 'Error closing HTTP server');
+        logger.error({ error: err }, "Error closing HTTP server");
         reject(err);
       } else {
-        logger.info('HTTP server stopped');
+        logger.info("HTTP server stopped");
         resolve();
       }
     });

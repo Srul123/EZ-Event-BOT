@@ -1,12 +1,12 @@
-import { env } from '../../../config/env.js';
-import { interpretWithRules } from './rules.js';
-import { interpretWithLLM } from './llmInterpreter.js';
-import type { Interpretation } from '../types.js';
-import type { FlowContext } from '../types.js';
+import { env } from "../../../config/env.js";
+import { interpretWithRules } from "./rules.js";
+import { interpretWithLLM } from "./llmInterpreter.js";
+import type { Interpretation } from "../types.js";
+import type { FlowContext } from "../types.js";
 
 export async function interpretMessage(
   text: string,
-  flowContext: FlowContext
+  flowContext: FlowContext,
 ): Promise<Interpretation> {
   // Apply rules first
   const rulesResult = interpretWithRules(text);

@@ -6,5 +6,5 @@
 </template>
 
 <script setup>
-import NotificationContainer from './components/common/NotificationContainer.vue'
+import NotificationContainer from "./components/common/NotificationContainer.vue";
 </script>

@@ -2,7 +2,7 @@ import type {
   RsvpStatus,
   ConversationState,
   AmbiguityReason,
-} from '../../domain/rsvp/types.js';
+} from "../../domain/rsvp/types.js";
 
 export type {
   RsvpStatus,
@@ -10,26 +10,30 @@ export type {
   AmbiguityReason,
   HeadcountExtraction,
   Interpretation,
-} from '../../domain/rsvp/types.js';
+} from "../../domain/rsvp/types.js";
 
 export type Action =
   | {
-      type: 'ASK_HEADCOUNT';
-      nextState: 'YES_AWAITING_HEADCOUNT';
-      updates: Partial<{ rsvpStatus: 'YES'; lastResponseAt: Date }>;
+      type: "ASK_HEADCOUNT";
+      nextState: "YES_AWAITING_HEADCOUNT";
+      updates: Partial<{ rsvpStatus: "YES"; lastResponseAt: Date }>;
     }
   | {
-      type: 'SET_RSVP';
-      nextState: 'DEFAULT';
-      updates: Partial<{ rsvpStatus: RsvpStatus; headcount: number | null; lastResponseAt: Date }>;
+      type: "SET_RSVP";
+      nextState: "DEFAULT";
+      updates: Partial<{
+        rsvpStatus: RsvpStatus;
+        headcount: number | null;
+        lastResponseAt: Date;
+      }>;
     }
   | {
-      type: 'ACK';
-      nextState: 'DEFAULT';
+      type: "ACK";
+      nextState: "DEFAULT";
       updates: Partial<{ lastResponseAt: Date }>;
     }
   | {
-      type: 'CLARIFY';
+      type: "CLARIFY";
       nextState: ConversationState;
       updates: Partial<{ lastResponseAt: Date }>;
     };
@@ -38,7 +42,7 @@ export interface FlowContext {
   guestName: string;
   eventTitle?: string;
   eventDate?: string;
-  locale: 'he' | 'en';
+  locale: "he" | "en";
   currentRsvpStatus: RsvpStatus;
   currentHeadcount?: number | null;
   conversationState: ConversationState;

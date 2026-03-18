@@ -1,26 +1,26 @@
-import { GuestModel, type GuestDocument } from './guest.model.js';
-import type { RsvpStatus } from './types.js';
-import { logger } from '../../logger/logger.js';
+import { GuestModel, type GuestDocument } from "./guest.model.js";
+import type { RsvpStatus } from "./types.js";
+import { logger } from "../../logger/logger.js";
 
 export interface UpdateGuestRsvpParams {
   rsvpStatus?: RsvpStatus;
   headcount?: number | null;
   lastResponseAt?: Date;
-  conversationState?: 'DEFAULT' | 'YES_AWAITING_HEADCOUNT';
+  conversationState?: "DEFAULT" | "YES_AWAITING_HEADCOUNT";
 }
 
 export async function updateGuestRsvp(
   guestId: string,
-  updates: UpdateGuestRsvpParams
+  updates: UpdateGuestRsvpParams,
 ): Promise<GuestDocument> {
   const guest = await GuestModel.findById(guestId);
   if (!guest) {
-    throw new Error('Guest not found');
+    throw new Error("Guest not found");
   }
 
   // Validate rsvpStatus if provided
   if (updates.rsvpStatus !== undefined) {
-    const validStatuses: RsvpStatus[] = ['NO_RESPONSE', 'YES', 'NO', 'MAYBE'];
+    const validStatuses: RsvpStatus[] = ["NO_RESPONSE", "YES", "NO", "MAYBE"];
     if (!validStatuses.includes(updates.rsvpStatus)) {
       throw new Error(`Invalid rsvpStatus: ${updates.rsvpStatus}`);
     }
@@ -39,7 +39,7 @@ export async function updateGuestRsvp(
   if (updates.headcount !== undefined) {
     if (updates.headcount === null) {
       updateData.headcount = null;
-    } else if (typeof updates.headcount === 'number') {
+    } else if (typeof updates.headcount === "number") {
       updateData.headcount = updates.headcount;
     }
   }
@@ -57,11 +57,14 @@ export async function updateGuestRsvp(
   // Update rsvpUpdatedAt ONLY when:
   // - rsvpStatus changes, OR
   // - headcount changes (when rsvpStatus is YES)
-  const rsvpStatusChanged = updates.rsvpStatus !== undefined && updates.rsvpStatus !== previousRsvpStatus;
+  const rsvpStatusChanged =
+    updates.rsvpStatus !== undefined &&
+    updates.rsvpStatus !== previousRsvpStatus;
   const headcountChanged =
     updates.headcount !== undefined &&
     updates.headcount !== previousHeadcount &&
-    (updates.rsvpStatus === 'YES' || (updates.rsvpStatus === undefined && previousRsvpStatus === 'YES'));
+    (updates.rsvpStatus === "YES" ||
+      (updates.rsvpStatus === undefined && previousRsvpStatus === "YES"));
 
   if (rsvpStatusChanged || headcountChanged) {
     updateData.rsvpUpdatedAt = new Date();
@@ -78,7 +81,7 @@ export async function updateGuestRsvp(
       previousRsvpStatus,
       newRsvpStatus: guest.rsvpStatus,
     },
-    'Guest RSVP updated'
+    "Guest RSVP updated",
   );
 
   return guest;

@@ -55,12 +55,16 @@ Event Organizer                    Guests (Telegram)
 ## Key Technical Contributions
 
 ### 1. Hybrid NLP Pipeline for Hebrew
+
 A two-stage interpretation pipeline processes guest messages:
+
 - **Rule-based interpreter** (`~630 lines`): Hebrew text normalization (niqqud stripping, morphological prefix stripping), keyword matching (YES/NO/MAYBE), a 14-step headcount extraction priority chain, and Levenshtein fuzzy matching with context-word gating.
 - **LLM fallback** (Anthropic Claude 3 Haiku): Invoked when rule-based confidence falls below the configurable threshold (default: 0.85). Returns structured JSON validated via Zod with regex extraction fallback.
 
 ### 2. LangGraph Stateful Agent
+
 The RSVP conversation is orchestrated by a compiled LangGraph state graph with 5 nodes and conditional routing:
+
 ```
 START → routeByState
   DEFAULT               → interpretFull → decideAction → composeReply → buildEffects → END
@@ -68,30 +72,33 @@ START → routeByState
                               ├─ exact & !fuzzy → decideAction → ...
                               └─ else           → interpretFull → ...
 ```
+
 All business logic is isolated in `decideAction` — a **pure synchronous function** with no side effects, independently unit-tested.
 
 ### 3. Hexagonal Architecture (Ports & Adapters)
+
 The domain layer (`domain/rsvp-graph/`) is completely isolated from all infrastructure concerns. It depends only on port interfaces (`NluPort`, `NlgPort`, `ClockPort`, `LoggerPort`) and has **zero imports** from Telegraf, Mongoose, or any infrastructure module.
 
 ### 4. Sparse EffectsPatch Pattern
+
 Database writes use a sparse patch object — only fields that are explicitly set are written to MongoDB, preserving semantic correctness of timestamps such as `rsvpUpdatedAt` (updated only on actual RSVP change) vs. `lastResponseAt` (updated on every message).
 
 ---
 
 ## Technology Stack
 
-| Layer | Technology |
-|---|---|
-| Backend runtime | Node.js 22+, TypeScript 5.3+ strict ESM |
-| Bot framework | Telegraf 4.x |
-| Agent / conversation graph | LangGraph (`@langchain/langgraph`) |
-| HTTP API | Express.js |
-| Database | MongoDB 7 via Mongoose ODM |
-| LLM | Anthropic Claude 3 Haiku (`claude-3-haiku-20240307`) |
-| Input validation | Zod |
-| Logging | Pino (structured JSON) |
-| Frontend | Vue 3, Vite, Tailwind CSS 4, Pinia, Vue Router, vue-i18n |
-| Tests | Node.js built-in `node:test` |
+| Layer                      | Technology                                               |
+| -------------------------- | -------------------------------------------------------- |
+| Backend runtime            | Node.js 22+, TypeScript 5.3+ strict ESM                  |
+| Bot framework              | Telegraf 4.x                                             |
+| Agent / conversation graph | LangGraph (`@langchain/langgraph`)                       |
+| HTTP API                   | Express.js                                               |
+| Database                   | MongoDB 7 via Mongoose ODM                               |
+| LLM                        | Anthropic Claude 3 Haiku (`claude-3-haiku-20240307`)     |
+| Input validation           | Zod                                                      |
+| Logging                    | Pino (structured JSON)                                   |
+| Frontend                   | Vue 3, Vite, Tailwind CSS 4, Pinia, Vue Router, vue-i18n |
+| Tests                      | Node.js built-in `node:test`                             |
 
 ---
 
@@ -138,6 +145,7 @@ EZ-Event-BOT/
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js >= 22.0.0
 - MongoDB (local or Atlas)
 - Telegram bot token ([BotFather](https://t.me/BotFather))
@@ -173,18 +181,18 @@ See [docs/08-setup-installation.md](docs/08-setup-installation.md) for full setu
 
 ## Documentation
 
-| Document | Description |
-|---|---|
-| [System Architecture](docs/01-system-architecture.md) | Layered design, component inventory, data flow |
-| [Database Models](docs/02-database-models.md) | MongoDB schema, ERD, indexes, query patterns |
-| [RSVP Lifecycle](docs/03-rsvp-lifecycle.md) | Guest state machine, business rules, EffectsPatch |
-| [NLU Pipeline](docs/04-nlu-pipeline.md) | Hebrew NLP, headcount extraction, LLM integration |
-| [LangGraph Agent](docs/05-langgraph-agent.md) | Graph topology, nodes, ports, design principles |
-| [API Reference](docs/06-api-reference.md) | REST endpoints, request/response schemas |
-| [Admin Dashboard](docs/07-admin-web.md) | Vue 3 frontend, features, component structure |
-| [Setup & Installation](docs/08-setup-installation.md) | Prerequisites, configuration, running locally |
-| [Development Status](docs/09-development-status.md) | Implemented features, tests, known limitations |
-| [Demo Guide](docs/10-demo-guide.md) | Step-by-step demo flow, academic discussion points |
+| Document                                              | Description                                        |
+| ----------------------------------------------------- | -------------------------------------------------- |
+| [System Architecture](docs/01-system-architecture.md) | Layered design, component inventory, data flow     |
+| [Database Models](docs/02-database-models.md)         | MongoDB schema, ERD, indexes, query patterns       |
+| [RSVP Lifecycle](docs/03-rsvp-lifecycle.md)           | Guest state machine, business rules, EffectsPatch  |
+| [NLU Pipeline](docs/04-nlu-pipeline.md)               | Hebrew NLP, headcount extraction, LLM integration  |
+| [LangGraph Agent](docs/05-langgraph-agent.md)         | Graph topology, nodes, ports, design principles    |
+| [API Reference](docs/06-api-reference.md)             | REST endpoints, request/response schemas           |
+| [Admin Dashboard](docs/07-admin-web.md)               | Vue 3 frontend, features, component structure      |
+| [Setup & Installation](docs/08-setup-installation.md) | Prerequisites, configuration, running locally      |
+| [Development Status](docs/09-development-status.md)   | Implemented features, tests, known limitations     |
+| [Demo Guide](docs/10-demo-guide.md)                   | Step-by-step demo flow, academic discussion points |
 
 ---
 

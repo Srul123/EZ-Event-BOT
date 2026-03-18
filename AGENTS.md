@@ -100,63 +100,101 @@ These constraints enforce hexagonal architecture. The domain layer is independen
 
 ```typescript
 // ─── Status enums ─────────────────────────────────────────────────────────────
-type RsvpStatus = 'NO_RESPONSE' | 'YES' | 'NO' | 'MAYBE';
-type ConversationState = 'DEFAULT' | 'YES_AWAITING_HEADCOUNT';
-type AmbiguityReason = 'FAMILY_TERM' | 'RELATIONAL' | 'RANGE_OR_APPROX' | 'UNKNOWN';
+type RsvpStatus = "NO_RESPONSE" | "YES" | "NO" | "MAYBE";
+type ConversationState = "DEFAULT" | "YES_AWAITING_HEADCOUNT";
+type AmbiguityReason =
+  | "FAMILY_TERM"
+  | "RELATIONAL"
+  | "RANGE_OR_APPROX"
+  | "UNKNOWN";
 
 // ─── Headcount — discriminated union (NOT number|null) ─────────────────────────
 type HeadcountExtraction =
-  | { kind: 'exact'; headcount: number; fuzzy?: boolean }
-  | { kind: 'ambiguous'; reason: AmbiguityReason }
-  | { kind: 'none' };
+  | { kind: "exact"; headcount: number; fuzzy?: boolean }
+  | { kind: "ambiguous"; reason: AmbiguityReason }
+  | { kind: "none" };
 
 // ─── NLU output ───────────────────────────────────────────────────────────────
 interface Interpretation {
-  rsvp: 'YES' | 'NO' | 'MAYBE' | 'UNKNOWN';
+  rsvp: "YES" | "NO" | "MAYBE" | "UNKNOWN";
   headcount: number | null;
   headcountExtraction: HeadcountExtraction;
-  confidence: number;           // 0.0–1.0
+  confidence: number; // 0.0–1.0
   needsHeadcount: boolean;
-  language?: 'he' | 'en';
+  language?: "he" | "en";
 }
 
 // ─── Graph input context ───────────────────────────────────────────────────────
 interface GuestContext {
-  guestId: string; campaignId: string; name: string; phone: string; locale: string;
-  rsvpStatus: RsvpStatus; headcount: number | null;
+  guestId: string;
+  campaignId: string;
+  name: string;
+  phone: string;
+  locale: string;
+  rsvpStatus: RsvpStatus;
+  headcount: number | null;
   conversationState: ConversationState;
-  clarificationAttempts: number; lastClarificationReason?: AmbiguityReason;
-  eventTitle?: string; eventDate?: string;
+  clarificationAttempts: number;
+  lastClarificationReason?: AmbiguityReason;
+  eventTitle?: string;
+  eventDate?: string;
 }
 
 // ─── 6-variant action union ────────────────────────────────────────────────────
 type Action =
-  | { type: 'SET_RSVP'; rsvpStatus: RsvpStatus; headcount: number | null }
-  | { type: 'ASK_HEADCOUNT' }
-  | { type: 'CLARIFY_HEADCOUNT'; reason: AmbiguityReason | null; attemptNumber: number }
-  | { type: 'CLARIFY_INTENT' }
-  | { type: 'ACK_NO_CHANGE' }
-  | { type: 'STOP_WAITING_FOR_HEADCOUNT' };
+  | { type: "SET_RSVP"; rsvpStatus: RsvpStatus; headcount: number | null }
+  | { type: "ASK_HEADCOUNT" }
+  | {
+      type: "CLARIFY_HEADCOUNT";
+      reason: AmbiguityReason | null;
+      attemptNumber: number;
+    }
+  | { type: "CLARIFY_INTENT" }
+  | { type: "ACK_NO_CHANGE" }
+  | { type: "STOP_WAITING_FOR_HEADCOUNT" };
 
 // ─── Sparse DB patch — only present keys are written ─────────────────────────
 interface EffectsPatch {
-  rsvpStatus?: RsvpStatus; headcount?: number | null;
-  conversationState?: ConversationState; lastResponseAt: Date;
-  rsvpUpdatedAt?: Date; clarificationAttempts?: number;
+  rsvpStatus?: RsvpStatus;
+  headcount?: number | null;
+  conversationState?: ConversationState;
+  lastResponseAt: Date;
+  rsvpUpdatedAt?: Date;
+  clarificationAttempts?: number;
   lastClarificationReason?: AmbiguityReason;
 }
 
 // ─── Port interfaces ──────────────────────────────────────────────────────────
 interface NluPort {
-  interpretMessage(text: string, context: GuestContext): Promise<Interpretation>;
-  interpretHeadcountOnly(text: string, locale: string): Promise<HeadcountExtraction>;
+  interpretMessage(
+    text: string,
+    context: GuestContext,
+  ): Promise<Interpretation>;
+  interpretHeadcountOnly(
+    text: string,
+    locale: string,
+  ): Promise<HeadcountExtraction>;
 }
 interface NlgPort {
-  composeReply(action: Action, context: GuestContext, interpretation?: Interpretation): Promise<string>;
-  buildClarificationQuestion(reason: AmbiguityReason | null, attempt: number, context: GuestContext): string;
+  composeReply(
+    action: Action,
+    context: GuestContext,
+    interpretation?: Interpretation,
+  ): Promise<string>;
+  buildClarificationQuestion(
+    reason: AmbiguityReason | null,
+    attempt: number,
+    context: GuestContext,
+  ): string;
 }
-interface ClockPort { now(): Date; }
-interface LoggerPort { info(...args: unknown[]): void; debug(...args: unknown[]): void; warn(...args: unknown[]): void; }
+interface ClockPort {
+  now(): Date;
+}
+interface LoggerPort {
+  info(...args: unknown[]): void;
+  debug(...args: unknown[]): void;
+  warn(...args: unknown[]): void;
+}
 ```
 
 ---
@@ -167,6 +205,7 @@ interface LoggerPort { info(...args: unknown[]): void; debug(...args: unknown[])
 `messageText`, `guestContext`, `interpretation`, `headcountExtraction`, `action`, `replyText`, `effects`
 
 **Routing:**
+
 ```
 START → routeByState
   'DEFAULT'               → interpretFull → decideAction → composeReply → buildEffects → END
@@ -179,12 +218,12 @@ START → routeByState
 
 ## NLU Pipeline
 
-| Signal | Confidence | Routed To |
-|---|---|---|
-| YES/NO keyword match | 0.9 | Rules accepted |
-| MAYBE keyword match | 0.85 | Rules accepted at default threshold |
-| Headcount only (no RSVP) | 0.5 | LLM fallback |
-| Nothing matched | 0.3 | LLM fallback |
+| Signal                   | Confidence | Routed To                           |
+| ------------------------ | ---------- | ----------------------------------- |
+| YES/NO keyword match     | 0.9        | Rules accepted                      |
+| MAYBE keyword match      | 0.85       | Rules accepted at default threshold |
+| Headcount only (no RSVP) | 0.5        | LLM fallback                        |
+| Nothing matched          | 0.3        | LLM fallback                        |
 
 Default threshold: `RSVP_CONFIDENCE_THRESHOLD=0.85`
 
@@ -199,22 +238,24 @@ Default threshold: `RSVP_CONFIDENCE_THRESHOLD=0.85`
 **Campaign**: `_id, name, eventTitle, eventDate(String), scheduledAt(Date), status(DRAFT|SCHEDULED|RUNNING|COMPLETED|FAILED)`
 
 **Guest**: `_id, campaignId, name, phone, rsvpStatus, headcount(Number|null), conversationState, rsvpUpdatedAt(Date|null), lastResponseAt(Date|null)`
+
 - `rsvpUpdatedAt` only set when rsvpStatus or headcount changes (not on ACK/CLARIFY)
 - Index: `{campaignId:1}`, `{phone:1}`
 
 **Invite**: `_id, token(unique: "inv_"+12chars), guestId, campaignId, usedAt(Date|null)`
+
 - Index: `{token:1}(unique)`, `{guestId:1}`, `{campaignId:1}`
 
 ---
 
 ## REST API
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/campaigns` | Create campaign with guests array |
-| GET | `/api/campaigns` | List all campaigns |
-| GET | `/api/campaigns/:id` | Campaign detail with guest RSVP data |
-| POST | `/api/campaigns/:id/generate-telegram-links` | Generate personalized deep links |
+| Method | Endpoint                                     | Description                          |
+| ------ | -------------------------------------------- | ------------------------------------ |
+| POST   | `/api/campaigns`                             | Create campaign with guests array    |
+| GET    | `/api/campaigns`                             | List all campaigns                   |
+| GET    | `/api/campaigns/:id`                         | Campaign detail with guest RSVP data |
+| POST   | `/api/campaigns/:id/generate-telegram-links` | Generate personalized deep links     |
 
 All endpoints include Zod request validation and structured error responses.
 
@@ -222,18 +263,18 @@ All endpoints include Zod request validation and structured error responses.
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js 22+, TypeScript 5.3+ strict ESM |
-| Bot | Telegraf 4.x with session middleware |
-| Graph | LangGraph (JS) compiled state graph |
-| DB | MongoDB 7 via Mongoose 8 |
-| Validation | Zod |
-| Logging | Pino + pino-pretty |
-| HTTP | Express 5 |
-| LLM | Anthropic SDK (claude-3-haiku-20240307, temp 0.2) |
-| Frontend | Vue 3, Vite, Tailwind CSS 4, Pinia, Vue Router, vue-i18n |
-| Tests | node:test (built-in, no jest/vitest) |
+| Layer      | Technology                                               |
+| ---------- | -------------------------------------------------------- |
+| Runtime    | Node.js 22+, TypeScript 5.3+ strict ESM                  |
+| Bot        | Telegraf 4.x with session middleware                     |
+| Graph      | LangGraph (JS) compiled state graph                      |
+| DB         | MongoDB 7 via Mongoose 8                                 |
+| Validation | Zod                                                      |
+| Logging    | Pino + pino-pretty                                       |
+| HTTP       | Express 5                                                |
+| LLM        | Anthropic SDK (claude-3-haiku-20240307, temp 0.2)        |
+| Frontend   | Vue 3, Vite, Tailwind CSS 4, Pinia, Vue Router, vue-i18n |
+| Tests      | node:test (built-in, no jest/vitest)                     |
 
 ---
 

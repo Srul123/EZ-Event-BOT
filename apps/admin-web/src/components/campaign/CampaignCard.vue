@@ -1,9 +1,14 @@
 <template>
-  <Card class="cursor-pointer hover:shadow-lg transition-shadow" @click="$emit('click')">
+  <Card
+    class="cursor-pointer hover:shadow-lg transition-shadow"
+    @click="$emit('click')"
+  >
     <template #header>
       <div class="flex items-start justify-between">
         <div class="flex-1">
-          <h3 class="text-lg font-semibold text-neutral-900">{{ campaign.name }}</h3>
+          <h3 class="text-lg font-semibold text-neutral-900">
+            {{ campaign.name }}
+          </h3>
           <p class="text-sm text-neutral-600 mt-1">{{ campaign.eventTitle }}</p>
         </div>
         <div class="ml-3 flex items-center gap-2">
@@ -14,15 +19,23 @@
             :aria-label="t('campaigns.delete')"
             @click.stop="$emit('delete', campaign.id)"
           >
-            {{ t('common.delete') }}
+            {{ t("common.delete") }}
           </button>
         </div>
       </div>
     </template>
 
     <div class="space-y-3">
-      <div v-if="campaign.eventDate" class="flex items-center text-sm text-neutral-600">
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div
+        v-if="campaign.eventDate"
+        class="flex items-center text-sm text-neutral-600"
+      >
+        <svg
+          class="w-4 h-4 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -34,7 +47,12 @@
       </div>
 
       <div class="flex items-center text-sm text-neutral-600">
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          class="w-4 h-4 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -48,7 +66,9 @@
       <div v-if="campaign.guests" class="pt-3 border-t border-neutral-200">
         <div class="flex items-center justify-between text-sm">
           <span class="text-neutral-600">Guests:</span>
-          <span class="font-medium text-neutral-900">{{ campaign.guests.length }}</span>
+          <span class="font-medium text-neutral-900">{{
+            campaign.guests.length
+          }}</span>
         </div>
         <div v-if="rsvpStats" class="mt-2 flex gap-2">
           <Badge v-if="rsvpStats.yes > 0" variant="success" size="sm">
@@ -67,41 +87,41 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { formatDate, formatDateTime } from '../../utils/formatters.js'
-import Card from '../common/Card.vue'
-import Badge from '../common/Badge.vue'
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { formatDate, formatDateTime } from "../../utils/formatters.js";
+import Card from "../common/Card.vue";
+import Badge from "../common/Badge.vue";
 
 const props = defineProps({
   campaign: {
     type: Object,
     required: true,
   },
-})
+});
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-defineEmits(['click', 'delete'])
+defineEmits(["click", "delete"]);
 
 const statusVariant = computed(() => {
   const map = {
-    DRAFT: 'neutral',
-    SCHEDULED: 'info',
-    RUNNING: 'primary',
-    COMPLETED: 'success',
-    FAILED: 'error',
-  }
-  return map[props.campaign.status] || 'neutral'
-})
+    DRAFT: "neutral",
+    SCHEDULED: "info",
+    RUNNING: "primary",
+    COMPLETED: "success",
+    FAILED: "error",
+  };
+  return map[props.campaign.status] || "neutral";
+});
 
 const rsvpStats = computed(() => {
-  if (!props.campaign.guests) return null
+  if (!props.campaign.guests) return null;
 
   return {
-    yes: props.campaign.guests.filter((g) => g.rsvpStatus === 'YES').length,
-    no: props.campaign.guests.filter((g) => g.rsvpStatus === 'NO').length,
-    maybe: props.campaign.guests.filter((g) => g.rsvpStatus === 'MAYBE').length,
-  }
-})
+    yes: props.campaign.guests.filter((g) => g.rsvpStatus === "YES").length,
+    no: props.campaign.guests.filter((g) => g.rsvpStatus === "NO").length,
+    maybe: props.campaign.guests.filter((g) => g.rsvpStatus === "MAYBE").length,
+  };
+});
 </script>

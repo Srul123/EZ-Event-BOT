@@ -1,13 +1,11 @@
-import { CampaignModel } from './campaign.model.js';
-import { GuestModel } from './guest.model.js';
-import { InviteModel } from './invite.model.js';
-import { env } from '../../config/env.js';
-import { logger } from '../../logger/logger.js';
-import { randomBytes } from 'crypto';
+import { CampaignModel } from "./campaign.model.js";
+import { GuestModel } from "./guest.model.js";
+import { InviteModel } from "./invite.model.js";
+import { env } from "../../config/env.js";
+import { logger } from "../../logger/logger.js";
+import { randomBytes } from "crypto";
 
-export async function generateTelegramInviteLinks(
-  campaignId: string
-): Promise<{
+export async function generateTelegramInviteLinks(campaignId: string): Promise<{
   campaignId: string;
   botUsername: string;
   links: Array<{
@@ -20,7 +18,7 @@ export async function generateTelegramInviteLinks(
 }> {
   const campaign = await CampaignModel.findById(campaignId);
   if (!campaign) {
-    throw new Error('Campaign not found');
+    throw new Error("Campaign not found");
   }
 
   const guests = await GuestModel.find({ campaignId }).lean();
@@ -31,7 +29,7 @@ export async function generateTelegramInviteLinks(
   for (const guest of guests) {
     // Generate a URL-safe token (10-14 chars)
     const tokenBytes = randomBytes(8);
-    const token = tokenBytes.toString('base64url').substring(0, 12);
+    const token = tokenBytes.toString("base64url").substring(0, 12);
     const fullToken = `inv_${token}`;
     const link = `https://t.me/${botUsername}?start=${fullToken}`;
 
@@ -51,7 +49,7 @@ export async function generateTelegramInviteLinks(
         name: guest.name,
         link,
       },
-      '[LINK_SIM]'
+      "[LINK_SIM]",
     );
 
     links.push({

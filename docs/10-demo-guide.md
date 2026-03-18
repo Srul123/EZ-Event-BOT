@@ -92,17 +92,17 @@
 
 ## Technology Stack
 
-| Component | Technology |
-|---|---|
-| Runtime | Node.js 22+ with ESM |
-| Language | TypeScript 5.3+ (strict mode) |
-| HTTP API | Express.js |
-| Telegram Bot | Telegraf |
-| Agent Framework | LangGraph (`@langchain/langgraph`) |
-| Database | MongoDB with Mongoose ODM |
-| LLM | Anthropic Claude 3 Haiku (via official SDK) |
-| Validation | Zod |
-| Logging | Pino (structured) |
+| Component       | Technology                                  |
+| --------------- | ------------------------------------------- |
+| Runtime         | Node.js 22+ with ESM                        |
+| Language        | TypeScript 5.3+ (strict mode)               |
+| HTTP API        | Express.js                                  |
+| Telegram Bot    | Telegraf                                    |
+| Agent Framework | LangGraph (`@langchain/langgraph`)          |
+| Database        | MongoDB with Mongoose ODM                   |
+| LLM             | Anthropic Claude 3 Haiku (via official SDK) |
+| Validation      | Zod                                         |
+| Logging         | Pino (structured)                           |
 
 ---
 
@@ -111,6 +111,7 @@
 ### Prerequisites
 
 1. **Start the backend service**:
+
    ```bash
    npm run dev --workspace=@ez-event-bot/bot-service
    ```
@@ -145,6 +146,7 @@ curl -X POST http://localhost:3000/api/campaigns \
 ```
 
 **What to explain**:
+
 - Campaign represents an event with metadata
 - Guests are pre-registered with name and phone
 - System creates Guest documents in MongoDB with `rsvpStatus: NO_RESPONSE`
@@ -158,6 +160,7 @@ curl -X POST http://localhost:3000/api/campaigns/{CAMPAIGN_ID}/generate-telegram
 ```
 
 **What to explain**:
+
 - Each guest gets a unique token (12-char base64url, prefixed `inv_`)
 - Token is stored in `Invite` collection with unique index
 - Link format: `https://t.me/{botUsername}?start=inv_{token}`
@@ -175,6 +178,7 @@ curl -X POST http://localhost:3000/api/campaigns/{CAMPAIGN_ID}/generate-telegram
 
 1. **Open one of the generated links** in Telegram
 2. **Bot responds with personalized invitation**:
+
    ```
    שלום דוד כהן! 👋
 
@@ -183,6 +187,7 @@ curl -X POST http://localhost:3000/api/campaigns/{CAMPAIGN_ID}/generate-telegram
 
    אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
    ```
+
 3. **Explain**:
    - Token extracted from `/start` command
    - Guest data loaded from database (token → Invite → Guest → Campaign)
@@ -198,6 +203,7 @@ curl -X POST http://localhost:3000/api/campaigns/{CAMPAIGN_ID}/generate-telegram
 Guest sends: `"כן מגיע"`
 
 What happens:
+
 1. Rules engine detects "כן" (YES), confidence: 0.9 (high) → no LLM call
 2. No headcount detected → Action: `ASK_HEADCOUNT`
 3. State transition: `DEFAULT` → `YES_AWAITING_HEADCOUNT`
@@ -214,6 +220,7 @@ Bot replies: `"דוד כהן, כמה אנשים יגיעו?"`
 Guest sends: `"אנחנו זוג"` (We're a couple — in `YES_AWAITING_HEADCOUNT` state)
 
 What happens:
+
 1. Graph routes to `interpretHeadcount` node (headcount-only extraction)
 2. "זוג" → `exact: 2` (from priority chain, step 5)
 3. Exact & not fuzzy → fast path directly to `decideAction`
@@ -231,6 +238,7 @@ Bot replies: `"תודה דוד כהן! נרשמת 2 אנשים."`
 Guest sends: `"תלוי בעבודה, עוד לא סגור"` (Depends on work, not decided)
 
 What happens:
+
 1. Rules detect "תלוי" → MAYBE, confidence: 0.85 (meets threshold)
 2. Action: `SET_RSVP { MAYBE }`
 
@@ -243,6 +251,7 @@ Bot replies: `"הבנתי, תודה. תעדכן אותי כשיהיה ברור."
 Guest sends: `"אני חושב שאגיע אבל צריך לבדוק עם הבוס"` (I think I'll come but need to check with the boss)
 
 What happens:
+
 1. Rules attempt parsing: confidence < 0.85 → LLM fallback triggered
 2. Anthropic Claude 3 Haiku analyzes: returns `{rsvp: "MAYBE", confidence: 0.8}`
 3. Validated by Zod schema → Action: `SET_RSVP { MAYBE }`
@@ -256,6 +265,7 @@ What happens:
 Guest with `rsvpStatus: YES, headcount: 2` sends: `"שלום"` (Hello)
 
 What happens:
+
 1. `decideAction` detects: confirmed guest, no change detected
 2. Action: `ACK_NO_CHANGE`
 3. Patch: `{lastResponseAt}` only — no DB status mutation
@@ -271,6 +281,7 @@ Bot replies: `"תודה דוד כהן! כבר נרשמת 2 אנשים."`
 Guest with `rsvpStatus: YES, headcount: 4` sends: `"אופס טעיתי, נהיה 2"` (Oops, I made a mistake, we'll be 2)
 
 What happens:
+
 1. Rules might classify as NO (correction keyword), but `decideAction` detects:
    - Correction keyword ("טעיתי") + current YES + different headcount (2 ≠ 4)
    - Priority rule: headcount update > status change
@@ -308,6 +319,7 @@ bot/adapters/
 ```
 
 **Key Points**:
+
 - `decideAction` is a pure function: no async, no side effects, 19 unit tests — no mocks needed
 - Architecture boundaries: `domain/rsvp-graph/` verified by grep — zero imports from `bot/`, `mongoose`, `telegraf`, no `new Date()`
 
@@ -352,14 +364,15 @@ bot/adapters/
 
 #### 3.3 LLM Integration Strategy
 
-| When LLM is used | Condition |
-|---|---|
-| Interpretation | Rules confidence < 0.85 AND `RSVP_USE_LLM_INTERPRETATION=true` |
-| Response generation | `RSVP_USE_LLM_RESPONSES=true` (default: false) |
+| When LLM is used    | Condition                                                      |
+| ------------------- | -------------------------------------------------------------- |
+| Interpretation      | Rules confidence < 0.85 AND `RSVP_USE_LLM_INTERPRETATION=true` |
+| Response generation | `RSVP_USE_LLM_RESPONSES=true` (default: false)                 |
 
 **Robustness**: JSON extraction with regex fallback, Zod validation, template fallback on any error. System never crashes on LLM failure.
 
 **Configuration**:
+
 ```dotenv
 RSVP_USE_LLM_INTERPRETATION=true   # Enable LLM fallback
 RSVP_USE_LLM_RESPONSES=false        # Use templates (default)
@@ -377,6 +390,7 @@ curl http://localhost:3000/api/campaigns/{CAMPAIGN_ID}
 ```
 
 Expected (after demo interactions):
+
 ```json
 {
   "guests": [
@@ -455,16 +469,19 @@ Expected (after demo interactions):
 ## Troubleshooting
 
 ### Bot Not Responding
+
 - Check `TELEGRAM_BOT_TOKEN` in `.env`
 - Verify bot launched (check logs for "Bot launched")
 - Test with `/start` command
 
 ### LLM Not Working
+
 - Verify `ANTHROPIC_API_KEY` is set
 - Check `RSVP_USE_LLM_INTERPRETATION=true`
 - Review logs for Anthropic API errors
 
 ### Database Issues
+
 - Verify `MONGODB_URI` is correct
 - Check MongoDB connection in logs
 - Ensure unique index on `Invite.token` was created
@@ -474,6 +491,7 @@ Expected (after demo interactions):
 ## Conclusion
 
 This system demonstrates practical application of:
+
 - **NLP**: Hybrid rule-based + LLM pipeline for Hebrew conversational understanding
 - **Agent Architecture**: LangGraph state graph with pure domain business logic
 - **State Management**: Distributed state (DB + session) with sparse effect patches

@@ -13,12 +13,12 @@ The interpretation pipeline transforms a free-text guest message into a structur
 
 ```typescript
 interface Interpretation {
-  rsvp: 'YES' | 'NO' | 'MAYBE' | 'UNKNOWN';
+  rsvp: "YES" | "NO" | "MAYBE" | "UNKNOWN";
   headcount: number | null;
   headcountExtraction: HeadcountExtraction;
   confidence: number; // 0.0 to 1.0
   needsHeadcount: boolean;
-  language?: 'he' | 'en';
+  language?: "he" | "en";
 }
 ```
 
@@ -38,6 +38,7 @@ flowchart TD
 ```
 
 The threshold is configurable via `RSVP_CONFIDENCE_THRESHOLD` (default: **0.85**). This means:
+
 - YES/NO matches (confidence 0.9) always bypass LLM
 - MAYBE matches (confidence 0.85) pass at the default threshold
 - Headcount-only (0.5) and unknown (0.3) always trigger LLM fallback
@@ -52,11 +53,11 @@ The rule-based interpreter is the **primary interpretation path**. It uses deter
 
 Three keyword lists classify intent:
 
-| Intent | Keywords (Hebrew) | Keywords (English) | Confidence |
-|---|---|---|---|
-| **YES** | כן, מגיע, אני בא, נכון, סבבה, בסדר, אוקיי | ok, yes, yeah | 0.9 |
-| **NO** | לא, לא מגיע, לא יכול, לא נוכל | no, nope | 0.9 |
-| **MAYBE** | תלוי, אולי, עוד לא סגור, לא בטוח | maybe, perhaps, possibly | 0.85 |
+| Intent    | Keywords (Hebrew)                         | Keywords (English)       | Confidence |
+| --------- | ----------------------------------------- | ------------------------ | ---------- |
+| **YES**   | כן, מגיע, אני בא, נכון, סבבה, בסדר, אוקיי | ok, yes, yeah            | 0.9        |
+| **NO**    | לא, לא מגיע, לא יכול, לא נוכל             | no, nope                 | 0.9        |
+| **MAYBE** | תלוי, אולי, עוד לא סגור, לא בטוח          | maybe, perhaps, possibly | 0.85       |
 
 The algorithm scans the normalized message text for keyword presence. If multiple intents match, the first match wins (YES > NO > MAYBE in evaluation order).
 
@@ -73,12 +74,14 @@ Before keyword matching, the input text undergoes Hebrew-specific normalization:
 
 **Step 3 — Strip Niqqud (diacritical marks)**
 Hebrew text may contain Unicode diacriticals in the range `\u0591-\u05C7`. These are vocalization marks that do not affect meaning for the purpose of keyword matching. The normalizer strips them:
+
 ```
 "הַיְלָדִים" → "הילדים"
 ```
 
 **Step 4 — Hebrew prefix stripping**
 Hebrew attaches single-letter prefixes to words. The normalizer strips the prefixes ו (and), ה (the), ב (in), ל (to), כ (as), מ (from), ש (that) from tokens longer than 2 characters:
+
 ```
 "והילדים" → "ילדים"    (stripped ו + ה)
 "שנגיע"  → "נגיע"      (stripped ש)
@@ -141,18 +144,18 @@ Priority  Pattern                         Result
 The interpreter recognizes Hebrew number words from 0 to 10, including gender variants:
 
 | Number | Masculine | Feminine | Alternate Forms |
-|---|---|---|---|
-| 0 | אפס | — | — |
-| 1 | אחד | אחת | — |
-| 2 | שניים | שתיים | שני, שתי |
-| 3 | שלושה | שלוש | — |
-| 4 | ארבעה | ארבע | — |
-| 5 | חמישה | חמש | — |
-| 6 | שישה | שש | — |
-| 7 | שבעה | שבע | — |
-| 8 | שמונה | שמונה | — |
-| 9 | תשעה | תשע | — |
-| 10 | עשרה | עשר | — |
+| ------ | --------- | -------- | --------------- |
+| 0      | אפס       | —        | —               |
+| 1      | אחד       | אחת      | —               |
+| 2      | שניים     | שתיים    | שני, שתי        |
+| 3      | שלושה     | שלוש     | —               |
+| 4      | ארבעה     | ארבע     | —               |
+| 5      | חמישה     | חמש      | —               |
+| 6      | שישה      | שש       | —               |
+| 7      | שבעה      | שבע      | —               |
+| 8      | שמונה     | שמונה    | —               |
+| 9      | תשעה      | תשע      | —               |
+| 10     | עשרה      | עשר      | —               |
 
 Each token in the normalized text is checked against this dictionary after prefix stripping and niqqud removal.
 
@@ -161,6 +164,7 @@ Each token in the normalized text is checked against this dictionary after prefi
 For tokens that do not exactly match any number word, the interpreter optionally applies **Levenshtein distance** fuzzy matching. This handles common typos in Hebrew number words (e.g., "שנים" instead of "שניים").
 
 **Algorithm:**
+
 1. Only attempt fuzzy matching when `allowFuzzy` is true
 2. Only consider tokens of length >= 3 (short tokens produce too many false positives)
 3. Only accept matches where `levenshteinDistance(token, numberWord) <= 1`
@@ -178,13 +182,13 @@ If the message is short (<= 3 tokens) or contains any of these context words, fu
 
 #### 4.2.7 Confidence Scoring Model
 
-| Detection | Confidence | Rationale |
-|---|---|---|
-| YES keyword match | 0.9 | High confidence — explicit affirmative |
-| NO keyword match | 0.9 | High confidence — explicit negative |
-| MAYBE keyword match | 0.85 | Slightly lower — ambiguity is inherent |
-| Headcount only (no RSVP) | 0.5 | RSVP intent unclear — likely needs LLM |
-| Nothing matched | 0.3 | No signal — LLM should handle |
+| Detection                | Confidence | Rationale                              |
+| ------------------------ | ---------- | -------------------------------------- |
+| YES keyword match        | 0.9        | High confidence — explicit affirmative |
+| NO keyword match         | 0.9        | High confidence — explicit negative    |
+| MAYBE keyword match      | 0.85       | Slightly lower — ambiguity is inherent |
+| Headcount only (no RSVP) | 0.5        | RSVP intent unclear — likely needs LLM |
+| Nothing matched          | 0.3        | No signal — LLM should handle          |
 
 ### 4.3 LLM Fallback Interpreter
 
@@ -234,6 +238,7 @@ Source: `interpret/headcountOnly.ts`
 When the conversation is in the `YES_AWAITING_HEADCOUNT` state, the system uses a specialized interpreter that **only extracts headcount** — it does not re-evaluate RSVP intent. This is a critical design decision: if the guest responds to "how many people?" with something like "I'm not sure yet" (which could be classified as MAYBE by the full interpreter), the headcount-only interpreter treats it as an ambiguous headcount signal rather than changing the guest's RSVP to MAYBE.
 
 **Algorithm:**
+
 1. Run `extractHeadcount(text, allowFuzzy=true)` — fuzzy matching is enabled here because the context is unambiguous (we are asking for a number)
 2. If the result is `exact`, return immediately
 3. If LLM is enabled, call the LLM with a **headcount-only prompt** (100 token budget, reduced scope)
@@ -248,38 +253,43 @@ When the conversation is in the `YES_AWAITING_HEADCOUNT` state, the system uses 
 
 ```typescript
 type HeadcountExtraction =
-  | { kind: 'exact'; headcount: number; fuzzy?: boolean }
-  | { kind: 'ambiguous'; reason: AmbiguityReason }
-  | { kind: 'none' };
+  | { kind: "exact"; headcount: number; fuzzy?: boolean }
+  | { kind: "ambiguous"; reason: AmbiguityReason }
+  | { kind: "none" };
 
-type AmbiguityReason = 'FAMILY_TERM' | 'RELATIONAL' | 'RANGE_OR_APPROX' | 'UNKNOWN';
+type AmbiguityReason =
+  | "FAMILY_TERM"
+  | "RELATIONAL"
+  | "RANGE_OR_APPROX"
+  | "UNKNOWN";
 ```
 
 ### 5.2 Why a Discriminated Union
 
 A naive approach would represent headcount as `number | null`, where `null` means "not mentioned." This loses critical information:
 
-| Message | `number \| null` | `HeadcountExtraction` |
-|---|---|---|
-| "כן מגיע" (Yes, coming) | `null` | `{ kind: 'none' }` |
-| "אני והילדים" (Me and the kids) | `null` | `{ kind: 'ambiguous', reason: 'FAMILY_TERM' }` |
-| "בערך 3" (About 3) | `3`? `null`? | `{ kind: 'ambiguous', reason: 'RANGE_OR_APPROX' }` |
-| "אנחנו שניים" (We are two) | `2` | `{ kind: 'exact', headcount: 2 }` |
-| "שנים" (typo for שניים) | `2`? | `{ kind: 'exact', headcount: 2, fuzzy: true }` |
+| Message                         | `number \| null` | `HeadcountExtraction`                              |
+| ------------------------------- | ---------------- | -------------------------------------------------- |
+| "כן מגיע" (Yes, coming)         | `null`           | `{ kind: 'none' }`                                 |
+| "אני והילדים" (Me and the kids) | `null`           | `{ kind: 'ambiguous', reason: 'FAMILY_TERM' }`     |
+| "בערך 3" (About 3)              | `3`? `null`?     | `{ kind: 'ambiguous', reason: 'RANGE_OR_APPROX' }` |
+| "אנחנו שניים" (We are two)      | `2`              | `{ kind: 'exact', headcount: 2 }`                  |
+| "שנים" (typo for שניים)         | `2`?             | `{ kind: 'exact', headcount: 2, fuzzy: true }`     |
 
 The discriminated union enables:
+
 - **Adaptive clarification**: Different questions for family terms vs. ranges vs. relational phrases
 - **Fuzzy confirmation**: When `fuzzy: true`, the bot can ask "Just to confirm, 2 people total?" before recording
 - **No false precision**: Ranges and approximations are never silently converted to exact numbers
 
 ### 5.3 Ambiguity Reasons
 
-| Reason | Trigger | Clarification Strategy |
-|---|---|---|
-| `FAMILY_TERM` | "ילדים" (kids), "משפחה" (family) without a number | "How many kids are coming? How many total?" |
-| `RELATIONAL` | "אני וX" where X is a person, not a number | "Just to confirm, how many total?" |
-| `RANGE_OR_APPROX` | "2-3", "בערך 3", "כ-3" | "Got it, it's approximate. Record an estimate?" |
-| `UNKNOWN` | Contradictory numbers, unrecognizable patterns | "Just to make sure, how many total?" |
+| Reason            | Trigger                                           | Clarification Strategy                          |
+| ----------------- | ------------------------------------------------- | ----------------------------------------------- |
+| `FAMILY_TERM`     | "ילדים" (kids), "משפחה" (family) without a number | "How many kids are coming? How many total?"     |
+| `RELATIONAL`      | "אני וX" where X is a person, not a number        | "Just to confirm, how many total?"              |
+| `RANGE_OR_APPROX` | "2-3", "בערך 3", "כ-3"                            | "Got it, it's approximate. Record an estimate?" |
+| `UNKNOWN`         | Contradictory numbers, unrecognizable patterns    | "Just to make sure, how many total?"            |
 
 ---
 
@@ -314,11 +324,13 @@ flowchart TD
 ### 6.2 Keyword Sets
 
 **Change keywords** (explicit update intent):
+
 ```
 רק, משנה, מעדכן, מעדכנת, change, update, changing, updating
 ```
 
 **Correction keywords** (mistake/correction intent):
+
 ```
 טעיתי, טעות, אופס, שגיאה, תיקנתי, מתקן, mistake, error, oops, correct, correction, fix, fixed
 ```
@@ -328,6 +340,7 @@ flowchart TD
 A critical edge case: a guest with `rsvpStatus: YES, headcount: 4` sends "אופס טעיתי, נהיה 2" ("Oops, I made a mistake, we'll be 2"). The rule-based interpreter might classify this as NO (due to "mistake" context) with headcount 2.
 
 Without the priority rule, this would be treated as a status change from YES to NO. With the rule, the system detects:
+
 1. Correction keyword present ("טעיתי")
 2. Current status is YES
 3. Exact headcount differs from current (2 ≠ 4)
@@ -356,16 +369,16 @@ Source: `respond/templates.ts`
 
 The default response mode uses static Hebrew templates with guest name interpolation:
 
-| Action | Template (Hebrew) | Translation |
-|---|---|---|
-| `SET_RSVP` (YES + headcount) | `"תודה {name}! נרשמת {N} אנשים."` | Thanks {name}! Registered {N} people. |
-| `ASK_HEADCOUNT` | `"{name}, כמה אנשים יגיעו?"` | {name}, how many people are coming? |
-| `SET_RSVP` (NO) | `"תודה {name}, נשמח לראות אותך בפעם הבאה."` | Thanks {name}, hope to see you next time. |
-| `SET_RSVP` (MAYBE) | `"הבנתי, תודה. תעדכן אותי כשיהיה ברור."` | Got it, thanks. Update me when it's clear. |
-| `CLARIFY` | `"{name}, אנא ענה כן/לא/אולי."` | {name}, please answer yes/no/maybe. |
-| `ACK` (YES + headcount) | `"תודה {name}! כבר נרשמת {N} אנשים."` | Thanks {name}! Already registered {N} people. |
-| `ACK` (YES, no headcount) | `"תודה {name}! כבר נרשמת."` | Thanks {name}! Already registered. |
-| `ACK` (NO) | `"תודה {name}, הבנתי שלא תוכל להגיע."` | Thanks {name}, understood you can't make it. |
+| Action                       | Template (Hebrew)                           | Translation                                   |
+| ---------------------------- | ------------------------------------------- | --------------------------------------------- |
+| `SET_RSVP` (YES + headcount) | `"תודה {name}! נרשמת {N} אנשים."`           | Thanks {name}! Registered {N} people.         |
+| `ASK_HEADCOUNT`              | `"{name}, כמה אנשים יגיעו?"`                | {name}, how many people are coming?           |
+| `SET_RSVP` (NO)              | `"תודה {name}, נשמח לראות אותך בפעם הבאה."` | Thanks {name}, hope to see you next time.     |
+| `SET_RSVP` (MAYBE)           | `"הבנתי, תודה. תעדכן אותי כשיהיה ברור."`    | Got it, thanks. Update me when it's clear.    |
+| `CLARIFY`                    | `"{name}, אנא ענה כן/לא/אולי."`             | {name}, please answer yes/no/maybe.           |
+| `ACK` (YES + headcount)      | `"תודה {name}! כבר נרשמת {N} אנשים."`       | Thanks {name}! Already registered {N} people. |
+| `ACK` (YES, no headcount)    | `"תודה {name}! כבר נרשמת."`                 | Thanks {name}! Already registered.            |
+| `ACK` (NO)                   | `"תודה {name}, הבנתי שלא תוכל להגיע."`      | Thanks {name}, understood you can't make it.  |
 
 Templates are deterministic, fast (no network call), and consistent. They serve as both the primary response mode and the fallback when LLM response generation fails.
 
@@ -374,6 +387,7 @@ Templates are deterministic, fast (no network call), and consistent. They serve 
 Source: `clarificationQuestions.ts`
 
 When the bot needs to ask for headcount, it generates **context-aware clarification questions** that adapt based on:
+
 1. **Ambiguity reason** — different wording for family terms vs. relational phrases vs. ranges
 2. **Attempt number** — progressive simplification across up to 3 attempts
 3. **Language** — Hebrew or English
@@ -381,11 +395,11 @@ When the bot needs to ask for headcount, it generates **context-aware clarificat
 
 **Attempt progression:**
 
-| Attempt | Strategy | Hebrew Example |
-|---|---|---|
-| 1 | Reason-specific question | `FAMILY_TERM`: "מעולה! כמה ילדים יגיעו איתך? כלומר כמה תהיו סהכ?" |
-| 2 | Simplified, with example | "כדי לרשום נכון, אפשר מספר בלבד? למשל: 3" |
-| 3 | Graceful exit | "אין בעיה, אשאיר כרגע בלי מספר. תמיד אפשר לעדכן בהמשך." |
+| Attempt | Strategy                 | Hebrew Example                                                    |
+| ------- | ------------------------ | ----------------------------------------------------------------- |
+| 1       | Reason-specific question | `FAMILY_TERM`: "מעולה! כמה ילדים יגיעו איתך? כלומר כמה תהיו סהכ?" |
+| 2       | Simplified, with example | "כדי לרשום נכון, אפשר מספר בלבד? למשל: 3"                         |
+| 3       | Graceful exit            | "אין בעיה, אשאיר כרגע בלי מספר. תמיד אפשר לעדכן בהמשך."           |
 
 The 3-attempt maximum follows a UX principle: **do not insist**. After 3 failed attempts, the bot records `headcount: null` and allows the guest to update later. This prevents frustrating loops where the guest feels interrogated.
 
@@ -394,6 +408,7 @@ The 3-attempt maximum follows a UX principle: **do not insist**. After 3 failed 
 Source: `respond/llmResponder.ts`, `respond/prompts/respond.prompt.ts`
 
 When enabled via `RSVP_USE_LLM_RESPONSES=true`, the system uses Claude to generate natural Hebrew replies. The prompt constrains the output to:
+
 - Maximum 2 short sentences
 - At most 1 emoji (optional)
 - Hebrew language
@@ -412,11 +427,11 @@ The user prompt includes: guest name, interpretation result, action type, event 
 
 ### 8.1 Model Selection
 
-| Property | Value | Rationale |
-|---|---|---|
-| **Provider** | Anthropic | Official SDK, structured output support |
-| **Model** | `claude-3-haiku-20240307` | Optimized for classification tasks: low latency (~200-500ms), low cost, sufficient intelligence for RSVP parsing |
-| **Temperature** | 0.2 | Low temperature for deterministic classification; slight randomness for natural response generation |
+| Property        | Value                     | Rationale                                                                                                        |
+| --------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Provider**    | Anthropic                 | Official SDK, structured output support                                                                          |
+| **Model**       | `claude-3-haiku-20240307` | Optimized for classification tasks: low latency (~200-500ms), low cost, sufficient intelligence for RSVP parsing |
+| **Temperature** | 0.2                       | Low temperature for deterministic classification; slight randomness for natural response generation              |
 
 Claude 3 Haiku was chosen over larger models (Sonnet, Opus) because the task is **classification, not generation**. The input is a short Hebrew sentence, and the output is a small JSON object. Haiku provides sufficient capability at a fraction of the cost and latency.
 
@@ -442,21 +457,21 @@ flowchart TD
 
 Source: `infra/llm/llmClient.ts`
 
-| Mechanism | Configuration | Purpose |
-|---|---|---|
-| **Timeout** | 10 seconds | Prevents indefinite hangs; implemented via `Promise.race` |
-| **Retries** | 1 retry (2 total attempts) | Handles transient network issues |
-| **Retry delay** | 500ms fixed backoff | Simple delay between attempts |
-| **Retryable errors** | Messages containing "timeout", "network", or "fetch" | Only retries transient failures |
-| **Non-retryable** | API errors (401, 429, 400), validation errors | Fails immediately — no point retrying |
+| Mechanism            | Configuration                                        | Purpose                                                   |
+| -------------------- | ---------------------------------------------------- | --------------------------------------------------------- |
+| **Timeout**          | 10 seconds                                           | Prevents indefinite hangs; implemented via `Promise.race` |
+| **Retries**          | 1 retry (2 total attempts)                           | Handles transient network issues                          |
+| **Retry delay**      | 500ms fixed backoff                                  | Simple delay between attempts                             |
+| **Retryable errors** | Messages containing "timeout", "network", or "fetch" | Only retries transient failures                           |
+| **Non-retryable**    | API errors (401, 429, 400), validation errors        | Fails immediately — no point retrying                     |
 
 ### 8.4 Token Budgets
 
-| Use Case | Max Tokens | Typical Output Size |
-|---|---|---|
-| RSVP interpretation | 200 | ~100-150 tokens (JSON with all fields) |
-| Response generation | 120 | ~50-80 tokens (2 Hebrew sentences) |
-| Headcount-only extraction | 100 | ~50-70 tokens (small JSON) |
+| Use Case                  | Max Tokens | Typical Output Size                    |
+| ------------------------- | ---------- | -------------------------------------- |
+| RSVP interpretation       | 200        | ~100-150 tokens (JSON with all fields) |
+| Response generation       | 120        | ~50-80 tokens (2 Hebrew sentences)     |
+| Headcount-only extraction | 100        | ~50-70 tokens (small JSON)             |
 
 Token budgets are deliberately tight to control costs. If the LLM exceeds the budget, the response is truncated, which typically causes JSON parse failure — caught by the validation layer and handled via fallback.
 

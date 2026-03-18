@@ -1,6 +1,6 @@
 export interface InterpretPromptParams {
   text: string;
-  locale: 'he' | 'en';
+  locale: "he" | "en";
   eventTitle?: string;
   eventDate?: string;
 }

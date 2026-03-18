@@ -26,13 +26,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps({
   size: {
     type: String,
-    default: 'md',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value),
+    default: "md",
+    validator: (value) => ["sm", "md", "lg"].includes(value),
   },
   fullPage: {
     type: Boolean,
@@ -42,22 +42,22 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-})
+});
 
 const sizeClasses = computed(() => {
   const sizes = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
-  }
-  return sizes[props.size]
-})
+    sm: "w-4 h-4",
+    md: "w-6 h-6",
+    lg: "w-8 h-8",
+  };
+  return sizes[props.size];
+});
 
 const spinnerClasses = computed(() => {
-  const base = 'flex items-center justify-center'
+  const base = "flex items-center justify-center";
   if (props.fullPage) {
-    return `${base} fixed inset-0 bg-white/80 z-50`
+    return `${base} fixed inset-0 bg-white/80 z-50`;
   }
-  return base
-})
+  return base;
+});
 </script>

@@ -1,13 +1,19 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ─── RSVP Status ──────────────────────────────────────────────────────────────
-export const rsvpStatusSchema = z.enum(['NO_RESPONSE', 'YES', 'NO', 'MAYBE']);
+export const rsvpStatusSchema = z.enum(["NO_RESPONSE", "YES", "NO", "MAYBE"]);
 export type RsvpStatus = z.infer<typeof rsvpStatusSchema>;
 /** Runtime array of all valid RSVP status values */
 export const RSVP_STATUSES = rsvpStatusSchema.options;
 
 // ─── Campaign Status ──────────────────────────────────────────────────────────
-export const campaignStatusSchema = z.enum(['DRAFT', 'SCHEDULED', 'RUNNING', 'COMPLETED', 'FAILED']);
+export const campaignStatusSchema = z.enum([
+  "DRAFT",
+  "SCHEDULED",
+  "RUNNING",
+  "COMPLETED",
+  "FAILED",
+]);
 export type CampaignStatus = z.infer<typeof campaignStatusSchema>;
 /** Runtime array of all valid campaign status values */
 export const CAMPAIGN_STATUSES = campaignStatusSchema.options;
@@ -17,7 +23,9 @@ export const createCampaignGuestSchema = z.object({
   name: z.string().min(1),
   phone: z.string().min(1),
 });
-export type CreateCampaignGuestInput = z.infer<typeof createCampaignGuestSchema>;
+export type CreateCampaignGuestInput = z.infer<
+  typeof createCampaignGuestSchema
+>;
 
 export const createCampaignSchema = z.object({
   name: z.string().min(1),

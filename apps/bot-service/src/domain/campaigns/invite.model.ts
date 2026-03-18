@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 export interface InviteDocument extends mongoose.Document {
   token: string;
@@ -18,12 +18,12 @@ const inviteSchema = new mongoose.Schema<InviteDocument>(
     },
     guestId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Guest',
+      ref: "Guest",
       required: true,
     },
     campaignId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Campaign',
+      ref: "Campaign",
       required: true,
     },
     usedAt: {
@@ -33,11 +33,14 @@ const inviteSchema = new mongoose.Schema<InviteDocument>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 inviteSchema.index({ token: 1 }, { unique: true });
 inviteSchema.index({ guestId: 1 });
 inviteSchema.index({ campaignId: 1 });
 
-export const InviteModel = mongoose.model<InviteDocument>('Invite', inviteSchema);
+export const InviteModel = mongoose.model<InviteDocument>(
+  "Invite",
+  inviteSchema,
+);

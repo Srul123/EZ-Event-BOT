@@ -103,30 +103,30 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useNotifications } from '../../composables/useNotifications.js'
+import { computed } from "vue";
+import { useNotifications } from "../../composables/useNotifications.js";
 
-const { notifications, removeNotification } = useNotifications()
+const { notifications, removeNotification } = useNotifications();
 
 function notificationClasses(type) {
-  const base = 'rounded-lg shadow-lg p-4 pointer-events-auto'
+  const base = "rounded-lg shadow-lg p-4 pointer-events-auto";
   const variants = {
-    success: 'bg-success-50 border border-success-200 text-success-800',
-    error: 'bg-error-50 border border-error-200 text-error-800',
-    info: 'bg-info-50 border border-info-200 text-info-800',
-    warning: 'bg-warning-50 border border-warning-200 text-warning-800',
-  }
-  return `${base} ${variants[type] || variants.info}`
+    success: "bg-success-50 border border-success-200 text-success-800",
+    error: "bg-error-50 border border-error-200 text-error-800",
+    info: "bg-info-50 border border-info-200 text-info-800",
+    warning: "bg-warning-50 border border-warning-200 text-warning-800",
+  };
+  return `${base} ${variants[type] || variants.info}`;
 }
 
 function closeButtonClasses(type) {
   const variants = {
-    success: 'text-success-500 hover:text-success-700 focus:ring-success-500',
-    error: 'text-error-500 hover:text-error-700 focus:ring-error-500',
-    info: 'text-info-500 hover:text-info-700 focus:ring-info-500',
-    warning: 'text-warning-500 hover:text-warning-700 focus:ring-warning-500',
-  }
-  return variants[type] || variants.info
+    success: "text-success-500 hover:text-success-700 focus:ring-success-500",
+    error: "text-error-500 hover:text-error-700 focus:ring-error-500",
+    info: "text-info-500 hover:text-info-700 focus:ring-info-500",
+    warning: "text-warning-500 hover:text-warning-700 focus:ring-warning-500",
+  };
+  return variants[type] || variants.info;
 }
 </script>
 

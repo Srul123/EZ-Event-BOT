@@ -70,28 +70,28 @@ The RSVP agent is implemented as a compiled LangGraph state graph with hexagonal
 
 ### 2.7 Campaign Management API
 
-| Endpoint | Status |
-|---|---|
-| `POST /api/campaigns` | ✅ Implemented |
-| `GET /api/campaigns` | ✅ Implemented |
-| `GET /api/campaigns/:id` | ✅ Implemented |
+| Endpoint                                          | Status         |
+| ------------------------------------------------- | -------------- |
+| `POST /api/campaigns`                             | ✅ Implemented |
+| `GET /api/campaigns`                              | ✅ Implemented |
+| `GET /api/campaigns/:id`                          | ✅ Implemented |
 | `POST /api/campaigns/:id/generate-telegram-links` | ✅ Implemented |
 
 All endpoints include Zod request validation and structured error responses.
 
 ### 2.8 Admin Web Dashboard (Vue 3)
 
-| Feature | Status |
-|---|---|
-| Campaign list with search & status filter | ✅ |
-| Campaign creation with CSV import | ✅ |
-| Campaign detail with RSVP statistics | ✅ |
-| Guest table (search, filter, sort) | ✅ |
-| Personalized link generation | ✅ |
-| Copy-to-clipboard & CSV export | ✅ |
-| Hebrew/English i18n with RTL/LTR | ✅ |
-| Responsive (mobile-friendly) | ✅ |
-| Toast notifications | ✅ |
+| Feature                                   | Status |
+| ----------------------------------------- | ------ |
+| Campaign list with search & status filter | ✅     |
+| Campaign creation with CSV import         | ✅     |
+| Campaign detail with RSVP statistics      | ✅     |
+| Guest table (search, filter, sort)        | ✅     |
+| Personalized link generation              | ✅     |
+| Copy-to-clipboard & CSV export            | ✅     |
+| Hebrew/English i18n with RTL/LTR          | ✅     |
+| Responsive (mobile-friendly)              | ✅     |
+| Toast notifications                       | ✅     |
 
 ---
 
@@ -99,12 +99,13 @@ All endpoints include Zod request validation and structured error responses.
 
 **Test runner**: Node.js built-in `node:test` (no jest/vitest/mocha).
 
-| Test File | Cases | Coverage |
-|---|---|---|
-| `bot/rsvp/interpret/rules.test.ts` | ~20 | `extractHeadcount()`: Hebrew numbers, digits, family terms, fuzzy matching, edge cases, normalization |
-| `domain/rsvp-graph/nodes/decideAction.test.ts` | 19 | DEFAULT state (8), YES_AWAITING_HEADCOUNT state (7), EffectsPatch correctness (4) |
+| Test File                                      | Cases | Coverage                                                                                              |
+| ---------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------- |
+| `bot/rsvp/interpret/rules.test.ts`             | ~20   | `extractHeadcount()`: Hebrew numbers, digits, family terms, fuzzy matching, edge cases, normalization |
+| `domain/rsvp-graph/nodes/decideAction.test.ts` | 19    | DEFAULT state (8), YES_AWAITING_HEADCOUNT state (7), EffectsPatch correctness (4)                     |
 
 **`decideAction.test.ts` breakdown:**
+
 - DEFAULT state: YES+headcount, YES without headcount, NO, MAYBE, UNKNOWN, ACK_NO_CHANGE, change detection, headcount-only update
 - YES_AWAITING_HEADCOUNT: exact headcount, fuzzy headcount, ambiguous with attempt tracking, 3-attempt cap, intent changes ("actually no", "maybe"), compound messages
 - EffectsPatch: ACK_NO_CHANGE/CLARIFY_INTENT produce minimal patches, SET_RSVP omits `rsvpUpdatedAt` when no change, ASK_HEADCOUNT includes `rsvpStatus: YES`
@@ -115,20 +116,20 @@ All endpoints include Zod request validation and structured error responses.
 
 ## 4. Known Limitations & Not Yet Implemented
 
-| Feature | Status | Notes |
-|---|---|---|
-| Authentication/Authorization | ❌ Not implemented | All API endpoints and admin web are open — no auth middleware |
-| Campaign scheduling/dispatch | ⚠️ Schema ready, no worker | `scheduledAt` field exists; no cron/scheduler processes it |
-| Campaign dispatch outbox | ⚠️ Status field ready | Backend `status` field exists; no dispatch worker |
-| Docker/containerization | ❌ Not configured | No Dockerfile or docker-compose |
-| CI/CD pipeline | ❌ Not configured | No GitHub Actions or equivalent |
-| `packages/shared` | ⚠️ Empty placeholder | Workspace exists but `index.ts` is empty |
-| Rate limiting | ❌ Not implemented | No Express rate-limit middleware |
-| Message history logging | ❌ Not implemented | Only latest guest state is tracked; no conversation log |
-| LLM response generation | ⚠️ Implemented, disabled by default | `RSVP_USE_LLM_RESPONSES=false` |
-| Integration/E2E tests | ❌ Not set up | Manual testing only |
-| Advanced bot features | ❌ Out of scope | No location sharing, event info queries, or additional commands beyond `/start` and `/help` |
-| External EZ-Event API integration | ❌ Not connected | No integration with external event management systems |
+| Feature                           | Status                              | Notes                                                                                       |
+| --------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------- |
+| Authentication/Authorization      | ❌ Not implemented                  | All API endpoints and admin web are open — no auth middleware                               |
+| Campaign scheduling/dispatch      | ⚠️ Schema ready, no worker          | `scheduledAt` field exists; no cron/scheduler processes it                                  |
+| Campaign dispatch outbox          | ⚠️ Status field ready               | Backend `status` field exists; no dispatch worker                                           |
+| Docker/containerization           | ❌ Not configured                   | No Dockerfile or docker-compose                                                             |
+| CI/CD pipeline                    | ❌ Not configured                   | No GitHub Actions or equivalent                                                             |
+| `packages/shared`                 | ⚠️ Empty placeholder                | Workspace exists but `index.ts` is empty                                                    |
+| Rate limiting                     | ❌ Not implemented                  | No Express rate-limit middleware                                                            |
+| Message history logging           | ❌ Not implemented                  | Only latest guest state is tracked; no conversation log                                     |
+| LLM response generation           | ⚠️ Implemented, disabled by default | `RSVP_USE_LLM_RESPONSES=false`                                                              |
+| Integration/E2E tests             | ❌ Not set up                       | Manual testing only                                                                         |
+| Advanced bot features             | ❌ Out of scope                     | No location sharing, event info queries, or additional commands beyond `/start` and `/help` |
+| External EZ-Event API integration | ❌ Not connected                    | No integration with external event management systems                                       |
 
 ---
 
@@ -136,50 +137,53 @@ All endpoints include Zod request validation and structured error responses.
 
 All of the following have been tested end-to-end via Telegram:
 
-| Scenario | Result |
-|---|---|
-| HTTP server starts, health endpoint returns `{"ok":true}` | ✅ |
-| MongoDB connection and Telegram bot launch | ✅ |
-| Token-based guest identification via `/start` | ✅ |
-| Personalized Hebrew invitation message | ✅ |
-| Session persistence across commands | ✅ |
-| "כן מגיע" → ASK_HEADCOUNT → headcount → SET_RSVP YES | ✅ |
-| "לא מגיע" → SET_RSVP NO | ✅ |
-| "תלוי בעבודה" → SET_RSVP MAYBE | ✅ |
-| Ambiguous message → LLM fallback | ✅ |
-| Already confirmed → ACK_NO_CHANGE | ✅ |
-| Correction message ("אופס טעיתי, נהיה 2") → headcount update | ✅ |
-| 3 failed headcount attempts → STOP_WAITING | ✅ |
-| Admin web: campaign creation, link generation, stats | ✅ |
+| Scenario                                                     | Result |
+| ------------------------------------------------------------ | ------ |
+| HTTP server starts, health endpoint returns `{"ok":true}`    | ✅     |
+| MongoDB connection and Telegram bot launch                   | ✅     |
+| Token-based guest identification via `/start`                | ✅     |
+| Personalized Hebrew invitation message                       | ✅     |
+| Session persistence across commands                          | ✅     |
+| "כן מגיע" → ASK_HEADCOUNT → headcount → SET_RSVP YES         | ✅     |
+| "לא מגיע" → SET_RSVP NO                                      | ✅     |
+| "תלוי בעבודה" → SET_RSVP MAYBE                               | ✅     |
+| Ambiguous message → LLM fallback                             | ✅     |
+| Already confirmed → ACK_NO_CHANGE                            | ✅     |
+| Correction message ("אופס טעיתי, נהיה 2") → headcount update | ✅     |
+| 3 failed headcount attempts → STOP_WAITING                   | ✅     |
+| Admin web: campaign creation, link generation, stats         | ✅     |
 
 ---
 
 ## 6. Code Quality Assessment
 
-| Aspect | Assessment |
-|---|---|
-| Type safety | Full TypeScript strict mode throughout backend |
-| Architecture boundaries | Domain layer verified by grep — zero infrastructure imports |
-| Error handling | Comprehensive try/catch with Pino structured logging |
-| LLM resilience | Graceful degradation at every integration point |
-| Input validation | Zod at API boundary and LLM response parsing |
+| Aspect                   | Assessment                                                    |
+| ------------------------ | ------------------------------------------------------------- |
+| Type safety              | Full TypeScript strict mode throughout backend                |
+| Architecture boundaries  | Domain layer verified by grep — zero infrastructure imports   |
+| Error handling           | Comprehensive try/catch with Pino structured logging          |
+| LLM resilience           | Graceful degradation at every integration point               |
+| Input validation         | Zod at API boundary and LLM response parsing                  |
 | Business logic isolation | `decideAction` is a pure function — no async, no side effects |
-| Test coverage | Minimal — 39 unit tests total, no integration coverage |
+| Test coverage            | Minimal — 39 unit tests total, no integration coverage        |
 
 ---
 
 ## 7. Deployment Readiness
 
 ### Ready
+
 - Zod-validated environment configuration at startup
 - Graceful shutdown (SIGINT/SIGTERM)
 - Structured Pino logging with log levels
 
 ### Needs Configuration
+
 - Production environment variables (bot token, MongoDB URI, Anthropic key)
 - MongoDB production cluster
 
 ### Not Set Up
+
 - Docker / containerization (no Dockerfile, no docker-compose)
 - CI/CD pipeline
 - API authentication and authorization

@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import type { CampaignStatus } from './types.js';
+import mongoose from "mongoose";
+import type { CampaignStatus } from "./types.js";
 
 export interface CampaignDocument extends mongoose.Document {
   name: string;
@@ -31,15 +31,18 @@ const campaignSchema = new mongoose.Schema<CampaignDocument>(
     },
     status: {
       type: String,
-      enum: ['DRAFT', 'SCHEDULED', 'RUNNING', 'COMPLETED', 'FAILED'],
-      default: 'SCHEDULED',
+      enum: ["DRAFT", "SCHEDULED", "RUNNING", "COMPLETED", "FAILED"],
+      default: "SCHEDULED",
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 campaignSchema.index({ scheduledAt: 1, status: 1 });
 
-export const CampaignModel = mongoose.model<CampaignDocument>('Campaign', campaignSchema);
+export const CampaignModel = mongoose.model<CampaignDocument>(
+  "Campaign",
+  campaignSchema,
+);

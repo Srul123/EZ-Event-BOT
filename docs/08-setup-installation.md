@@ -6,13 +6,13 @@
 
 Before starting, ensure you have the following installed:
 
-| Tool | Minimum Version | Purpose |
-|---|---|---|
-| **Node.js** | 22.0.0+ | Runtime (required by `engines` in package.json) |
-| **npm** | 10+ | Package manager (ships with Node.js 22) |
-| **MongoDB** | 6.0+ | Database (local install or cloud Atlas) |
-| **Telegram Bot Token** | — | From [@BotFather](https://t.me/BotFather) on Telegram |
-| **Anthropic API Key** | — | Optional: for LLM-powered RSVP interpretation |
+| Tool                   | Minimum Version | Purpose                                               |
+| ---------------------- | --------------- | ----------------------------------------------------- |
+| **Node.js**            | 22.0.0+         | Runtime (required by `engines` in package.json)       |
+| **npm**                | 10+             | Package manager (ships with Node.js 22)               |
+| **MongoDB**            | 6.0+            | Database (local install or cloud Atlas)               |
+| **Telegram Bot Token** | —               | From [@BotFather](https://t.me/BotFather) on Telegram |
+| **Anthropic API Key**  | —               | Optional: for LLM-powered RSVP interpretation         |
 
 ### Verify Node.js version
 
@@ -35,6 +35,7 @@ npm install
 ```
 
 This single `npm install` at the root installs dependencies for all three workspaces:
+
 - `apps/bot-service` — Backend (Express + Telegraf + Mongoose)
 - `apps/admin-web` — Frontend (Vue 3 + Vite)
 - `packages/shared` — Shared utilities (currently a placeholder)
@@ -66,18 +67,18 @@ ANTHROPIC_API_KEY=<your-anthropic-api-key>
 
 ### Environment Variable Reference
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `NODE_ENV` | No | `development` | Environment: `development`, `production`, or `test` |
-| `PORT` | Yes | — | HTTP server port (typically `3000`) |
-| `TELEGRAM_BOT_TOKEN` | Yes | — | Bot token from Telegram BotFather |
-| `TELEGRAM_BOT_USERNAME` | No | `EzEventBot` | Bot username (without @) for generating invite links |
-| `MONGODB_URI` | Yes | — | MongoDB connection string |
-| `LOG_LEVEL` | No | `info` | Pino log level: `fatal`, `error`, `warn`, `info`, `debug`, `trace` |
-| `ANTHROPIC_API_KEY` | Conditional | — | Required if `RSVP_USE_LLM_INTERPRETATION=true` |
-| `RSVP_USE_LLM_INTERPRETATION` | No | `true` | Enable LLM fallback for RSVP message interpretation |
-| `RSVP_USE_LLM_RESPONSES` | No | `false` | Enable LLM-generated reply messages |
-| `RSVP_CONFIDENCE_THRESHOLD` | No | `0.85` | Confidence threshold for rule-based interpretation before falling back to LLM |
+| Variable                      | Required    | Default       | Description                                                                   |
+| ----------------------------- | ----------- | ------------- | ----------------------------------------------------------------------------- |
+| `NODE_ENV`                    | No          | `development` | Environment: `development`, `production`, or `test`                           |
+| `PORT`                        | Yes         | —             | HTTP server port (typically `3000`)                                           |
+| `TELEGRAM_BOT_TOKEN`          | Yes         | —             | Bot token from Telegram BotFather                                             |
+| `TELEGRAM_BOT_USERNAME`       | No          | `EzEventBot`  | Bot username (without @) for generating invite links                          |
+| `MONGODB_URI`                 | Yes         | —             | MongoDB connection string                                                     |
+| `LOG_LEVEL`                   | No          | `info`        | Pino log level: `fatal`, `error`, `warn`, `info`, `debug`, `trace`            |
+| `ANTHROPIC_API_KEY`           | Conditional | —             | Required if `RSVP_USE_LLM_INTERPRETATION=true`                                |
+| `RSVP_USE_LLM_INTERPRETATION` | No          | `true`        | Enable LLM fallback for RSVP message interpretation                           |
+| `RSVP_USE_LLM_RESPONSES`      | No          | `false`       | Enable LLM-generated reply messages                                           |
+| `RSVP_CONFIDENCE_THRESHOLD`   | No          | `0.85`        | Confidence threshold for rule-based interpretation before falling back to LLM |
 
 ### Running without an Anthropic API key
 
@@ -110,6 +111,7 @@ sudo systemctl start mongod
 ```
 
 Verify it's running:
+
 ```bash
 mongosh --eval "db.runCommand({ ping: 1 })"
 ```
@@ -155,11 +157,13 @@ npm run dev
 ```
 
 This runs `tsx watch src/index.ts` in the bot-service workspace. It starts:
+
 - Express HTTP server on `http://localhost:3000`
 - Telegram bot (long polling)
 - MongoDB connection
 
 You should see output like:
+
 ```
 [info] MongoDB connected
 [info] HTTP server started { port: 3000 }
@@ -178,11 +182,11 @@ This starts the Vite dev server on `http://localhost:5173`. The frontend proxies
 
 ### Verify everything is running
 
-| Service | URL | Expected |
-|---|---|---|
-| Backend health check | `http://localhost:3000/health` | `{"ok":true}` |
-| Campaign API | `http://localhost:3000/api/campaigns` | `[]` (empty array) |
-| Admin dashboard | `http://localhost:5173` | Vue app loads |
+| Service              | URL                                   | Expected           |
+| -------------------- | ------------------------------------- | ------------------ |
+| Backend health check | `http://localhost:3000/health`        | `{"ok":true}`      |
+| Campaign API         | `http://localhost:3000/api/campaigns` | `[]` (empty array) |
+| Admin dashboard      | `http://localhost:5173`               | Vue app loads      |
 
 ---
 
@@ -309,6 +313,7 @@ npm test --workspace=@ez-event-bot/bot-service
 ```
 
 Test files:
+
 - `apps/bot-service/src/bot/rsvp/interpret/rules.test.ts` — headcount extraction rules
 - `apps/bot-service/src/domain/rsvp-graph/nodes/decideAction.test.ts` — RSVP business logic
 
@@ -319,12 +324,14 @@ Test files:
 ### `ANTHROPIC_API_KEY is required when RSVP_USE_LLM_INTERPRETATION is true`
 
 The Zod validation fails at startup. Either:
+
 - Set `RSVP_USE_LLM_INTERPRETATION=false` in `.env`
 - Or provide a valid `ANTHROPIC_API_KEY`
 
 ### `MongooseServerSelectionError: connect ECONNREFUSED`
 
 MongoDB is not running. Start it:
+
 ```bash
 # macOS
 brew services start mongodb-community
@@ -344,22 +351,24 @@ Your `TELEGRAM_BOT_TOKEN` is invalid. Get a new token from [@BotFather](https://
 ### Port already in use
 
 Another process is using port 3000 or 5173. Either stop it or change the port:
+
 ```dotenv
 PORT=3001
 ```
+
 If you change the backend port, also update the proxy target in `apps/admin-web/vite.config.js`.
 
 ---
 
 ## 11. npm Workspace Commands Reference
 
-| Command | Scope | Description |
-|---|---|---|
-| `npm install` | All workspaces | Install all dependencies |
-| `npm run dev` | bot-service | Start backend in development mode (watch) |
-| `npm run dev -w @ez-event-bot/admin-web` | admin-web | Start frontend dev server |
-| `npm run build` | All workspaces | Build all packages |
-| `npm run build -w @ez-event-bot/bot-service` | bot-service | Build backend (TypeScript) |
-| `npm run build -w @ez-event-bot/admin-web` | admin-web | Build frontend (Vite) |
-| `npm start -w @ez-event-bot/bot-service` | bot-service | Run production backend |
-| `npm run preview -w @ez-event-bot/admin-web` | admin-web | Preview production frontend |
+| Command                                      | Scope          | Description                               |
+| -------------------------------------------- | -------------- | ----------------------------------------- |
+| `npm install`                                | All workspaces | Install all dependencies                  |
+| `npm run dev`                                | bot-service    | Start backend in development mode (watch) |
+| `npm run dev -w @ez-event-bot/admin-web`     | admin-web      | Start frontend dev server                 |
+| `npm run build`                              | All workspaces | Build all packages                        |
+| `npm run build -w @ez-event-bot/bot-service` | bot-service    | Build backend (TypeScript)                |
+| `npm run build -w @ez-event-bot/admin-web`   | admin-web      | Build frontend (Vite)                     |
+| `npm start -w @ez-event-bot/bot-service`     | bot-service    | Run production backend                    |
+| `npm run preview -w @ez-event-bot/admin-web` | admin-web      | Preview production frontend               |

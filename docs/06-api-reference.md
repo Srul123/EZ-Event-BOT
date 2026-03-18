@@ -27,11 +27,13 @@ Creates a new campaign with associated guests.
 **Endpoint:** `POST /api/campaigns`
 
 **Request Headers:**
+
 ```
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "Summer BBQ 2024",
@@ -52,6 +54,7 @@ Content-Type: application/json
 ```
 
 **Field Descriptions:**
+
 - `name` (string, required): Campaign name/identifier
 - `eventTitle` (string, required): Title of the event
 - `eventDate` (string, optional): Event date in ISO format (YYYY-MM-DD)
@@ -61,6 +64,7 @@ Content-Type: application/json
   - `phone` (string, required): Guest's phone number
 
 **Success Response (200 OK):**
+
 ```json
 {
   "campaignId": "6970b507ce951f625695114b"
@@ -70,6 +74,7 @@ Content-Type: application/json
 **Error Responses:**
 
 - **400 Bad Request** - Validation error:
+
 ```json
 {
   "error": "Validation error",
@@ -88,6 +93,7 @@ Content-Type: application/json
 ```
 
 - **500 Internal Server Error** - Server error:
+
 ```json
 {
   "error": "Failed to create campaign"
@@ -95,6 +101,7 @@ Content-Type: application/json
 ```
 
 **Example cURL:**
+
 ```bash
 curl -X POST http://localhost:3000/api/campaigns \
   -H "Content-Type: application/json" \
@@ -121,6 +128,7 @@ Retrieves a list of all campaigns, sorted by creation date (newest first).
 **Request:** No request body required.
 
 **Success Response (200 OK):**
+
 ```json
 [
   {
@@ -143,6 +151,7 @@ Retrieves a list of all campaigns, sorted by creation date (newest first).
 ```
 
 **Field Descriptions:**
+
 - `id` (string): Campaign unique identifier
 - `name` (string): Campaign name
 - `eventTitle` (string): Event title
@@ -151,6 +160,7 @@ Retrieves a list of all campaigns, sorted by creation date (newest first).
 - `createdAt` (string): ISO 8601 datetime when campaign was created
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "error": "Failed to list campaigns"
@@ -158,6 +168,7 @@ Retrieves a list of all campaigns, sorted by creation date (newest first).
 ```
 
 **Example cURL:**
+
 ```bash
 curl http://localhost:3000/api/campaigns
 ```
@@ -171,11 +182,13 @@ Retrieves detailed information about a specific campaign, including all associat
 **Endpoint:** `GET /api/campaigns/:id`
 
 **URL Parameters:**
+
 - `id` (string, required): Campaign ID (MongoDB ObjectId)
 
 **Example:** `GET /api/campaigns/6970b507ce951f625695114b`
 
 **Success Response (200 OK):**
+
 ```json
 {
   "id": "6970b507ce951f625695114b",
@@ -208,6 +221,7 @@ Retrieves detailed information about a specific campaign, including all associat
 ```
 
 **Campaign Fields:**
+
 - `id` (string): Campaign unique identifier
 - `name` (string): Campaign name
 - `eventTitle` (string): Event title
@@ -217,6 +231,7 @@ Retrieves detailed information about a specific campaign, including all associat
 - `createdAt` / `updatedAt` (string): ISO 8601 timestamps
 
 **Guest Fields:**
+
 - `id` (string): Guest unique identifier
 - `name` (string): Guest's full name
 - `phone` (string): Guest's phone number
@@ -227,6 +242,7 @@ Retrieves detailed information about a specific campaign, including all associat
 **Error Responses:**
 
 - **404 Not Found:**
+
 ```json
 {
   "error": "Campaign not found"
@@ -234,6 +250,7 @@ Retrieves detailed information about a specific campaign, including all associat
 ```
 
 - **500 Internal Server Error:**
+
 ```json
 {
   "error": "Failed to get campaign details"
@@ -241,6 +258,7 @@ Retrieves detailed information about a specific campaign, including all associat
 ```
 
 **Example cURL:**
+
 ```bash
 curl http://localhost:3000/api/campaigns/6970b507ce951f625695114b
 ```
@@ -254,11 +272,13 @@ Generates personalized Telegram deep links for all guests in a campaign. Each li
 **Endpoint:** `POST /api/campaigns/:id/generate-telegram-links`
 
 **URL Parameters:**
+
 - `id` (string, required): Campaign ID (MongoDB ObjectId)
 
 **Request:** No request body required.
 
 **Success Response (200 OK):**
+
 ```json
 {
   "campaignId": "6970b507ce951f625695114b",
@@ -283,6 +303,7 @@ Generates personalized Telegram deep links for all guests in a campaign. Each li
 ```
 
 **Field Descriptions:**
+
 - `campaignId` (string): Campaign unique identifier
 - `botUsername` (string): Telegram bot username (from `TELEGRAM_BOT_USERNAME` env var)
 - `links` (array): Array of invite link objects
@@ -293,6 +314,7 @@ Generates personalized Telegram deep links for all guests in a campaign. Each li
   - `token` (string): Unique invite token (format: `inv_<12-char-token>`)
 
 **Important Notes:**
+
 - Tokens are persisted in the database and linked to guests
 - Each token can be used to identify the guest when they interact with the bot
 - When a guest clicks the link and starts the bot, the token is used to initialize their session
@@ -301,6 +323,7 @@ Generates personalized Telegram deep links for all guests in a campaign. Each li
 **Error Responses:**
 
 - **404 Not Found:**
+
 ```json
 {
   "error": "Campaign not found"
@@ -308,6 +331,7 @@ Generates personalized Telegram deep links for all guests in a campaign. Each li
 ```
 
 - **500 Internal Server Error:**
+
 ```json
 {
   "error": "Failed to generate Telegram links"
@@ -315,11 +339,13 @@ Generates personalized Telegram deep links for all guests in a campaign. Each li
 ```
 
 **Example cURL:**
+
 ```bash
 curl -X POST http://localhost:3000/api/campaigns/6970b507ce951f625695114b/generate-telegram-links
 ```
 
 **Usage Workflow:**
+
 1. Create a campaign with guests using `POST /api/campaigns`
 2. Generate Telegram links using `POST /api/campaigns/:id/generate-telegram-links`
 3. Copy the links from the response and send them to guests
@@ -331,27 +357,35 @@ curl -X POST http://localhost:3000/api/campaigns/6970b507ce951f625695114b/genera
 ## Data Types
 
 ### Campaign Status
+
 ```typescript
-type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+type CampaignStatus =
+  | "DRAFT"
+  | "SCHEDULED"
+  | "RUNNING"
+  | "COMPLETED"
+  | "FAILED";
 ```
 
 ### RSVP Status
+
 ```typescript
-type RsvpStatus = 'NO_RESPONSE' | 'YES' | 'NO' | 'MAYBE';
+type RsvpStatus = "NO_RESPONSE" | "YES" | "NO" | "MAYBE";
 ```
 
-| Value | Meaning |
-|---|---|
+| Value         | Meaning                              |
+| ------------- | ------------------------------------ |
 | `NO_RESPONSE` | Default status when guest is created |
-| `YES` | Guest confirmed attendance |
-| `NO` | Guest declined |
-| `MAYBE` | Guest is unsure |
+| `YES`         | Guest confirmed attendance           |
+| `NO`          | Guest declined                       |
+| `MAYBE`       | Guest is unsure                      |
 
 ---
 
 ## Error Responses
 
 ### 400 Bad Request
+
 Validation errors when request body doesn't match the expected schema.
 
 ```json
@@ -370,6 +404,7 @@ Validation errors when request body doesn't match the expected schema.
 ```
 
 ### 404 Not Found
+
 Resource not found (campaign ID doesn't exist).
 
 ```json
@@ -379,6 +414,7 @@ Resource not found (campaign ID doesn't exist).
 ```
 
 ### 500 Internal Server Error
+
 Unexpected server errors.
 
 ```json
@@ -392,6 +428,7 @@ Unexpected server errors.
 ## Complete Workflow Example
 
 **Step 1 — Create a campaign:**
+
 ```bash
 curl -X POST http://localhost:3000/api/campaigns \
   -H "Content-Type: application/json" \
@@ -408,16 +445,19 @@ curl -X POST http://localhost:3000/api/campaigns \
 ```
 
 **Step 2 — List all campaigns:**
+
 ```bash
 curl http://localhost:3000/api/campaigns
 ```
 
 **Step 3 — Get campaign details:**
+
 ```bash
 curl http://localhost:3000/api/campaigns/6970b507ce951f625695114b
 ```
 
 **Step 4 — Generate Telegram links:**
+
 ```bash
 curl -X POST http://localhost:3000/api/campaigns/6970b507ce951f625695114b/generate-telegram-links
 ```
@@ -429,11 +469,11 @@ Copy a link from the response (e.g., `https://t.me/EzEventBot?start=inv_evUWgi54
 
 ## Environment Variables
 
-| Variable | Description |
-|---|---|
+| Variable                | Description                                   |
+| ----------------------- | --------------------------------------------- |
 | `TELEGRAM_BOT_USERNAME` | Telegram bot username (default: `EzEventBot`) |
-| `MONGODB_URI` | MongoDB connection string |
-| `PORT` | HTTP server port (default: `3000`) |
+| `MONGODB_URI`           | MongoDB connection string                     |
+| `PORT`                  | HTTP server port (default: `3000`)            |
 
 ---
 

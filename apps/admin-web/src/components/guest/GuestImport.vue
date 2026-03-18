@@ -45,7 +45,9 @@
           </button>
           or drag and drop
         </p>
-        <p class="text-xs text-neutral-500">CSV file with name and phone columns</p>
+        <p class="text-xs text-neutral-500">
+          CSV file with name and phone columns
+        </p>
       </div>
     </div>
 
@@ -54,7 +56,10 @@
       <p class="mt-2 text-sm text-neutral-600">Parsing CSV...</p>
     </div>
 
-    <div v-if="errors.length > 0" class="rounded-lg bg-error-50 border border-error-200 p-4">
+    <div
+      v-if="errors.length > 0"
+      class="rounded-lg bg-error-50 border border-error-200 p-4"
+    >
       <h4 class="text-sm font-medium text-error-800 mb-2">Errors found:</h4>
       <ul class="text-sm text-error-700 space-y-1">
         <li v-for="(error, index) in errors" :key="index">
@@ -67,24 +72,36 @@
     <div v-if="guests.length > 0" class="space-y-2">
       <div class="flex items-center justify-between">
         <h4 class="text-sm font-medium text-neutral-700">
-          {{ validGuestsCount }} valid guest{{ validGuestsCount !== 1 ? 's' : '' }}
+          {{ validGuestsCount }} valid guest{{
+            validGuestsCount !== 1 ? "s" : ""
+          }}
         </h4>
-        <Button variant="ghost" size="sm" @click="clearGuests">Clear All</Button>
+        <Button variant="ghost" size="sm" @click="clearGuests"
+          >Clear All</Button
+        >
       </div>
       <div class="border border-neutral-200 rounded-lg overflow-hidden">
         <table class="min-w-full divide-y divide-neutral-200">
           <thead class="bg-neutral-50">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase"
+              >
                 Name
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase"
+              >
                 Phone
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase"
+              >
                 Status
               </th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase">
+              <th
+                class="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase"
+              >
                 Actions
               </th>
             </tr>
@@ -95,8 +112,12 @@
               :key="index"
               :class="guest._errors ? 'bg-error-50' : ''"
             >
-              <td class="px-4 py-3 text-sm text-neutral-900">{{ guest.name }}</td>
-              <td class="px-4 py-3 text-sm text-neutral-900">{{ guest.phone }}</td>
+              <td class="px-4 py-3 text-sm text-neutral-900">
+                {{ guest.name }}
+              </td>
+              <td class="px-4 py-3 text-sm text-neutral-900">
+                {{ guest.phone }}
+              </td>
               <td class="px-4 py-3 text-sm">
                 <span
                   v-if="guest._errors"
@@ -112,7 +133,9 @@
                 </span>
               </td>
               <td class="px-4 py-3 text-right text-sm">
-                <Button variant="ghost" size="sm" @click="removeGuest(index)">Remove</Button>
+                <Button variant="ghost" size="sm" @click="removeGuest(index)"
+                  >Remove</Button
+                >
               </td>
             </tr>
           </tbody>
@@ -123,65 +146,72 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useCsvImport } from '../../composables/useCsvImport.js'
-import Button from '../common/Button.vue'
-import LoadingSpinner from '../common/LoadingSpinner.vue'
+import { ref, computed, watch } from "vue";
+import { useCsvImport } from "../../composables/useCsvImport.js";
+import Button from "../common/Button.vue";
+import LoadingSpinner from "../common/LoadingSpinner.vue";
 
 const props = defineProps({
   modelValue: {
     type: Array,
     default: () => [],
   },
-})
+});
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 
-const { guests, errors, loading, parseCsv, removeGuest, getValidGuests, clearGuests } =
-  useCsvImport()
+const {
+  guests,
+  errors,
+  loading,
+  parseCsv,
+  removeGuest,
+  getValidGuests,
+  clearGuests,
+} = useCsvImport();
 
-const fileInput = ref(null)
-const isDragging = ref(false)
+const fileInput = ref(null);
+const isDragging = ref(false);
 
 const dropZoneClasses = computed(() => {
   const base =
-    'border-2 border-dashed rounded-lg p-8 transition-colors duration-200 cursor-pointer'
+    "border-2 border-dashed rounded-lg p-8 transition-colors duration-200 cursor-pointer";
   if (isDragging.value) {
-    return `${base} border-primary-500 bg-primary-50`
+    return `${base} border-primary-500 bg-primary-50`;
   }
-  return `${base} border-neutral-300 hover:border-neutral-400`
-})
+  return `${base} border-neutral-300 hover:border-neutral-400`;
+});
 
-const validGuestsCount = computed(() => getValidGuests().length)
+const validGuestsCount = computed(() => getValidGuests().length);
 
 function openFilePicker() {
-  fileInput.value?.click()
+  fileInput.value?.click();
 }
 
 function handleDrop(event) {
-  isDragging.value = false
-  const files = event.dataTransfer.files
+  isDragging.value = false;
+  const files = event.dataTransfer.files;
   if (files.length > 0) {
-    handleFile(files[0])
+    handleFile(files[0]);
   }
 }
 
 function handleFileSelect(event) {
-  const files = event.target.files
+  const files = event.target.files;
   if (files.length > 0) {
-    handleFile(files[0])
+    handleFile(files[0]);
   }
 }
 
 async function handleFile(file) {
-  if (!file.name.endsWith('.csv')) {
-    alert('Please select a CSV file')
-    return
+  if (!file.name.endsWith(".csv")) {
+    alert("Please select a CSV file");
+    return;
   }
 
-  const result = await parseCsv(file)
+  const result = await parseCsv(file);
   if (result.success) {
-    emit('update:modelValue', getValidGuests())
+    emit("update:modelValue", getValidGuests());
   }
 }
 
@@ -190,18 +220,18 @@ watch(
   () => props.modelValue,
   (newValue) => {
     if (newValue && newValue.length > 0 && guests.value.length === 0) {
-      guests.value = [...newValue]
+      guests.value = [...newValue];
     }
   },
-  { immediate: true }
-)
+  { immediate: true },
+);
 
 // Watch for changes and emit
 watch(
   () => getValidGuests(),
   (validGuests) => {
-    emit('update:modelValue', validGuests)
+    emit("update:modelValue", validGuests);
   },
-  { deep: true }
-)
+  { deep: true },
+);
 </script>

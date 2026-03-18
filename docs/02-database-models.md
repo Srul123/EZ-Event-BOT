@@ -71,10 +71,10 @@ All models live under `apps/bot-service/src/domain/campaigns/`.
 
 ### Relationship Summary
 
-| Relationship | Type | Description |
-|---|---|---|
-| Campaign → Guest | **One-to-Many** | A campaign contains many guests. `Guest.campaignId` references `Campaign._id`. |
-| Guest → Invite | **One-to-Many** | A guest can have multiple invites (e.g., re-generated links). `Invite.guestId` references `Guest._id`. |
+| Relationship      | Type            | Description                                                                                               |
+| ----------------- | --------------- | --------------------------------------------------------------------------------------------------------- |
+| Campaign → Guest  | **One-to-Many** | A campaign contains many guests. `Guest.campaignId` references `Campaign._id`.                            |
+| Guest → Invite    | **One-to-Many** | A guest can have multiple invites (e.g., re-generated links). `Invite.guestId` references `Guest._id`.    |
 | Campaign → Invite | **One-to-Many** | All invites for a campaign. `Invite.campaignId` references `Campaign._id` (denormalized for fast lookup). |
 
 > **No Mongoose `populate()` is used.** All cross-collection lookups are done as explicit sequential queries (find invite → find guest by ID → find campaign by ID). This is intentional — it keeps queries simple and avoids hidden N+1 patterns.
@@ -89,36 +89,37 @@ Represents an event campaign created by an organizer.
 
 **Source**: `campaign.model.ts`
 
-| Field | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `_id` | `ObjectId` | auto | auto | MongoDB primary key |
-| `name` | `String` | yes | — | Internal campaign name (for organizer reference) |
-| `eventTitle` | `String` | yes | — | Public event title shown to guests in bot messages |
-| `eventDate` | `String` | no | — | Human-readable event date string (displayed as-is to guests) |
-| `scheduledAt` | `Date` | yes | — | When the campaign is scheduled to start dispatching |
-| `status` | `String` (enum) | no | `'SCHEDULED'` | Campaign lifecycle state |
-| `createdAt` | `Date` | auto | auto | Mongoose timestamp |
-| `updatedAt` | `Date` | auto | auto | Mongoose timestamp |
+| Field         | Type            | Required | Default       | Description                                                  |
+| ------------- | --------------- | -------- | ------------- | ------------------------------------------------------------ |
+| `_id`         | `ObjectId`      | auto     | auto          | MongoDB primary key                                          |
+| `name`        | `String`        | yes      | —             | Internal campaign name (for organizer reference)             |
+| `eventTitle`  | `String`        | yes      | —             | Public event title shown to guests in bot messages           |
+| `eventDate`   | `String`        | no       | —             | Human-readable event date string (displayed as-is to guests) |
+| `scheduledAt` | `Date`          | yes      | —             | When the campaign is scheduled to start dispatching          |
+| `status`      | `String` (enum) | no       | `'SCHEDULED'` | Campaign lifecycle state                                     |
+| `createdAt`   | `Date`          | auto     | auto          | Mongoose timestamp                                           |
+| `updatedAt`   | `Date`          | auto     | auto          | Mongoose timestamp                                           |
 
 **Status enum values:**
 
-| Value | Meaning |
-|---|---|
-| `DRAFT` | Campaign created but not scheduled |
+| Value       | Meaning                                       |
+| ----------- | --------------------------------------------- |
+| `DRAFT`     | Campaign created but not scheduled            |
 | `SCHEDULED` | Campaign scheduled, waiting for dispatch time |
-| `RUNNING` | Campaign actively dispatching invites |
-| `COMPLETED` | All invites dispatched successfully |
-| `FAILED` | Dispatch encountered an error |
+| `RUNNING`   | Campaign actively dispatching invites         |
+| `COMPLETED` | All invites dispatched successfully           |
+| `FAILED`    | Dispatch encountered an error                 |
 
 > **Note**: The `status` field and `scheduledAt` exist as infrastructure for future campaign dispatching. Currently, no scheduler/worker processes these — campaigns are created as `SCHEDULED` and links are generated on demand via the API.
 
 **Indexes:**
 
-| Fields | Type | Purpose |
-|---|---|---|
+| Fields                          | Type     | Purpose                                                         |
+| ------------------------------- | -------- | --------------------------------------------------------------- |
 | `{ scheduledAt: 1, status: 1 }` | Compound | Future use — efficient querying for campaigns ready to dispatch |
 
 **Design decisions:**
+
 - `eventDate` is stored as a free-form `String` (not `Date`) because it is a display value shown directly to guests in Hebrew (e.g., "יום שישי, 25 ביולי"). No date arithmetic is needed on this field.
 - `scheduledAt` is a proper `Date` for future scheduler queries (finding campaigns where `scheduledAt <= now AND status = 'SCHEDULED'`).
 
@@ -130,52 +131,53 @@ Represents an invited guest within a specific campaign. Tracks RSVP status and c
 
 **Source**: `guest.model.ts`
 
-| Field | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `_id` | `ObjectId` | auto | auto | MongoDB primary key |
-| `campaignId` | `ObjectId` (ref: Campaign) | yes | — | The campaign this guest belongs to |
-| `name` | `String` | yes | — | Guest's display name (used in bot messages) |
-| `phone` | `String` | yes | — | Guest's phone number (imported from CSV/manual entry) |
-| `rsvpStatus` | `String` (enum) | no | `'NO_RESPONSE'` | Current RSVP status |
-| `headcount` | `Number` | no | — | Number of attendees (set when guest confirms YES) |
-| `conversationState` | `String` (enum) | no | `'DEFAULT'` | Bot conversation flow state |
-| `rsvpUpdatedAt` | `Date` | no | — | Timestamp when `rsvpStatus` or `headcount` last changed |
-| `lastResponseAt` | `Date` | no | — | Timestamp of last meaningful guest message |
-| `createdAt` | `Date` | auto | auto | Mongoose timestamp |
-| `updatedAt` | `Date` | auto | auto | Mongoose timestamp |
+| Field               | Type                       | Required | Default         | Description                                             |
+| ------------------- | -------------------------- | -------- | --------------- | ------------------------------------------------------- |
+| `_id`               | `ObjectId`                 | auto     | auto            | MongoDB primary key                                     |
+| `campaignId`        | `ObjectId` (ref: Campaign) | yes      | —               | The campaign this guest belongs to                      |
+| `name`              | `String`                   | yes      | —               | Guest's display name (used in bot messages)             |
+| `phone`             | `String`                   | yes      | —               | Guest's phone number (imported from CSV/manual entry)   |
+| `rsvpStatus`        | `String` (enum)            | no       | `'NO_RESPONSE'` | Current RSVP status                                     |
+| `headcount`         | `Number`                   | no       | —               | Number of attendees (set when guest confirms YES)       |
+| `conversationState` | `String` (enum)            | no       | `'DEFAULT'`     | Bot conversation flow state                             |
+| `rsvpUpdatedAt`     | `Date`                     | no       | —               | Timestamp when `rsvpStatus` or `headcount` last changed |
+| `lastResponseAt`    | `Date`                     | no       | —               | Timestamp of last meaningful guest message              |
+| `createdAt`         | `Date`                     | auto     | auto            | Mongoose timestamp                                      |
+| `updatedAt`         | `Date`                     | auto     | auto            | Mongoose timestamp                                      |
 
 **rsvpStatus enum values:**
 
-| Value | Meaning |
-|---|---|
+| Value         | Meaning                                    |
+| ------------- | ------------------------------------------ |
 | `NO_RESPONSE` | Guest hasn't responded yet (initial state) |
-| `YES` | Guest confirmed attendance |
-| `NO` | Guest declined |
-| `MAYBE` | Guest is uncertain |
+| `YES`         | Guest confirmed attendance                 |
+| `NO`          | Guest declined                             |
+| `MAYBE`       | Guest is uncertain                         |
 
 **conversationState enum values:**
 
-| Value | Meaning |
-|---|---|
-| `DEFAULT` | Normal RSVP flow — accepts all message types |
+| Value                    | Meaning                                                               |
+| ------------------------ | --------------------------------------------------------------------- |
+| `DEFAULT`                | Normal RSVP flow — accepts all message types                          |
 | `YES_AWAITING_HEADCOUNT` | Guest said YES but hasn't provided headcount — bot is actively asking |
 
 **Indexes:**
 
-| Fields | Type | Purpose |
-|---|---|---|
+| Fields              | Type   | Purpose                                                                   |
+| ------------------- | ------ | ------------------------------------------------------------------------- |
 | `{ campaignId: 1 }` | Single | Fetch all guests for a campaign (used by detail view and link generation) |
-| `{ phone: 1 }` | Single | Lookup guest by phone number |
+| `{ phone: 1 }`      | Single | Lookup guest by phone number                                              |
 
 **Timestamp semantics:**
 
-| Field | When updated |
-|---|---|
-| `rsvpUpdatedAt` | Only when `rsvpStatus` changes OR `headcount` changes while status is `YES`. NOT updated on repeat messages with no change. |
-| `lastResponseAt` | Every time a meaningful message is processed (including ACK responses with no data change). |
-| `updatedAt` | Every `save()` call (Mongoose automatic). |
+| Field            | When updated                                                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `rsvpUpdatedAt`  | Only when `rsvpStatus` changes OR `headcount` changes while status is `YES`. NOT updated on repeat messages with no change. |
+| `lastResponseAt` | Every time a meaningful message is processed (including ACK responses with no data change).                                 |
+| `updatedAt`      | Every `save()` call (Mongoose automatic).                                                                                   |
 
 **Design decisions:**
+
 - `headcount` uses `min: 0` validation. A `null`/`undefined` headcount means "not yet provided" — distinct from `0` which would mean "no additional guests."
 - `conversationState` is persisted to DB (not just session) so the bot can recover state if the Telegraf session is lost. **DB is the source of truth** — on each message, the handler fetches the guest from DB and syncs the session.
 - `rsvpUpdatedAt` vs `lastResponseAt` distinction enables the admin dashboard to show "last RSVP change" separately from "last interaction," supporting scenarios where a guest sends multiple messages without changing their RSVP.
@@ -188,31 +190,34 @@ Maps a unique token to a guest and campaign. Tokens are embedded in Telegram dee
 
 **Source**: `invite.model.ts`
 
-| Field | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `_id` | `ObjectId` | auto | auto | MongoDB primary key |
-| `token` | `String` | yes (unique) | — | Unique invite token (format: `inv_` + 12-char base64url) |
-| `guestId` | `ObjectId` (ref: Guest) | yes | — | The guest this invite belongs to |
-| `campaignId` | `ObjectId` (ref: Campaign) | yes | — | The campaign this invite belongs to |
-| `usedAt` | `Date` | no | — | Timestamp when the guest first clicked the link |
-| `createdAt` | `Date` | auto | auto | Mongoose timestamp |
-| `updatedAt` | `Date` | auto | auto | Mongoose timestamp |
+| Field        | Type                       | Required     | Default | Description                                              |
+| ------------ | -------------------------- | ------------ | ------- | -------------------------------------------------------- |
+| `_id`        | `ObjectId`                 | auto         | auto    | MongoDB primary key                                      |
+| `token`      | `String`                   | yes (unique) | —       | Unique invite token (format: `inv_` + 12-char base64url) |
+| `guestId`    | `ObjectId` (ref: Guest)    | yes          | —       | The guest this invite belongs to                         |
+| `campaignId` | `ObjectId` (ref: Campaign) | yes          | —       | The campaign this invite belongs to                      |
+| `usedAt`     | `Date`                     | no           | —       | Timestamp when the guest first clicked the link          |
+| `createdAt`  | `Date`                     | auto         | auto    | Mongoose timestamp                                       |
+| `updatedAt`  | `Date`                     | auto         | auto    | Mongoose timestamp                                       |
 
 **Indexes:**
 
-| Fields | Type | Purpose |
-|---|---|---|
-| `{ token: 1 }` | Unique | Fast O(1) token lookup when guest opens deep link — the primary access pattern |
-| `{ guestId: 1 }` | Single | Find all invites for a guest (e.g., check if links already generated) |
-| `{ campaignId: 1 }` | Single | Find all invites for a campaign |
+| Fields              | Type   | Purpose                                                                        |
+| ------------------- | ------ | ------------------------------------------------------------------------------ |
+| `{ token: 1 }`      | Unique | Fast O(1) token lookup when guest opens deep link — the primary access pattern |
+| `{ guestId: 1 }`    | Single | Find all invites for a guest (e.g., check if links already generated)          |
+| `{ campaignId: 1 }` | Single | Find all invites for a campaign                                                |
 
 **Token format:**
+
 ```
 inv_aB3xK9mP2nQ7    (prefix "inv_" + 12 random base64url chars)
 ```
+
 Generated via `crypto.randomBytes(8).toString('base64url').substring(0, 12)`.
 
 **Design decisions:**
+
 - `campaignId` is **denormalized** (it could be derived from `guestId → Guest.campaignId`). Stored directly on Invite for query convenience — avoids a join when listing invites per campaign.
 - `usedAt` tracks first usage only. Set once when the guest clicks the link, never updated again. This lets the organizer see which guests have opened their invite vs. which haven't.
 - A guest can have **multiple Invite records** if links are regenerated (e.g., organizer clicks "Generate Links" again). Each generation creates new tokens. All old tokens remain valid.
@@ -308,14 +313,14 @@ API: GET /api/campaigns  →  campaign.service.ts → listCampaigns()
 
 ## Index Strategy
 
-| Collection | Index | Unique | Primary Query |
-|---|---|---|---|
-| Campaign | `{ scheduledAt: 1, status: 1 }` | No | Future scheduler: find campaigns ready to dispatch |
-| Guest | `{ campaignId: 1 }` | No | Get all guests in a campaign |
-| Guest | `{ phone: 1 }` | No | Lookup by phone (available for future use) |
-| Invite | `{ token: 1 }` | **Yes** | Token-to-guest resolution on `/start` command |
-| Invite | `{ guestId: 1 }` | No | Find invites for a specific guest |
-| Invite | `{ campaignId: 1 }` | No | Find all invites in a campaign |
+| Collection | Index                           | Unique  | Primary Query                                      |
+| ---------- | ------------------------------- | ------- | -------------------------------------------------- |
+| Campaign   | `{ scheduledAt: 1, status: 1 }` | No      | Future scheduler: find campaigns ready to dispatch |
+| Guest      | `{ campaignId: 1 }`             | No      | Get all guests in a campaign                       |
+| Guest      | `{ phone: 1 }`                  | No      | Lookup by phone (available for future use)         |
+| Invite     | `{ token: 1 }`                  | **Yes** | Token-to-guest resolution on `/start` command      |
+| Invite     | `{ guestId: 1 }`                | No      | Find invites for a specific guest                  |
+| Invite     | `{ campaignId: 1 }`             | No      | Find all invites in a campaign                     |
 
 ### Why no compound indexes on Guest?
 
@@ -329,9 +334,9 @@ A person can be invited to multiple campaigns with the same phone number. Each c
 
 ## Denormalization Choices
 
-| Field | Location | Why Denormalized |
-|---|---|---|
-| `Invite.campaignId` | Invite | Avoids needing to join through Guest to find which campaign an invite belongs to. Enables direct `Invite.find({ campaignId })` queries. |
+| Field                             | Location                | Why Denormalized                                                                                                                           |
+| --------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Invite.campaignId`               | Invite                  | Avoids needing to join through Guest to find which campaign an invite belongs to. Enables direct `Invite.find({ campaignId })` queries.    |
 | Session `eventTitle`, `eventDate` | Bot session (in-memory) | Fetched once during `/start` and cached in Telegraf session. Avoids repeated Campaign lookups on every guest message. Not persisted to DB. |
 
 ### What is NOT denormalized (and why)
@@ -346,9 +351,14 @@ A person can be invited to multiple campaigns with the same phone number. Each c
 **Source**: `types.ts`
 
 ```typescript
-export type RsvpStatus = 'NO_RESPONSE' | 'YES' | 'NO' | 'MAYBE';
+export type RsvpStatus = "NO_RESPONSE" | "YES" | "NO" | "MAYBE";
 
-export type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+export type CampaignStatus =
+  | "DRAFT"
+  | "SCHEDULED"
+  | "RUNNING"
+  | "COMPLETED"
+  | "FAILED";
 
 export type CreateCampaignGuestInput = {
   name: string;
@@ -414,11 +424,11 @@ Campaign + all Guests fetched → stats computed client-side
 
 ## Considerations for Future Growth
 
-| Scenario | Current State | Potential Change |
-|---|---|---|
-| Large guest lists (1000+) | `insertMany` + single `find({ campaignId })` | Pagination on guest list API, compound index `{ campaignId, rsvpStatus }` |
-| Campaign scheduling | `scheduledAt` + `status` fields exist, no worker | Add a cron job / worker that queries `{ scheduledAt: { $lte: now }, status: 'SCHEDULED' }` |
-| Multi-organizer | No auth, single-tenant | Add `organizerId` field to Campaign, authentication middleware |
-| Guest across campaigns | Same phone = separate Guest docs | Could add a top-level `Contact` collection with deduplication if cross-campaign analytics needed |
-| Invite expiration | No TTL, all invites valid forever | Add `expiresAt` field + TTL index, or check in `getGuestByToken()` |
-| Message history | Only latest state tracked | Add a `Message` collection to log full conversation history per guest |
+| Scenario                  | Current State                                    | Potential Change                                                                                 |
+| ------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Large guest lists (1000+) | `insertMany` + single `find({ campaignId })`     | Pagination on guest list API, compound index `{ campaignId, rsvpStatus }`                        |
+| Campaign scheduling       | `scheduledAt` + `status` fields exist, no worker | Add a cron job / worker that queries `{ scheduledAt: { $lte: now }, status: 'SCHEDULED' }`       |
+| Multi-organizer           | No auth, single-tenant                           | Add `organizerId` field to Campaign, authentication middleware                                   |
+| Guest across campaigns    | Same phone = separate Guest docs                 | Could add a top-level `Contact` collection with deduplication if cross-campaign analytics needed |
+| Invite expiration         | No TTL, all invites valid forever                | Add `expiresAt` field + TTL index, or check in `getGuestByToken()`                               |
+| Message history           | Only latest state tracked                        | Add a `Message` collection to log full conversation history per guest                            |

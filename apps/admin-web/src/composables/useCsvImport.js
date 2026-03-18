@@ -1,63 +1,63 @@
-import { ref } from 'vue'
-import { parseAndValidateCsv, normalizeCsvGuests } from '../utils/csvParser.js'
-import { validateGuest, findDuplicatePhones } from '../utils/validators.js'
+import { ref } from "vue";
+import { parseAndValidateCsv, normalizeCsvGuests } from "../utils/csvParser.js";
+import { validateGuest, findDuplicatePhones } from "../utils/validators.js";
 
 /**
  * Composable for CSV import functionality
  * @returns {Object}
  */
 export function useCsvImport() {
-  const guests = ref([])
-  const errors = ref([])
-  const loading = ref(false)
+  const guests = ref([]);
+  const errors = ref([]);
+  const loading = ref(false);
 
   /**
    * Parse and validate CSV file
    * @param {File} file
    */
   async function parseCsv(file) {
-    loading.value = true
-    errors.value = []
-    guests.value = []
+    loading.value = true;
+    errors.value = [];
+    guests.value = [];
 
     try {
-      const result = await parseAndValidateCsv(file)
-      guests.value = result.guests
-      errors.value = result.errors
+      const result = await parseAndValidateCsv(file);
+      guests.value = result.guests;
+      errors.value = result.errors;
 
       // Additional validation: check for duplicates
-      const duplicates = findDuplicatePhones(guests.value)
+      const duplicates = findDuplicatePhones(guests.value);
       if (duplicates.length > 0) {
         duplicates.forEach((dup) => {
           errors.value.push({
-            type: 'duplicate',
+            type: "duplicate",
             message: `Duplicate phone number: ${dup.phone}`,
             row: dup.index,
-          })
-        })
+          });
+        });
       }
 
       // Validate each guest
       guests.value.forEach((guest, index) => {
-        const validation = validateGuest(guest)
+        const validation = validateGuest(guest);
         if (!validation.valid) {
-          guest._errors = validation.errors
+          guest._errors = validation.errors;
           errors.value.push({
-            type: 'validation',
-            message: validation.errors.join(', '),
+            type: "validation",
+            message: validation.errors.join(", "),
             row: index,
-          })
+          });
         } else {
-          delete guest._errors
+          delete guest._errors;
         }
-      })
+      });
 
-      return { success: true, guests: guests.value, errors: errors.value }
+      return { success: true, guests: guests.value, errors: errors.value };
     } catch (error) {
-      errors.value = [{ type: 'file', message: error.message }]
-      return { success: false, guests: [], errors: errors.value }
+      errors.value = [{ type: "file", message: error.message }];
+      return { success: false, guests: [], errors: errors.value };
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
@@ -66,12 +66,12 @@ export function useCsvImport() {
    * @param {Object} guest
    */
   function addGuest(guest) {
-    const validation = validateGuest(guest)
+    const validation = validateGuest(guest);
     if (validation.valid) {
-      guests.value.push({ ...guest, _errors: undefined })
-      return true
+      guests.value.push({ ...guest, _errors: undefined });
+      return true;
     }
-    return false
+    return false;
   }
 
   /**
@@ -79,7 +79,7 @@ export function useCsvImport() {
    * @param {number} index
    */
   function removeGuest(index) {
-    guests.value.splice(index, 1)
+    guests.value.splice(index, 1);
   }
 
   /**
@@ -89,14 +89,14 @@ export function useCsvImport() {
    */
   function updateGuest(index, updates) {
     if (index >= 0 && index < guests.value.length) {
-      const updated = { ...guests.value[index], ...updates }
-      const validation = validateGuest(updated)
+      const updated = { ...guests.value[index], ...updates };
+      const validation = validateGuest(updated);
       if (validation.valid) {
-        delete updated._errors
+        delete updated._errors;
       } else {
-        updated._errors = validation.errors
+        updated._errors = validation.errors;
       }
-      guests.value[index] = updated
+      guests.value[index] = updated;
     }
   }
 
@@ -105,15 +105,15 @@ export function useCsvImport() {
    * @returns {Array}
    */
   function getValidGuests() {
-    return guests.value.filter((g) => !g._errors || g._errors.length === 0)
+    return guests.value.filter((g) => !g._errors || g._errors.length === 0);
   }
 
   /**
    * Clear all guests
    */
   function clearGuests() {
-    guests.value = []
-    errors.value = []
+    guests.value = [];
+    errors.value = [];
   }
 
   return {
@@ -126,5 +126,5 @@ export function useCsvImport() {
     updateGuest,
     getValidGuests,
     clearGuests,
-  }
+  };
 }

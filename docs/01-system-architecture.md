@@ -10,12 +10,12 @@ Event organizers need to collect RSVP responses from invited guests. Traditional
 
 The core technical challenge is **Natural Language Understanding (NLU) in Hebrew**: guests respond with colloquial expressions, abbreviations, ambiguous phrasing, and varying levels of specificity.
 
-| Guest Message | Expected Interpretation |
-|---|---|
-| "כן מגיע" (Yes, coming) | RSVP: YES, headcount unknown |
-| "אנחנו זוג" (We're a couple) | RSVP: YES, headcount: 2 |
-| "תלוי בעבודה, עוד לא סגור" (Depends on work) | RSVP: MAYBE |
-| "אני ואשתי ו-2 ילדים" (Me, wife, and 2 kids) | RSVP: YES, headcount: 4 |
+| Guest Message                                    | Expected Interpretation             |
+| ------------------------------------------------ | ----------------------------------- |
+| "כן מגיע" (Yes, coming)                          | RSVP: YES, headcount unknown        |
+| "אנחנו זוג" (We're a couple)                     | RSVP: YES, headcount: 2             |
+| "תלוי בעבודה, עוד לא סגור" (Depends on work)     | RSVP: MAYBE                         |
+| "אני ואשתי ו-2 ילדים" (Me, wife, and 2 kids)     | RSVP: YES, headcount: 4             |
 | "אופס טעיתי, נהיה 2" (Oops, mistake, we'll be 2) | Headcount correction to 2, keep YES |
 
 ### 1.2 Research Context
@@ -75,6 +75,7 @@ The system has three main actors and two runtime processes:
 ```
 
 **Two runtime processes:**
+
 - **`bot-service`** (Node.js): Express HTTP server + Telegraf Telegram bot + LangGraph RSVP agent
 - **`admin-web`** (Vite dev server / static build): Vue 3 admin dashboard
 
@@ -106,11 +107,11 @@ The codebase enforces **strict import boundaries** between three layers:
 
 **Boundary rules** (verifiable by grep):
 
-| Rule | Checked By |
-|---|---|
-| `domain/rsvp-graph/**` never imports from `bot/` | grep |
-| `domain/rsvp-graph/**` never imports `mongoose` or `telegraf` | grep |
-| `domain/rsvp-graph/**` never calls `new Date()` | grep |
+| Rule                                                          | Checked By |
+| ------------------------------------------------------------- | ---------- |
+| `domain/rsvp-graph/**` never imports from `bot/`              | grep       |
+| `domain/rsvp-graph/**` never imports `mongoose` or `telegraf` | grep       |
+| `domain/rsvp-graph/**` never calls `new Date()`               | grep       |
 
 All time values flow through `ClockPort.now()`, making the domain layer fully deterministic in tests. All external capabilities (NLU, NLG, clock, logger) are accessed through **port interfaces** defined in `domain/rsvp-graph/ports.ts`.
 
@@ -120,33 +121,33 @@ All time values flow through `ClockPort.now()`, making the domain layer fully de
 
 ### Backend (bot-service)
 
-| Technology | Version | Purpose |
-|---|---|---|
-| Node.js | 22+ | Runtime (ESM modules) |
-| TypeScript | 5.3+ | Type safety, strict mode |
-| Express.js | 4.x | HTTP API server |
-| Telegraf | 4.x | Telegram bot framework |
-| LangGraph (`@langchain/langgraph`) | latest | RSVP state graph orchestration |
-| Mongoose | 8.x | MongoDB ODM |
-| Zod | 3.x | Schema validation (API + LLM responses) |
-| Pino | 9.x | Structured logging |
-| Anthropic SDK | latest | Claude 3 Haiku LLM |
+| Technology                         | Version | Purpose                                 |
+| ---------------------------------- | ------- | --------------------------------------- |
+| Node.js                            | 22+     | Runtime (ESM modules)                   |
+| TypeScript                         | 5.3+    | Type safety, strict mode                |
+| Express.js                         | 4.x     | HTTP API server                         |
+| Telegraf                           | 4.x     | Telegram bot framework                  |
+| LangGraph (`@langchain/langgraph`) | latest  | RSVP state graph orchestration          |
+| Mongoose                           | 8.x     | MongoDB ODM                             |
+| Zod                                | 3.x     | Schema validation (API + LLM responses) |
+| Pino                               | 9.x     | Structured logging                      |
+| Anthropic SDK                      | latest  | Claude 3 Haiku LLM                      |
 
 **LLM model**: `claude-3-haiku-20240307` — chosen for classification tasks: low latency (~200-500ms), low cost (~10x cheaper than Sonnet), sufficient capability for short Hebrew RSVP parsing.
 
 ### Frontend (admin-web)
 
-| Technology | Purpose |
-|---|---|
-| Vue 3 (Composition API) | UI framework |
-| Vite | Build tool and dev server |
-| Tailwind CSS 4 | Styling with custom design tokens |
-| Pinia | State management |
-| Vue Router | Client-side routing |
-| vue-i18n | Hebrew/English internationalization |
-| Axios | HTTP client with interceptors |
-| PapaParse | CSV parsing for guest import |
-| date-fns | Date formatting |
+| Technology              | Purpose                             |
+| ----------------------- | ----------------------------------- |
+| Vue 3 (Composition API) | UI framework                        |
+| Vite                    | Build tool and dev server           |
+| Tailwind CSS 4          | Styling with custom design tokens   |
+| Pinia                   | State management                    |
+| Vue Router              | Client-side routing                 |
+| vue-i18n                | Hebrew/English internationalization |
+| Axios                   | HTTP client with interceptors       |
+| PapaParse               | CSV parsing for guest import        |
+| date-fns                | Date formatting                     |
 
 ---
 
@@ -189,45 +190,45 @@ EZ-Event-BOT/
 
 ### Domain Layer — Pure, no infrastructure imports
 
-| Component | File | Responsibility |
-|---|---|---|
-| Shared Domain Types | `domain/rsvp/types.ts` | `RsvpStatus`, `ConversationState`, `HeadcountExtraction`, `Interpretation`, `AmbiguityReason` |
-| Graph Types | `domain/rsvp-graph/types.ts` | `GuestContext`, `Action` (6-variant union), `EffectsPatch`, `GraphInput`/`GraphOutput` |
-| Port Interfaces | `domain/rsvp-graph/ports.ts` | `NluPort`, `NlgPort`, `ClockPort`, `LoggerPort`, `RsvpGraphPorts` |
-| State Annotation | `domain/rsvp-graph/state.ts` | LangGraph `RsvpAnnotation` — 7-channel state definition |
-| `interpretFull` node | `domain/rsvp-graph/nodes/interpretFull.ts` | Calls `ports.nlu.interpretMessage()`, sets `interpretation` |
-| `interpretHeadcount` node | `domain/rsvp-graph/nodes/interpretHeadcount.ts` | Calls `ports.nlu.interpretHeadcountOnly()`, sets `headcountExtraction` |
-| `decideAction` node | `domain/rsvp-graph/nodes/decideAction.ts` | **All business logic** — change detection, policy rules, produces `Action`. Pure function. |
-| `composeReply` node | `domain/rsvp-graph/nodes/composeReply.ts` | Switches on `action.type`, delegates to `ports.nlg` |
-| `buildEffects` node | `domain/rsvp-graph/nodes/buildEffects.ts` | Maps `Action` + `GuestContext` → sparse `EffectsPatch` via `ClockPort` |
-| Graph Definition | `domain/rsvp-graph/graph.ts` | LangGraph `StateGraph` with conditional routing, compiled once |
-| Graph Runner | `domain/rsvp-graph/index.ts` | `createRsvpGraphRunner()` — singleton factory |
+| Component                 | File                                            | Responsibility                                                                                |
+| ------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Shared Domain Types       | `domain/rsvp/types.ts`                          | `RsvpStatus`, `ConversationState`, `HeadcountExtraction`, `Interpretation`, `AmbiguityReason` |
+| Graph Types               | `domain/rsvp-graph/types.ts`                    | `GuestContext`, `Action` (6-variant union), `EffectsPatch`, `GraphInput`/`GraphOutput`        |
+| Port Interfaces           | `domain/rsvp-graph/ports.ts`                    | `NluPort`, `NlgPort`, `ClockPort`, `LoggerPort`, `RsvpGraphPorts`                             |
+| State Annotation          | `domain/rsvp-graph/state.ts`                    | LangGraph `RsvpAnnotation` — 7-channel state definition                                       |
+| `interpretFull` node      | `domain/rsvp-graph/nodes/interpretFull.ts`      | Calls `ports.nlu.interpretMessage()`, sets `interpretation`                                   |
+| `interpretHeadcount` node | `domain/rsvp-graph/nodes/interpretHeadcount.ts` | Calls `ports.nlu.interpretHeadcountOnly()`, sets `headcountExtraction`                        |
+| `decideAction` node       | `domain/rsvp-graph/nodes/decideAction.ts`       | **All business logic** — change detection, policy rules, produces `Action`. Pure function.    |
+| `composeReply` node       | `domain/rsvp-graph/nodes/composeReply.ts`       | Switches on `action.type`, delegates to `ports.nlg`                                           |
+| `buildEffects` node       | `domain/rsvp-graph/nodes/buildEffects.ts`       | Maps `Action` + `GuestContext` → sparse `EffectsPatch` via `ClockPort`                        |
+| Graph Definition          | `domain/rsvp-graph/graph.ts`                    | LangGraph `StateGraph` with conditional routing, compiled once                                |
+| Graph Runner              | `domain/rsvp-graph/index.ts`                    | `createRsvpGraphRunner()` — singleton factory                                                 |
 
 ### Bot Layer — Infrastructure, adapters, Telegraf
 
-| Component | File | Responsibility |
-|---|---|---|
-| Message Handler | `bot/handlers/guestMessage.handler.ts` | Session check, DB fetch, builds `GuestContext`, calls graph runner, applies `EffectsPatch`, sends reply |
-| Start Handler | `bot/handlers/start.handler.ts` | `/start` command: token lookup, session init, personalized invitation |
-| NLU Adapter | `bot/adapters/nluAdapter.ts` | Implements `NluPort` — wraps `interpret/` functions |
-| NLG Adapter | `bot/adapters/nlgAdapter.ts` | Implements `NlgPort` — wraps `respond/` functions |
-| Rule-Based Interpreter | `bot/rsvp/interpret/rules.ts` | Deterministic Hebrew/English NLP, 14-step headcount extraction, fuzzy matching |
-| LLM Interpreter | `bot/rsvp/interpret/llmInterpreter.ts` | Anthropic Claude fallback with Zod validation |
-| Interpretation Pipeline | `bot/rsvp/interpret/index.ts` | Routes between rules and LLM based on confidence threshold |
-| Headcount-Only Extractor | `bot/rsvp/interpret/headcountOnly.ts` | Focused extraction for `YES_AWAITING_HEADCOUNT` state |
-| Response Composer | `bot/rsvp/respond/index.ts` | Routes between templates and LLM responses |
-| Template Engine | `bot/rsvp/respond/templates.ts` | Static Hebrew reply templates |
-| LLM Responder | `bot/rsvp/respond/llmResponder.ts` | LLM-generated natural replies |
-| Clarification Builder | `bot/rsvp/clarificationQuestions.ts` | Adaptive 3-attempt headcount clarification |
+| Component                | File                                   | Responsibility                                                                                          |
+| ------------------------ | -------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Message Handler          | `bot/handlers/guestMessage.handler.ts` | Session check, DB fetch, builds `GuestContext`, calls graph runner, applies `EffectsPatch`, sends reply |
+| Start Handler            | `bot/handlers/start.handler.ts`        | `/start` command: token lookup, session init, personalized invitation                                   |
+| NLU Adapter              | `bot/adapters/nluAdapter.ts`           | Implements `NluPort` — wraps `interpret/` functions                                                     |
+| NLG Adapter              | `bot/adapters/nlgAdapter.ts`           | Implements `NlgPort` — wraps `respond/` functions                                                       |
+| Rule-Based Interpreter   | `bot/rsvp/interpret/rules.ts`          | Deterministic Hebrew/English NLP, 14-step headcount extraction, fuzzy matching                          |
+| LLM Interpreter          | `bot/rsvp/interpret/llmInterpreter.ts` | Anthropic Claude fallback with Zod validation                                                           |
+| Interpretation Pipeline  | `bot/rsvp/interpret/index.ts`          | Routes between rules and LLM based on confidence threshold                                              |
+| Headcount-Only Extractor | `bot/rsvp/interpret/headcountOnly.ts`  | Focused extraction for `YES_AWAITING_HEADCOUNT` state                                                   |
+| Response Composer        | `bot/rsvp/respond/index.ts`            | Routes between templates and LLM responses                                                              |
+| Template Engine          | `bot/rsvp/respond/templates.ts`        | Static Hebrew reply templates                                                                           |
+| LLM Responder            | `bot/rsvp/respond/llmResponder.ts`     | LLM-generated natural replies                                                                           |
+| Clarification Builder    | `bot/rsvp/clarificationQuestions.ts`   | Adaptive 3-attempt headcount clarification                                                              |
 
 ### Infrastructure Layer
 
-| Component | File | Responsibility |
-|---|---|---|
-| Anthropic Client | `infra/llm/anthropic.ts` | SDK singleton, `claude-3-haiku-20240307`, temperature 0.2 |
-| LLM Client | `infra/llm/llmClient.ts` | 10s timeout, 1 retry, retryable error classification |
-| Environment Config | `config/env.ts` | Zod schema with cross-field validation (API key required when LLM enabled) |
-| Campaign Routes | `http/routes/campaignRoutes.ts` | Express routes for Campaign CRUD and link generation |
+| Component          | File                            | Responsibility                                                             |
+| ------------------ | ------------------------------- | -------------------------------------------------------------------------- |
+| Anthropic Client   | `infra/llm/anthropic.ts`        | SDK singleton, `claude-3-haiku-20240307`, temperature 0.2                  |
+| LLM Client         | `infra/llm/llmClient.ts`        | 10s timeout, 1 retry, retryable error classification                       |
+| Environment Config | `config/env.ts`                 | Zod schema with cross-field validation (API key required when LLM enabled) |
+| Campaign Routes    | `http/routes/campaignRoutes.ts` | Express routes for Campaign CRUD and link generation                       |
 
 ---
 
@@ -240,6 +241,7 @@ Every incoming message is processed by the deterministic rule-based interpreter.
 ### 7.2 Hexagonal Architecture (Ports & Adapters)
 
 The domain layer (`domain/rsvp-graph/`) defines **port interfaces** for all external capabilities. Concrete implementations live in the bot layer as **adapters**. This enables:
+
 - Testing the domain graph in complete isolation with mock ports
 - Swapping NLU or NLG implementations without touching domain logic
 
@@ -259,12 +261,12 @@ When headcount is ambiguous ("אני והילדים" — me and the kids), the s
 
 Every LLM integration point has an explicit fallback:
 
-| Component | LLM Failure Fallback |
-|---|---|
-| Interpretation pipeline | Returns rules result (even if low confidence) |
-| LLM interpreter | Returns `UNKNOWN` with confidence 0.2 |
-| Response composer | Falls back to template replies |
-| Headcount-only extractor | Returns rules extraction result |
+| Component                | LLM Failure Fallback                          |
+| ------------------------ | --------------------------------------------- |
+| Interpretation pipeline  | Returns rules result (even if low confidence) |
+| LLM interpreter          | Returns `UNKNOWN` with confidence 0.2         |
+| Response composer        | Falls back to template replies                |
+| Headcount-only extractor | Returns rules extraction result               |
 
 The system always produces a reply, even if every LLM call fails.
 
@@ -331,17 +333,17 @@ sequenceDiagram
 
 ## 9. Configuration & Feature Flags
 
-| Variable | Default | Description |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | — | Required when `RSVP_USE_LLM_INTERPRETATION=true` |
-| `RSVP_USE_LLM_INTERPRETATION` | `true` | Enable LLM fallback for interpretation |
-| `RSVP_USE_LLM_RESPONSES` | `false` | Enable LLM-generated reply text |
-| `RSVP_CONFIDENCE_THRESHOLD` | `0.85` | Minimum rules confidence to skip LLM |
+| Variable                      | Default | Description                                      |
+| ----------------------------- | ------- | ------------------------------------------------ |
+| `ANTHROPIC_API_KEY`           | —       | Required when `RSVP_USE_LLM_INTERPRETATION=true` |
+| `RSVP_USE_LLM_INTERPRETATION` | `true`  | Enable LLM fallback for interpretation           |
+| `RSVP_USE_LLM_RESPONSES`      | `false` | Enable LLM-generated reply text                  |
+| `RSVP_CONFIDENCE_THRESHOLD`   | `0.85`  | Minimum rules confidence to skip LLM             |
 
 ### Operating Modes
 
-| Mode | `LLM_INTERPRETATION` | `LLM_RESPONSES` | Behavior |
-|---|---|---|---|
-| Rules-only | `false` | `false` | Zero LLM calls. Fully deterministic. |
-| **Hybrid (default)** | `true` | `false` | LLM for ambiguous messages; templates for all replies. |
-| Full LLM | `true` | `true` | LLM for interpretation and response. Most natural, highest cost. |
+| Mode                 | `LLM_INTERPRETATION` | `LLM_RESPONSES` | Behavior                                                         |
+| -------------------- | -------------------- | --------------- | ---------------------------------------------------------------- |
+| Rules-only           | `false`              | `false`         | Zero LLM calls. Fully deterministic.                             |
+| **Hybrid (default)** | `true`               | `false`         | LLM for ambiguous messages; templates for all replies.           |
+| Full LLM             | `true`               | `true`          | LLM for interpretation and response. Most natural, highest cost. |
