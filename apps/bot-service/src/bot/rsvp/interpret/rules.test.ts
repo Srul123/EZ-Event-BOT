@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import { strict as assert } from "node:assert";
-import { extractHeadcount } from "./rules.js";
+import { extractHeadcount, interpretWithRules } from "./rules.js";
 
 describe("extractHeadcount - Hebrew number words", () => {
   it('should extract "ארבע" from "אנחנו נהיה ארבע"', () => {
@@ -178,5 +178,20 @@ describe("extractHeadcount - normalization and fuzzy matching", () => {
     assert.strictEqual(result.kind, "exact");
     assert.strictEqual(result.headcount, 2);
     assert.strictEqual(result.fuzzy, true);
+  });
+});
+
+describe("interpretWithRules - RSVP intent precedence", () => {
+  it('classifies "לא מגיע" as NO (not YES)', () => {
+    const result = interpretWithRules("לא מגיע");
+    assert.strictEqual(result.rsvp, "NO");
+    assert.strictEqual(result.confidence, 0.9);
+    assert.strictEqual(result.needsHeadcount, false);
+  });
+
+  it('does not classify uncertainty phrase "לא בטוח" as NO', () => {
+    const result = interpretWithRules("לא בטוח");
+    assert.notStrictEqual(result.rsvp, "NO");
+    assert.strictEqual(result.rsvp, "MAYBE");
   });
 });

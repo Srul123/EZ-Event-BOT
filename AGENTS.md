@@ -1,8 +1,4 @@
-# EZ-Event-BOT — Agent Context
 
-> Compact codebase reference for LLM coding agents. For full detail see `docs/llm-context.md`.
-
----
 
 ## System Identity
 

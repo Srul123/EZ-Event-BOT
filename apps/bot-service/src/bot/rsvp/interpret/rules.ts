@@ -12,7 +12,7 @@ const YES_KEYWORDS = [
   "yes",
   "yeah",
 ];
-const NO_KEYWORDS = ["לא", "לא מגיע", "לא יכול", "לא נוכל", "no", "nope"];
+const NO_KEYWORDS = ["לא מגיע", "לא יכול", "לא נוכל", "no", "nope"];
 const MAYBE_KEYWORDS = [
   "תלוי",
   "אולי",
@@ -621,21 +621,6 @@ export function interpretWithRules(text: string): Interpretation {
     needsHeadcount = false;
   }
 
-  // Check for YES
-  const hasYes = YES_KEYWORDS.some((keyword) =>
-    normalized.includes(keyword.toLowerCase()),
-  );
-  if (hasYes) {
-    return {
-      rsvp: "YES",
-      headcount,
-      headcountExtraction,
-      confidence: 0.9,
-      needsHeadcount: headcountExtraction.kind !== "exact",
-      language,
-    };
-  }
-
   // Check for NO
   const hasNo = NO_KEYWORDS.some((keyword) =>
     normalized.includes(keyword.toLowerCase()),
@@ -647,6 +632,21 @@ export function interpretWithRules(text: string): Interpretation {
       headcountExtraction: { kind: "none" },
       confidence: 0.9,
       needsHeadcount: false,
+      language,
+    };
+  }
+
+  // Check for YES
+  const hasYes = YES_KEYWORDS.some((keyword) =>
+    normalized.includes(keyword.toLowerCase()),
+  );
+  if (hasYes) {
+    return {
+      rsvp: "YES",
+      headcount,
+      headcountExtraction,
+      confidence: 0.9,
+      needsHeadcount: headcountExtraction.kind !== "exact",
       language,
     };
   }
