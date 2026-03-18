@@ -1,0 +1,929 @@
+קבוצה F — שגיאות כתיב ו-edge cases (10 הודעות)
+41. כן מגיע שנים ← (שגיאת כתיב של שניים)
+42. בטח נגיה ← (שגיאת כתיב של נגיע)
+43. yes coming
+44. no can't make it
+45. כן + אישתי ← (שגיאת כתיב)
+46. שלום ← (לא רלוונטי)
+47. תודה על ההזמנה ← (לא ברור)
+48. אני לבד
+49. רק אני
+50. כן אני וחבר שלי ויש מצב עוד ידידה
+
+
+"
+EZ-Event BOT, [18/03/2026 16:10]
+שלום Israel! 👋
+
+הוזמנת לאירוע: מסיבה בלאגן 2026 אצל שרול
+תאריך: 2026-04-30
+
+אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
+
+Israel Heiblum, [18/03/2026 16:10]
+כן מגיע שנים
+
+EZ-Event BOT, [18/03/2026 16:10]
+Israel, רק כדי לדעת, כמה תהיו סהכ?
+
+Israel Heiblum, [18/03/2026 16:11]
+2
+
+EZ-Event BOT, [18/03/2026 16:11]
+תודה! נרשמת 2 אנשים 🎉
+
+Israel Heiblum, [18/03/2026 16:11]
+/start
+
+EZ-Event BOT, [18/03/2026 16:11]
+שלום Srul! 👋
+
+הוזמנת לאירוע: מסיבה בלאגן 2026 אצל שרול
+תאריך: 2026-04-30
+
+אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
+
+Israel Heiblum, [18/03/2026 16:11]
+בטח נגיה
+
+EZ-Event BOT, [18/03/2026 16:11]
+Srul, רק כדי לדעת, כמה תהיו סהכ?
+
+Israel Heiblum, [18/03/2026 16:11]
+שלוש
+
+EZ-Event BOT, [18/03/2026 16:11]
+תודה! נרשמת 3 אנשים 🎉
+
+Israel Heiblum, [18/03/2026 16:12]
+/start
+
+EZ-Event BOT, [18/03/2026 16:12]
+שלום יוסי כהן! 👋
+
+הוזמנת לאירוע: מסיבה בלאגן 2026 אצל שרול
+תאריך: 2026-04-30
+
+אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
+
+EZ-Event BOT, [18/03/2026 16:12]
+יוסי כהן, רק כדי לדעת, כמה תהיו סהכ?
+
+Israel Heiblum, [18/03/2026 16:12]
+yes coming
+
+Israel Heiblum, [18/03/2026 16:12]
+three
+
+EZ-Event BOT, [18/03/2026 16:12]
+תודה! נרשמת 3 אנשים 🎉
+
+Israel Heiblum, [18/03/2026 16:12]
+/start
+
+EZ-Event BOT, [18/03/2026 16:12]
+שלום שרה לוי! 👋
+
+הוזמנת לאירוע: מסיבה בלאגן 2026 אצל שרול
+תאריך: 2026-04-30
+
+אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
+
+Israel Heiblum, [18/03/2026 16:13]
+no can't make it
+
+EZ-Event BOT, [18/03/2026 16:13]
+תודה, נשמח לראות אותך בפעם הבאה.
+
+Israel Heiblum, [18/03/2026 16:13]
+/start
+
+EZ-Event BOT, [18/03/2026 16:13]
+שלום משה אברהם! 👋
+
+הוזמנת לאירוע: מסיבה בלאגן 2026 אצל שרול
+תאריך: 2026-04-30
+
+אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
+
+Israel Heiblum, [18/03/2026 16:13]
+כן + אישתי
+
+EZ-Event BOT, [18/03/2026 16:13]
+משה אברהם, רק כדי לדעת, כמה תהיו סהכ?
+
+Israel Heiblum, [18/03/2026 16:13]
+2
+
+EZ-Event BOT, [18/03/2026 16:13]
+תודה! נרשמת 2 אנשים 🎉
+
+Israel Heiblum, [18/03/2026 16:14]
+/start
+
+EZ-Event BOT, [18/03/2026 16:14]
+שלום רחל ישראלי! 👋
+
+הוזמנת לאירוע: מסיבה בלאגן 2026 אצל שרול
+תאריך: 2026-04-30
+
+אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
+
+Israel Heiblum, [18/03/2026 16:14]
+שלום
+
+EZ-Event BOT, [18/03/2026 16:14]
+שלום רחל, אשמח לדעת אם אתם מגיעים למסיבה בלאגן 2026 אצל שרול ב-30 באפריל 2026? אנא עדכני אותי.
+
+Israel Heiblum, [18/03/2026 16:14]
+וואלה נראה לי שכן
+
+EZ-Event BOT, [18/03/2026 16:14]
+רחל ישראלי, רק כדי לדעת, כמה תהיו סהכ?
+
+Israel Heiblum, [18/03/2026 16:14]
+לבד
+
+EZ-Event BOT, [18/03/2026 16:14]
+תודה! נרשמת 1 אדם 🎉
+
+Israel Heiblum, [18/03/2026 16:15]
+/start
+
+EZ-Event BOT, [18/03/2026 16:15]
+שלום דוד מזרחי! 👋
+
+הוזמנת לאירוע: מסיבה בלאגן 2026 אצל שרול
+תאריך: 2026-04-30
+
+אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
+
+Israel Heiblum, [18/03/2026 16:15]
+תודה על ההזמנה
+
+EZ-Event BOT, [18/03/2026 16:15]
+שלום דוד, האם אתה מתכוון להגיע למסיבה בלאגן 2026 אצל שרול ב-30 באפריל 2026? אשמח לדעת את כוונתך.
+
+Israel Heiblum, [18/03/2026 16:15]
+עדיין לא בטוח
+
+EZ-Event BOT, [18/03/2026 16:15]
+הבנתי! תעדכן אותי כשתדע.
+
+Israel Heiblum, [18/03/2026 16:15]
+/start
+
+EZ-Event BOT, [18/03/2026 16:15]
+שלום חנה בן דוד! 👋
+
+הוזמנת לאירוע: מסיבה בלאגן 2026 אצל שרול
+תאריך: 2026-04-30
+
+אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
+
+Israel Heiblum, [18/03/2026 16:16]
+אני לבד
+
+EZ-Event BOT, [18/03/2026 16:16]
+תודה! נרשמת 1 אדם 🎉
+
+Israel Heiblum, [18/03/2026 16:16]
+/start
+
+EZ-Event BOT, [18/03/2026 16:16]
+שלום אלי פרץ! 👋
+
+הוזמנת לאירוע: מסיבה בלאגן 2026 אצל שרול
+תאריך: 2026-04-30
+
+אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
+
+Israel Heiblum, [18/03/2026 16:16]
+רק אני
+
+EZ-Event BOT, [18/03/2026 16:16]
+תודה! נרשמת 1 אדם 🎉
+
+Israel Heiblum, [18/03/2026 16:17]
+/start
+
+EZ-Event BOT, [18/03/2026 16:17]
+שלום מרים גולן! 👋
+
+הוזמנת לאירוע: מסיבה בלאגן 2026 אצל שרול
+תאריך: 2026-04-30
+
+אנא עדכן אותי אם תוכל להגיע. תוכל לכתוב "כן", "לא", "אולי" או כל הודעה אחרת.
+
+EZ-Event BOT, [18/03/2026 16:17]
+מרים גולן, רק כדי לדעת, כמה תהיו סהכ?
+
+Israel Heiblum, [18/03/2026 16:17]
+כן אני וחבר שלי ויש מצב עוד ידידה
+
+Israel Heiblum, [18/03/2026 16:17]
+2-3
+
+EZ-Event BOT, [18/03/2026 16:18]
+הבנתי! תעדכן אותי כשתדע.
+"
+
+log:
+
+"
+[16:10:26.888] INFO (138608): Guest session initialized
+    userId: 1911970934
+    username: "sharon_stone"
+    guestId: "69bab22923bd8332b8cfb1b1"
+    token: "inv_99G7Mc5rEY4"
+[16:10:55.812] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "YES"
+    confidence: 0.9
+    headcountKind: "none"
+[16:10:55.814] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "ASK_HEADCOUNT"
+[16:10:55.817] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "ASK_HEADCOUNT"
+    patchKeys: [
+      "rsvpStatus",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:10:55.832] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b1"
+    updates: {
+      "rsvpStatus": "YES",
+      "conversationState": "YES_AWAITING_HEADCOUNT",
+      "lastResponseAt": "2026-03-18T14:10:55.817Z",
+      "rsvpUpdatedAt": "2026-03-18T14:10:55.825Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "YES"
+[16:11:01.171] DEBUG (138608): Headcount-only extraction complete
+    node: "interpretHeadcount"
+    kind: "exact"
+    headcount: 2
+[16:11:01.172] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "SET_RSVP"
+[16:11:01.174] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 244
+[16:11:02.007] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 39
+[16:11:02.008] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "SET_RSVP"
+    patchKeys: [
+      "rsvpStatus",
+      "headcount",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:11:02.013] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b1"
+    updates: {
+      "rsvpStatus": "YES",
+      "headcount": 2,
+      "conversationState": "DEFAULT",
+      "lastResponseAt": "2026-03-18T14:11:02.008Z",
+      "rsvpUpdatedAt": "2026-03-18T14:11:02.011Z"
+    }
+    previousRsvpStatus: "YES"
+    newRsvpStatus: "YES"
+[16:11:19.481] INFO (138608): Guest session initialized
+    userId: 1911970934
+    username: "sharon_stone"
+    guestId: "69bab22923bd8332b8cfb1b2"
+    token: "inv_ER3_iTw-3cM"
+[16:11:37.222] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 200)"
+    promptLength: 127
+[16:11:38.783] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 200)"
+    resultLength: 201
+[16:11:38.783] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "YES"
+    confidence: 0.9
+    headcountKind: "none"
+[16:11:38.784] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "ASK_HEADCOUNT"
+[16:11:38.785] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "ASK_HEADCOUNT"
+    patchKeys: [
+      "rsvpStatus",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:11:38.789] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b2"
+    updates: {
+      "rsvpStatus": "YES",
+      "conversationState": "YES_AWAITING_HEADCOUNT",
+      "lastResponseAt": "2026-03-18T14:11:38.785Z",
+      "rsvpUpdatedAt": "2026-03-18T14:11:38.787Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "YES"
+[16:11:53.676] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 100)"
+    promptLength: 66
+[16:11:54.796] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 100)"
+    resultLength: 74
+[16:11:54.797] DEBUG (138608): Headcount-only extraction complete
+    node: "interpretHeadcount"
+    kind: "exact"
+    headcount: 3
+[16:11:54.798] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "SET_RSVP"
+[16:11:54.798] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 242
+[16:11:56.904] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 39
+[16:11:56.905] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "SET_RSVP"
+    patchKeys: [
+      "rsvpStatus",
+      "headcount",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:11:56.909] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b2"
+    updates: {
+      "rsvpStatus": "YES",
+      "headcount": 3,
+      "conversationState": "DEFAULT",
+      "lastResponseAt": "2026-03-18T14:11:56.905Z",
+      "rsvpUpdatedAt": "2026-03-18T14:11:56.908Z"
+    }
+    previousRsvpStatus: "YES"
+    newRsvpStatus: "YES"
+[16:12:09.131] INFO (138608): Guest session initialized
+    userId: 1911970934
+    username: "sharon_stone"
+    guestId: "69bab22923bd8332b8cfb1b3"
+    token: "inv_QAQBj9-EElA"
+[16:12:19.376] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "YES"
+    confidence: 0.9
+    headcountKind: "none"
+[16:12:19.376] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "ASK_HEADCOUNT"
+[16:12:19.378] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "ASK_HEADCOUNT"
+    patchKeys: [
+      "rsvpStatus",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:12:19.380] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b3"
+    updates: {
+      "rsvpStatus": "YES",
+      "conversationState": "YES_AWAITING_HEADCOUNT",
+      "lastResponseAt": "2026-03-18T14:12:19.378Z",
+      "rsvpUpdatedAt": "2026-03-18T14:12:19.379Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "YES"
+[16:12:35.107] DEBUG (138608): Headcount-only extraction complete
+    node: "interpretHeadcount"
+    kind: "exact"
+    headcount: 3
+[16:12:35.108] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "SET_RSVP"
+[16:12:35.108] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 246
+[16:12:35.972] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 39
+[16:12:35.973] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "SET_RSVP"
+    patchKeys: [
+      "rsvpStatus",
+      "headcount",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:12:35.976] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b3"
+    updates: {
+      "rsvpStatus": "YES",
+      "headcount": 3,
+      "conversationState": "DEFAULT",
+      "lastResponseAt": "2026-03-18T14:12:35.973Z",
+      "rsvpUpdatedAt": "2026-03-18T14:12:35.975Z"
+    }
+    previousRsvpStatus: "YES"
+    newRsvpStatus: "YES"
+[16:12:55.488] INFO (138608): Guest session initialized
+    userId: 1911970934
+    username: "sharon_stone"
+    guestId: "69bab22923bd8332b8cfb1b4"
+    token: "inv_7_rLXUk88hc"
+[16:13:04.904] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "NO"
+    confidence: 0.9
+    headcountKind: "none"
+[16:13:04.905] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "SET_RSVP"
+[16:13:04.906] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 230
+[16:13:05.753] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 49
+[16:13:05.753] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "SET_RSVP"
+    patchKeys: [
+      "rsvpStatus",
+      "headcount",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:13:05.757] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b4"
+    updates: {
+      "rsvpStatus": "NO",
+      "headcount": null,
+      "conversationState": "DEFAULT",
+      "lastResponseAt": "2026-03-18T14:13:05.753Z",
+      "rsvpUpdatedAt": "2026-03-18T14:13:05.755Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "NO"
+[16:13:24.147] INFO (138608): Guest session initialized
+    userId: 1911970934
+    username: "sharon_stone"
+    guestId: "69bab22923bd8332b8cfb1b5"
+    token: "inv_8yiIMeY4K90"
+[16:13:41.910] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "YES"
+    confidence: 0.9
+    headcountKind: "none"
+[16:13:41.911] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "ASK_HEADCOUNT"
+[16:13:41.912] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "ASK_HEADCOUNT"
+    patchKeys: [
+      "rsvpStatus",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:13:41.914] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b5"
+    updates: {
+      "rsvpStatus": "YES",
+      "conversationState": "YES_AWAITING_HEADCOUNT",
+      "lastResponseAt": "2026-03-18T14:13:41.912Z",
+      "rsvpUpdatedAt": "2026-03-18T14:13:41.913Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "YES"
+[16:13:50.497] DEBUG (138608): Headcount-only extraction complete
+    node: "interpretHeadcount"
+    kind: "exact"
+    headcount: 2
+[16:13:50.498] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "SET_RSVP"
+[16:13:50.499] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 247
+[16:13:51.266] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 39
+[16:13:51.268] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "SET_RSVP"
+    patchKeys: [
+      "rsvpStatus",
+      "headcount",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:13:51.273] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b5"
+    updates: {
+      "rsvpStatus": "YES",
+      "headcount": 2,
+      "conversationState": "DEFAULT",
+      "lastResponseAt": "2026-03-18T14:13:51.268Z",
+      "rsvpUpdatedAt": "2026-03-18T14:13:51.271Z"
+    }
+    previousRsvpStatus: "YES"
+    newRsvpStatus: "YES"
+[16:14:06.786] INFO (138608): Guest session initialized
+    userId: 1911970934
+    username: "sharon_stone"
+    guestId: "69bab22923bd8332b8cfb1b6"
+    token: "inv_iZbYoerRYtk"
+[16:14:14.645] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 200)"
+    promptLength: 123
+[16:14:15.812] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 200)"
+    resultLength: 206
+[16:14:15.812] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "UNKNOWN"
+    confidence: 0.5
+    headcountKind: "none"
+[16:14:15.813] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "CLARIFY_INTENT"
+[16:14:15.814] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 202
+[16:14:17.325] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 111
+[16:14:17.326] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "CLARIFY_INTENT"
+    patchKeys: [
+      "lastResponseAt"
+    ]
+[16:14:17.328] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b6"
+    updates: {
+      "lastResponseAt": "2026-03-18T14:14:17.326Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "NO_RESPONSE"
+[16:14:42.688] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "YES"
+    confidence: 0.9
+    headcountKind: "none"
+[16:14:42.689] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "ASK_HEADCOUNT"
+[16:14:42.690] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "ASK_HEADCOUNT"
+    patchKeys: [
+      "rsvpStatus",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:14:42.693] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b6"
+    updates: {
+      "rsvpStatus": "YES",
+      "conversationState": "YES_AWAITING_HEADCOUNT",
+      "lastResponseAt": "2026-03-18T14:14:42.690Z",
+      "rsvpUpdatedAt": "2026-03-18T14:14:42.692Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "YES"
+[16:14:50.754] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 100)"
+    promptLength: 65
+[16:14:51.659] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 100)"
+    resultLength: 53
+[16:14:51.659] DEBUG (138608): Headcount-only extraction complete
+    node: "interpretHeadcount"
+    kind: "none"
+[16:14:51.660] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 200)"
+    promptLength: 122
+[16:14:55.031] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 200)"
+    resultLength: 177
+[16:14:55.031] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "YES"
+    confidence: 1
+    headcountKind: "exact"
+[16:14:55.032] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "SET_RSVP"
+[16:14:55.033] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 248
+[16:14:55.968] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 37
+[16:14:55.969] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "SET_RSVP"
+    patchKeys: [
+      "rsvpStatus",
+      "headcount",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:14:55.972] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b6"
+    updates: {
+      "rsvpStatus": "YES",
+      "headcount": 1,
+      "conversationState": "DEFAULT",
+      "lastResponseAt": "2026-03-18T14:14:55.969Z",
+      "rsvpUpdatedAt": "2026-03-18T14:14:55.971Z"
+    }
+    previousRsvpStatus: "YES"
+    newRsvpStatus: "YES"
+[16:15:14.413] INFO (138608): Guest session initialized
+    userId: 1911970934
+    username: "sharon_stone"
+    guestId: "69bab22923bd8332b8cfb1b7"
+    token: "inv_w1tWkc45lDw"
+[16:15:28.947] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 200)"
+    promptLength: 133
+[16:15:30.038] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 200)"
+    resultLength: 206
+[16:15:30.039] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "UNKNOWN"
+    confidence: 0.5
+    headcountKind: "none"
+[16:15:30.039] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "CLARIFY_INTENT"
+[16:15:30.040] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 201
+[16:15:31.021] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 113
+[16:15:31.021] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "CLARIFY_INTENT"
+    patchKeys: [
+      "lastResponseAt"
+    ]
+[16:15:31.024] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b7"
+    updates: {
+      "lastResponseAt": "2026-03-18T14:15:31.021Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "NO_RESPONSE"
+[16:15:42.197] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "MAYBE"
+    confidence: 0.85
+    headcountKind: "none"
+[16:15:42.198] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "SET_RSVP"
+[16:15:42.199] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 238
+[16:15:43.267] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 41
+[16:15:43.268] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "SET_RSVP"
+    patchKeys: [
+      "rsvpStatus",
+      "headcount",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:15:43.271] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b7"
+    updates: {
+      "rsvpStatus": "MAYBE",
+      "headcount": null,
+      "conversationState": "DEFAULT",
+      "lastResponseAt": "2026-03-18T14:15:43.268Z",
+      "rsvpUpdatedAt": "2026-03-18T14:15:43.270Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "MAYBE"
+[16:15:59.267] INFO (138608): Guest session initialized
+    userId: 1911970934
+    username: "sharon_stone"
+    guestId: "69bab22923bd8332b8cfb1b8"
+    token: "inv_nn8UccAMpiw"
+[16:16:08.560] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 200)"
+    promptLength: 126
+[16:16:09.614] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 200)"
+    resultLength: 177
+[16:16:09.614] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "YES"
+    confidence: 1
+    headcountKind: "exact"
+[16:16:09.614] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "SET_RSVP"
+[16:16:09.615] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 248
+[16:16:10.304] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 37
+[16:16:10.306] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "SET_RSVP"
+    patchKeys: [
+      "rsvpStatus",
+      "headcount",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:16:10.309] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b8"
+    updates: {
+      "rsvpStatus": "YES",
+      "headcount": 1,
+      "conversationState": "DEFAULT",
+      "lastResponseAt": "2026-03-18T14:16:10.306Z",
+      "rsvpUpdatedAt": "2026-03-18T14:16:10.308Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "YES"
+[16:16:24.510] INFO (138608): Guest session initialized
+    userId: 1911970934
+    username: "sharon_stone"
+    guestId: "69bab22923bd8332b8cfb1b9"
+    token: "inv_OhH1MkzKkqc"
+[16:16:35.011] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 200)"
+    promptLength: 125
+[16:16:36.034] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 200)"
+    resultLength: 177
+[16:16:36.034] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "YES"
+    confidence: 1
+    headcountKind: "exact"
+[16:16:36.035] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "SET_RSVP"
+[16:16:36.036] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 245
+[16:16:36.749] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 37
+[16:16:36.750] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "SET_RSVP"
+    patchKeys: [
+      "rsvpStatus",
+      "headcount",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:16:36.752] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1b9"
+    updates: {
+      "rsvpStatus": "YES",
+      "headcount": 1,
+      "conversationState": "DEFAULT",
+      "lastResponseAt": "2026-03-18T14:16:36.750Z",
+      "rsvpUpdatedAt": "2026-03-18T14:16:36.751Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "YES"
+[16:17:01.056] INFO (138608): Guest session initialized
+    userId: 1911970934
+    username: "sharon_stone"
+    guestId: "69bab22923bd8332b8cfb1ba"
+    token: "inv_EuezV-BBXTQ"
+[16:17:49.476] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "YES"
+    confidence: 0.9
+    headcountKind: "ambiguous"
+[16:17:49.477] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "ASK_HEADCOUNT"
+[16:17:49.478] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "ASK_HEADCOUNT"
+    patchKeys: [
+      "rsvpStatus",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:17:49.480] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1ba"
+    updates: {
+      "rsvpStatus": "YES",
+      "conversationState": "YES_AWAITING_HEADCOUNT",
+      "lastResponseAt": "2026-03-18T14:17:49.478Z",
+      "rsvpUpdatedAt": "2026-03-18T14:17:49.479Z"
+    }
+    previousRsvpStatus: "NO_RESPONSE"
+    newRsvpStatus: "YES"
+[16:17:59.428] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 100)"
+    promptLength: 65
+[16:18:00.218] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 100)"
+    resultLength: 91
+[16:18:00.219] DEBUG (138608): Headcount-only extraction complete
+    node: "interpretHeadcount"
+    kind: "ambiguous"
+    reason: "RANGE_OR_APPROX"
+[16:18:00.220] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 200)"
+    promptLength: 122
+[16:18:01.304] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 200)"
+    resultLength: 198
+[16:18:01.304] DEBUG (138608): Full NLU interpretation complete
+    node: "interpretFull"
+    rsvp: "MAYBE"
+    confidence: 0.8
+    headcountKind: "ambiguous"
+[16:18:01.304] DEBUG (138608): Action decided
+    node: "decideAction"
+    actionType: "SET_RSVP"
+[16:18:01.305] DEBUG (138608): Calling LLM
+    context: "LLM call (maxTokens: 120)"
+    promptLength: 238
+[16:18:01.982] DEBUG (138608): LLM call succeeded
+    context: "LLM call (maxTokens: 120)"
+    resultLength: 41
+[16:18:01.983] DEBUG (138608): Effects patch built
+    node: "buildEffects"
+    actionType: "SET_RSVP"
+    patchKeys: [
+      "rsvpStatus",
+      "headcount",
+      "conversationState",
+      "lastResponseAt",
+      "clarificationAttempts",
+      "rsvpUpdatedAt"
+    ]
+[16:18:01.986] INFO (138608): Guest RSVP updated
+    guestId: "69bab22923bd8332b8cfb1ba"
+    updates: {
+      "rsvpStatus": "MAYBE",
+      "headcount": null,
+      "conversationState": "DEFAULT",
+      "lastResponseAt": "2026-03-18T14:18:01.983Z",
+      "rsvpUpdatedAt": "2026-03-18T14:18:01.984Z"
+    }
+    previousRsvpStatus: "YES"
+    newRsvpStatus: "MAYBE"
+"
