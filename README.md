@@ -9,8 +9,7 @@
 
 ---
 
-<img width="2048" height="2048" alt="Image" src="https://github.com/user-attachments/assets/bf40bce9-5e02-4f7f-8000-2a2bb1a0b761" />
-
+![Image](https://github.com/user-attachments/assets/8e21339b-f56b-4764-bc9e-8819e2e5e7ea)
 
 ## Abstract
 
