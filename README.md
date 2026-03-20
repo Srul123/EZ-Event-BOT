@@ -1,7 +1,7 @@
 # EZ-Event-BOT
 
 **Conversational RSVP Agent for Events via Telegram**
-
+<img width="2048" height="2048" alt="Image" src="https://github.com/user-attachments/assets/bf40bce9-5e02-4f7f-8000-2a2bb1a0b761" />
 ---
 
 > **Master's Degree Final Project — Computer Science**
