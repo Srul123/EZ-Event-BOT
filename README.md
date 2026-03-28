@@ -1,7 +1,6 @@
 # EZ-Event-BOT
 
 **Conversational RSVP Agent for Events via Telegram**
-
 ---
 
 > **Master's Degree Final Project — Computer Science**
@@ -9,6 +8,8 @@
 > Student: Israel Heiblum
 
 ---
+
+![Image](https://github.com/user-attachments/assets/8e21339b-f56b-4764-bc9e-8819e2e5e7ea)
 
 ## Abstract
 
