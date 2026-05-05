@@ -430,10 +430,10 @@ The user prompt includes: guest name, interpretation result, action type, event 
 | Property        | Value                     | Rationale                                                                                                        |
 | --------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | **Provider**    | Anthropic                 | Official SDK, structured output support                                                                          |
-| **Model**       | `claude-3-haiku-20240307` | Optimized for classification tasks: low latency (~200-500ms), low cost, sufficient intelligence for RSVP parsing |
+| **Model**       | `claude-haiku-4-5-20251001` | Optimized for classification tasks: low latency (~200-500ms), low cost, sufficient intelligence for RSVP parsing |
 | **Temperature** | 0.2                       | Low temperature for deterministic classification; slight randomness for natural response generation              |
 
-Claude 3 Haiku was chosen over larger models (Sonnet, Opus) because the task is **classification, not generation**. The input is a short Hebrew sentence, and the output is a small JSON object. Haiku provides sufficient capability at a fraction of the cost and latency.
+Claude Haiku 4.5 was chosen over larger models (Sonnet, Opus) because the task is **classification, not generation**. The input is a short Hebrew sentence, and the output is a small JSON object. Haiku provides sufficient capability at a fraction of the cost and latency.
 
 ### 8.2 Client Architecture
 

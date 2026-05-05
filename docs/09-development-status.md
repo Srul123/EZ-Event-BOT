@@ -55,7 +55,7 @@ The RSVP agent is implemented as a compiled LangGraph state graph with hexagonal
   - Levenshtein fuzzy matching with context-word gating
   - Language detection (Hebrew/English)
 - **LLM fallback** (`bot/rsvp/interpret/llmInterpreter.ts`):
-  - Anthropic Claude 3 Haiku, structured JSON output schema
+  - Anthropic Claude Haiku 4.5, structured JSON output schema
   - Zod validation with regex JSON extraction fallback
   - 200-token budget, graceful degradation to UNKNOWN on any failure
 - **Headcount-only extractor** for `YES_AWAITING_HEADCOUNT` state

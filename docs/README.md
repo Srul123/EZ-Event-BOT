@@ -1,6 +1,6 @@
 # EZ-Event-BOT — Documentation
 
-**EZ-Event-BOT** is a conversational RSVP agent for events, delivered over Telegram. Event organizers create campaigns with a guest list via a REST API and a Vue 3 admin dashboard; guests receive personalized Telegram deep links and respond in free-text Hebrew or English. The bot interprets responses using a **hybrid NLP pipeline** (rule-based parser first, Anthropic Claude 3 Haiku as fallback) and orchestrates the multi-turn RSVP conversation using a **LangGraph state graph** built on a hexagonal (ports & adapters) architecture. All RSVP data is persisted in MongoDB.
+**EZ-Event-BOT** is a conversational RSVP agent for events, delivered over Telegram. Event organizers create campaigns with a guest list via a REST API and a Vue 3 admin dashboard; guests receive personalized Telegram deep links and respond in free-text Hebrew or English. The bot interprets responses using a **hybrid NLP pipeline** (rule-based parser first, Anthropic Claude Haiku 4.5 as fallback) and orchestrates the multi-turn RSVP conversation using a **LangGraph state graph** built on a hexagonal (ports & adapters) architecture. All RSVP data is persisted in MongoDB.
 
 This project was developed as a master's degree final project in Computer Science, demonstrating the integration of NLP, agent-based architectures (LangGraph), stateful conversation management, and software engineering principles.
 
@@ -43,7 +43,7 @@ This project was developed as a master's degree final project in Computer Scienc
 | Agent framework | LangGraph (`@langchain/langgraph`)                       |
 | HTTP API        | Express.js                                               |
 | Database        | MongoDB 6+ via Mongoose ODM                              |
-| LLM             | Anthropic Claude 3 Haiku                                 |
+| LLM             | Anthropic Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) |
 | Validation      | Zod                                                      |
 | Logging         | Pino                                                     |
 | Frontend        | Vue 3, Vite, Tailwind CSS 4, Pinia, Vue Router, vue-i18n |

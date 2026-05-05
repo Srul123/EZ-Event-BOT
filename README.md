@@ -13,7 +13,7 @@
 
 ## Abstract
 
-EZ-Event-BOT is an intelligent RSVP agent that allows event organizers to manage guest responses through personalized Telegram conversations. Guests receive unique deep links and interact with the bot in free-text Hebrew or English. The system interprets natural-language responses using a hybrid NLP pipeline — a rule-based Hebrew parser with an Anthropic Claude 3 Haiku LLM fallback — and manages multi-turn conversations via a compiled **LangGraph state graph** built on a hexagonal (ports & adapters) architecture. RSVP state is persisted in MongoDB and managed through an admin web dashboard built with Vue 3.
+EZ-Event-BOT is an intelligent RSVP agent that allows event organizers to manage guest responses through personalized Telegram conversations. Guests receive unique deep links and interact with the bot in free-text Hebrew or English. The system interprets natural-language responses using a hybrid NLP pipeline — a rule-based Hebrew parser with an Anthropic Claude Haiku 4.5 LLM fallback — and manages multi-turn conversations via a compiled **LangGraph state graph** built on a hexagonal (ports & adapters) architecture. RSVP state is persisted in MongoDB and managed through an admin web dashboard built with Vue 3.
 
 The project demonstrates the integration of **conversational AI**, **agent-based architectures**, **stateful dialogue management**, **NLP for non-English (Hebrew) text**, and **full-stack software engineering** principles.
 
@@ -60,7 +60,7 @@ Event Organizer                    Guests (Telegram)
 A two-stage interpretation pipeline processes guest messages:
 
 - **Rule-based interpreter** (`~630 lines`): Hebrew text normalization (niqqud stripping, morphological prefix stripping), keyword matching (YES/NO/MAYBE), a 14-step headcount extraction priority chain, and Levenshtein fuzzy matching with context-word gating.
-- **LLM fallback** (Anthropic Claude 3 Haiku): Invoked when rule-based confidence falls below the configurable threshold (default: 0.85). Returns structured JSON validated via Zod with regex extraction fallback.
+- **LLM fallback** (Anthropic Claude Haiku 4.5): Invoked when rule-based confidence falls below the configurable threshold (default: 0.85). Returns structured JSON validated via Zod with regex extraction fallback.
 
 ### 2. LangGraph Stateful Agent
 
@@ -95,7 +95,7 @@ Database writes use a sparse patch object — only fields that are explicitly se
 | Agent / conversation graph | LangGraph (`@langchain/langgraph`)                       |
 | HTTP API                   | Express.js                                               |
 | Database                   | MongoDB 7 via Mongoose ODM                               |
-| LLM                        | Anthropic Claude 3 Haiku (`claude-3-haiku-20240307`)     |
+| LLM                        | Anthropic Claude Haiku 4.5 (`claude-haiku-4-5-20251001`)     |
 | Input validation           | Zod                                                      |
 | Logging                    | Pino (structured JSON)                                   |
 | Frontend                   | Vue 3, Vite, Tailwind CSS 4, Pinia, Vue Router, vue-i18n |

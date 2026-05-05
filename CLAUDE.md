@@ -2,7 +2,7 @@
 
 ## Project Identity
 
-RSVP conversational agent for events delivered via Telegram. Guests receive personalized deep links and interact in free-text Hebrew/English. The bot uses a LangGraph state graph + hybrid NLP (rule-based → Claude 3 Haiku fallback) to collect RSVP responses. Data persisted in MongoDB.
+RSVP conversational agent for events delivered via Telegram. Guests receive personalized deep links and interact in free-text Hebrew/English. The bot uses a LangGraph state graph + hybrid NLP (rule-based → Claude Haiku 4.5 fallback) to collect RSVP responses. Data persisted in MongoDB.
 
 **Master's degree final project — CS.**
 

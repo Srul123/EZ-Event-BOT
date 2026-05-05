@@ -468,7 +468,7 @@ These checks can be run in CI to prevent boundary violations from being merged.
 
 | File                     | Role                                                                     |
 | ------------------------ | ------------------------------------------------------------------------ |
-| `infra/llm/anthropic.ts` | Anthropic SDK wrapper: singleton client, claude-3-haiku, temperature 0.2 |
+| `infra/llm/anthropic.ts` | Anthropic SDK wrapper: singleton client, claude-haiku-4-5-20251001, temperature 0.2 |
 | `infra/llm/llmClient.ts` | Resilience layer: 10s timeout, 1 retry, retryable error classification   |
 | `config/env.ts`          | Zod-validated environment config with LLM feature flags                  |
 

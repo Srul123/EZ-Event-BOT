@@ -1,6 +1,6 @@
 import {
   anthropicJsonCompletion,
-  type AnthropicCompletionParams,
+  DEFAULT_LLM_TEMPERATURE,
 } from "./anthropic.js";
 import { logger } from "../../logger/logger.js";
 
@@ -66,9 +66,9 @@ export async function callLLM({
   system,
   prompt,
   maxTokens,
-  temperature,
+  temperature = DEFAULT_LLM_TEMPERATURE,
 }: LLMCallParams): Promise<string> {
-  const context = `LLM call (maxTokens: ${maxTokens ?? "default"})`;
+  const context = `LLM call (maxTokens: ${maxTokens ?? "default"}, temperature: ${temperature})`;
 
   logger.debug({ context, promptLength: prompt.length }, "Calling LLM");
 

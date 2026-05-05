@@ -2,7 +2,7 @@
 
 ## System Identity
 
-**EZ-Event-BOT** is a conversational RSVP agent for events delivered via Telegram. Event organizers create campaigns with guest lists via a REST API + Vue 3 admin dashboard. Guests receive personalized Telegram deep links (`https://t.me/{bot}?start=inv_{token}`) and interact in free-text Hebrew or English. The bot uses a **compiled LangGraph state graph** with **hybrid NLP** (rule-based first, Anthropic Claude 3 Haiku fallback) to collect and update RSVP responses. All data is persisted in MongoDB.
+**EZ-Event-BOT** is a conversational RSVP agent for events delivered via Telegram. Event organizers create campaigns with guest lists via a REST API + Vue 3 admin dashboard. Guests receive personalized Telegram deep links (`https://t.me/{bot}?start=inv_{token}`) and interact in free-text Hebrew or English. The bot uses a **compiled LangGraph state graph** with **hybrid NLP** (rule-based first, Anthropic Claude Haiku 4.5 fallback) to collect and update RSVP responses. All data is persisted in MongoDB.
 
 **Academic context**: Final project for a Master's degree in Computer Science.
 
@@ -65,7 +65,7 @@ apps/
           llmResponder.ts     ← LLM response generation
           prompts/respond.prompt.ts   ← Anthropic system prompt for NLG
     infra/llm/
-      anthropic.ts            ← Anthropic SDK singleton (claude-3-haiku-20240307, temp 0.2)
+      anthropic.ts            ← Anthropic SDK singleton (claude-haiku-4-5-20251001, temp 0.2)
       llmClient.ts            ← 10s timeout, 1 retry, retryable error classification
 
   admin-web/src/              ← Vue 3 + Vite (proxies /api to localhost:3000)
@@ -225,7 +225,7 @@ Default threshold: `RSVP_CONFIDENCE_THRESHOLD=0.85`
 
 **Hebrew normalization**: niqqud stripping → prefix stripping (ו, ה, ב, ל, כ, מ, ש) → tokenization → 14-step headcount extraction chain → Levenshtein fuzzy matching with context-word gating.
 
-**LLM fallback** (`llmInterpreter.ts`): Claude 3 Haiku, 200-token budget, Zod validation, JSON regex extraction fallback, graceful degradation to UNKNOWN on any failure.
+**LLM fallback** (`llmInterpreter.ts`): Claude Haiku 4.5, 200-token budget, Zod validation, JSON regex extraction fallback, graceful degradation to UNKNOWN on any failure.
 
 ---
 
@@ -268,7 +268,7 @@ All endpoints include Zod request validation and structured error responses.
 | Validation | Zod                                                      |
 | Logging    | Pino + pino-pretty                                       |
 | HTTP       | Express 5                                                |
-| LLM        | Anthropic SDK (claude-3-haiku-20240307, temp 0.2)        |
+| LLM        | Anthropic SDK (claude-haiku-4-5-20251001, temp 0.2)        |
 | Frontend   | Vue 3, Vite, Tailwind CSS 4, Pinia, Vue Router, vue-i18n |
 | Tests      | node:test (built-in, no jest/vitest)                     |
 

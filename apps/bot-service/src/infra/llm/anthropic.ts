@@ -2,10 +2,11 @@ import Anthropic from "@anthropic-ai/sdk";
 import { env } from "../../config/env.js";
 import { logger } from "../../logger/logger.js";
 
-const DEFAULT_MODEL = "claude-3-haiku-20240307";
+export const DEFAULT_ANTHROPIC_TEXT_MODEL = "claude-haiku-4-5-20251001";
 const DEFAULT_MAX_TOKENS_INTERPRET = 200;
 const DEFAULT_MAX_TOKENS_RESPOND = 120;
-const DEFAULT_TEMPERATURE = 0.2;
+/** Used by `callLLM` and `anthropicJsonCompletion` when temperature is omitted. */
+export const DEFAULT_LLM_TEMPERATURE = 0.2;
 
 // Create Anthropic client instance (singleton)
 let anthropicClient: Anthropic | null = null;
@@ -35,13 +36,13 @@ export async function anthropicJsonCompletion({
   system,
   prompt,
   maxTokens = DEFAULT_MAX_TOKENS_INTERPRET,
-  temperature = DEFAULT_TEMPERATURE,
+  temperature = DEFAULT_LLM_TEMPERATURE,
 }: AnthropicCompletionParams): Promise<string> {
   const client = getAnthropicClient();
 
   try {
     const message = await client.messages.create({
-      model: DEFAULT_MODEL,
+      model: DEFAULT_ANTHROPIC_TEXT_MODEL,
       max_tokens: maxTokens,
       temperature,
       system,

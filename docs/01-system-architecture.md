@@ -60,7 +60,7 @@ The system has three main actors and two runtime processes:
            │                  ┌──────────┴──────────┐
            │                  │ NLU Pipeline         │  ┌──────────────────┐
            │                  │ - Rule-based parser  ├─►│ Anthropic Claude │
-           │                  │ - LLM fallback       │  │ claude-3-haiku   │
+           │                  │ - LLM fallback       │  │ claude-haiku-4-5 │
            │                  │ NLG Pipeline         │  └──────────────────┘
            │                  │ - Templates (default)│
            │                  │ - LLM responses (opt)│
@@ -131,9 +131,9 @@ All time values flow through `ClockPort.now()`, making the domain layer fully de
 | Mongoose                           | 8.x     | MongoDB ODM                             |
 | Zod                                | 3.x     | Schema validation (API + LLM responses) |
 | Pino                               | 9.x     | Structured logging                      |
-| Anthropic SDK                      | latest  | Claude 3 Haiku LLM                      |
+| Anthropic SDK                      | latest  | Claude Haiku 4.5 LLM                    |
 
-**LLM model**: `claude-3-haiku-20240307` — chosen for classification tasks: low latency (~200-500ms), low cost (~10x cheaper than Sonnet), sufficient capability for short Hebrew RSVP parsing.
+**LLM model**: `claude-haiku-4-5-20251001` — chosen for classification tasks: low latency (~200-500ms), low cost (~10x cheaper than Sonnet), sufficient capability for short Hebrew RSVP parsing.
 
 ### Frontend (admin-web)
 
@@ -225,7 +225,7 @@ EZ-Event-BOT/
 
 | Component          | File                            | Responsibility                                                             |
 | ------------------ | ------------------------------- | -------------------------------------------------------------------------- |
-| Anthropic Client   | `infra/llm/anthropic.ts`        | SDK singleton, `claude-3-haiku-20240307`, temperature 0.2                  |
+| Anthropic Client   | `infra/llm/anthropic.ts`        | SDK singleton, `claude-haiku-4-5-20251001`, temperature 0.2                |
 | LLM Client         | `infra/llm/llmClient.ts`        | 10s timeout, 1 retry, retryable error classification                       |
 | Environment Config | `config/env.ts`                 | Zod schema with cross-field validation (API key required when LLM enabled) |
 | Campaign Routes    | `http/routes/campaignRoutes.ts` | Express routes for Campaign CRUD and link generation                       |

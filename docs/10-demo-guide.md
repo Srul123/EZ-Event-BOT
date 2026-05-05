@@ -100,7 +100,7 @@
 | Telegram Bot    | Telegraf                                    |
 | Agent Framework | LangGraph (`@langchain/langgraph`)          |
 | Database        | MongoDB with Mongoose ODM                   |
-| LLM             | Anthropic Claude 3 Haiku (via official SDK) |
+| LLM             | Anthropic Claude Haiku 4.5 (`claude-haiku-4-5-20251001`, via official SDK) |
 | Validation      | Zod                                         |
 | Logging         | Pino (structured)                           |
 
@@ -253,7 +253,7 @@ Guest sends: `"אני חושב שאגיע אבל צריך לבדוק עם הבו
 What happens:
 
 1. Rules attempt parsing: confidence < 0.85 → LLM fallback triggered
-2. Anthropic Claude 3 Haiku analyzes: returns `{rsvp: "MAYBE", confidence: 0.8}`
+2. Anthropic Claude Haiku 4.5 analyzes: returns `{rsvp: "MAYBE", confidence: 0.8}`
 3. Validated by Zod schema → Action: `SET_RSVP { MAYBE }`
 
 **Explain**: Hybrid approach: rules for common cases (~80-90%), LLM for the long tail of complex messages.
