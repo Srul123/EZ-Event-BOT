@@ -12,7 +12,7 @@ const YES_KEYWORDS = [
   "yes",
   "yeah",
 ];
-const NO_KEYWORDS = ["לא מגיע", "לא יכול", "לא נוכל", "no", "nope"];
+const NO_KEYWORDS = ["לא מגיע", "לא יכול", "לא נוכל", "לא נגיע", "no", "nope"];
 const MAYBE_KEYWORDS = [
   "תלוי",
   "אולי",
@@ -22,6 +22,19 @@ const MAYBE_KEYWORDS = [
   "perhaps",
   "possibly",
 ];
+const HEBREW_NO_PHRASES = ["לא", "לא תודה", "לא יכול", "לא נגיע"];
+
+function normalizeIntentText(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[.!?,;:]+/g, "")
+    .replace(/\s+/g, " ");
+}
+
+function isHebrewNoPhrase(text: string): boolean {
+  return HEBREW_NO_PHRASES.includes(normalizeIntentText(text));
+}
 
 /**
  * Hebrew number word mappings (0-10)
@@ -622,9 +635,9 @@ export function interpretWithRules(text: string): Interpretation {
   }
 
   // Check for NO
-  const hasNo = NO_KEYWORDS.some((keyword) =>
-    normalized.includes(keyword.toLowerCase()),
-  );
+  const hasNo =
+    isHebrewNoPhrase(text) ||
+    NO_KEYWORDS.some((keyword) => normalized.includes(keyword.toLowerCase()));
   if (hasNo) {
     return {
       rsvp: "NO",

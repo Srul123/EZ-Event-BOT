@@ -11,6 +11,8 @@ export function createInterpretFullNode(ports: RsvpGraphPorts) {
     ports.logger.debug(
       {
         node: "interpretFull",
+        guestId: state.guestContext.guestId,
+        messageText: state.messageText,
         rsvp: interpretation.rsvp,
         confidence: interpretation.confidence,
         headcountKind: interpretation.headcountExtraction.kind,

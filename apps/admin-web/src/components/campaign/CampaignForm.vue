@@ -51,7 +51,7 @@
           v-model="formData.name"
           class="lg:col-span-2"
           :label="t('campaigns.name')"
-          placeholder="e.g., Summer BBQ 2024"
+          :placeholder="t('campaigns.namePlaceholder')"
           :error="errors.name"
           required
         />

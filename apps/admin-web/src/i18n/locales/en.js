@@ -95,6 +95,7 @@ export default {
     statusRunning: "Running",
     statusCompleted: "Completed",
     statusFailed: "Failed",
+    namePlaceholder: "e.g., Annual Summer BBQ Party",
   },
   // Guests
   guests: {

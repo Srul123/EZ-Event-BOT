@@ -2,6 +2,7 @@ import {
   anthropicJsonCompletion,
   DEFAULT_LLM_TEMPERATURE,
 } from "./anthropic.js";
+import { env } from "../../config/env.js";
 import { logger } from "../../logger/logger.js";
 
 const TIMEOUT_MS = 10000; // 10 seconds
@@ -62,6 +63,22 @@ async function callWithRetry<T>(
   throw lastError || new Error("LLM call failed after retries");
 }
 
+function logLlmFullExchange(
+  msg: string,
+  payload: {
+    context: string;
+    system: string;
+    prompt: string;
+    response?: string;
+    error?: unknown;
+  },
+): void {
+  logger.debug(payload, msg);
+  if (env.RSVP_LOG_LLM_FULL) {
+    logger.info(payload, msg);
+  }
+}
+
 export async function callLLM({
   system,
   prompt,
@@ -85,12 +102,20 @@ export async function callLLM({
       context,
     );
 
-    logger.debug(
-      { context, resultLength: result.length },
-      "LLM call succeeded",
-    );
+    logLlmFullExchange("LLM full exchange", {
+      context,
+      system,
+      prompt,
+      response: result,
+    });
     return result;
   } catch (error) {
+    logLlmFullExchange("LLM full exchange failed", {
+      context,
+      system,
+      prompt,
+      error,
+    });
     logger.error({ error, context }, "LLM call failed after retries");
     throw error;
   }

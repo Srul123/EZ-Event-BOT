@@ -94,6 +94,7 @@ export default {
     statusRunning: "פועל",
     statusCompleted: "הושלם",
     statusFailed: "נכשל",
+    namePlaceholder: "לדוגמה: מסיבת קיץ שנתית",
   },
   // Guests
   guests: {

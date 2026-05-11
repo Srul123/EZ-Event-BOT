@@ -33,6 +33,12 @@ const envSchema = z
       .transform(Number)
       .pipe(z.number().min(0).max(1))
       .default("0.85"),
+    /** Log full LLM system prompt, user prompt, and response at info without enabling debug. */
+    RSVP_LOG_LLM_FULL: z
+      .string()
+      .transform((val) => val === "true" || val === "1")
+      .pipe(z.boolean())
+      .default("true"),
   })
   .refine(
     (data) => {

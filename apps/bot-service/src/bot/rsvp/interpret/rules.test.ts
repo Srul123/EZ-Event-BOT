@@ -182,6 +182,41 @@ describe("extractHeadcount - normalization and fuzzy matching", () => {
 });
 
 describe("interpretWithRules - RSVP intent precedence", () => {
+  it('classifies standalone "לא" as NO', () => {
+    const result = interpretWithRules("לא");
+    assert.strictEqual(result.rsvp, "NO");
+    assert.strictEqual(result.confidence, 0.9);
+    assert.strictEqual(result.needsHeadcount, false);
+  });
+
+  it('classifies punctuated "לא" as NO', () => {
+    const result = interpretWithRules("לא.");
+    assert.strictEqual(result.rsvp, "NO");
+    assert.strictEqual(result.confidence, 0.9);
+    assert.strictEqual(result.needsHeadcount, false);
+  });
+
+  it('classifies "לא תודה" as NO', () => {
+    const result = interpretWithRules("לא תודה");
+    assert.strictEqual(result.rsvp, "NO");
+    assert.strictEqual(result.confidence, 0.9);
+    assert.strictEqual(result.needsHeadcount, false);
+  });
+
+  it('classifies "לא יכול" as NO', () => {
+    const result = interpretWithRules("לא יכול");
+    assert.strictEqual(result.rsvp, "NO");
+    assert.strictEqual(result.confidence, 0.9);
+    assert.strictEqual(result.needsHeadcount, false);
+  });
+
+  it('classifies "לא נגיע" as NO', () => {
+    const result = interpretWithRules("לא נגיע");
+    assert.strictEqual(result.rsvp, "NO");
+    assert.strictEqual(result.confidence, 0.9);
+    assert.strictEqual(result.needsHeadcount, false);
+  });
+
   it('classifies "לא מגיע" as NO (not YES)', () => {
     const result = interpretWithRules("לא מגיע");
     assert.strictEqual(result.rsvp, "NO");
